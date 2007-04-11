@@ -1,3 +1,8 @@
+2007-04-11  nrf
+
+	* [r16772] cha-ching/trunk/ChangeLog, cha-ching/trunk/package.php:
+	  Setup packaging
+
 2006-09-18  gauthierm
 
 	* [r11077] cha-ching/trunk/ChaChing/ChaChingClient.php:

@@ -370,9 +370,11 @@ class ChaChingServer
 	// {{{ private function output()
 
 	/**
-	 * Displays a debug string if debugging is turned on
+	 * Displays a debug string based on the verbosity level
 	 *
-	 * @param string $string the debugging string to display.
+	 * @param string $string the string to display.
+	 * @param integer $verbosity an optional verbosity level to display at. By
+	 *                            default, this is 1.
 	 */
 	private function output($string, $verbosity = 1)
 	{

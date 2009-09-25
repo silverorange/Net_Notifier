@@ -16,23 +16,23 @@ $package = new PEAR_PackageFileManager2();
 
 $package->setOptions(
 	array(
-		'filelistgenerator'           => 'svn',
-		'simpleoutput'                => true,
-		'baseinstalldir'              => '/',
-		'packagedirectory'            => './',
-		'dir_roles'                   => array(
-			'ChaChing'                => 'php',
-			'tests'                   => 'test'
+		'filelistgenerator'            => 'svn',
+		'simpleoutput'                 => true,
+		'baseinstalldir'               => '/',
+		'packagedirectory'             => './',
+		'dir_roles'                    => array(
+			'ChaChing'                 => 'php',
+			'tests'                    => 'test'
 		),
-		'exceptions'                  => array(
-			'scripts/chaching-server' => 'script'
+		'exceptions'                   => array(
+			'scripts/cha-ching-server' => 'script'
 		),
-		'ignore'                      => array(
+		'ignore'                       => array(
 			'package.php',
 			'*.tgz'
 		),
-		'installexceptions'           => array(
-			'scripts/chaching-server' => '/'
+		'installexceptions'            => array(
+			'scripts/cha-ching-server' => '/'
 		)
 	)
 );
@@ -69,7 +69,7 @@ $package->setPearinstallerDep('1.4.0');
 $package->generateContents();
 
 $package->addRelease();
-$package->addInstallAs('scripts/chaching-server', 'chaching-server');
+$package->addInstallAs('scripts/cha-ching-server', 'cha-ching-server');
 
 if (   isset($_GET['make'])
 	|| (isset($_SERVER['argv']) && @$_SERVER['argv'][1] == 'make')

@@ -3,7 +3,7 @@
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$version = '1.1.0';
+$version = '1.1.1';
 $notes = <<<EOT
 see ChangeLog
 EOT;
@@ -69,7 +69,7 @@ $package->setPearinstallerDep('1.4.0');
 $package->generateContents();
 
 $package->addRelease();
-$pacjage->addInstallAs('scripts/chaching-server', 'chaching-server');
+$package->addInstallAs('scripts/chaching-server', 'chaching-server');
 
 if (   isset($_GET['make'])
 	|| (isset($_SERVER['argv']) && @$_SERVER['argv'][1] == 'make')

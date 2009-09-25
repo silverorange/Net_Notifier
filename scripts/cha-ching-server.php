@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-require_once 'ChaChingServer.php';
+require_once 'ChaChing/ChaChingServer.php';
 
 set_time_limit(0);
 

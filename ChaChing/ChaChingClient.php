@@ -70,6 +70,15 @@ class ChaChingClient
 	protected $connected = false;
 
 	/**
+	 * Old error handler so some errors can be handed off instead of suppressed
+	 *
+	 * @var mixed
+	 *
+	 * @see ChachingClient::handleError()
+	 */
+	protected $old_error_handler = null;
+
+	/**
 	 * Creates a new cha-ching client
 	 *
 	 * @param string $address the address of the cha-ching server.
@@ -98,9 +107,41 @@ class ChaChingClient
 	 */
 	public function chaChing($id)
 	{
+		$this->old_error_handler =
+			set_error_handler(array($this, 'handleError'));
+
 		$this->connect();
 		$this->send($id);
 		$this->disconnect();
+
+		restore_error_handler();
+	}
+
+	/**
+	 * Handles PHP errors that may be raised by socket operations
+	 *
+	 * Since the cha-ching client is non-critical, we fail silently.
+	 *
+	 * @param integer $errno the level of the error raised.
+	 * @param string $errstr the error message.
+	 * @param string $errfile the filename that the error was raised in.
+	 * @param integer $errline the line number the error was raised at.
+	 *
+	 * @return boolean false.
+	 */
+	public function handleError($errno, $errstr, $errfile, $errline)
+	{
+		// don't suppress user errors since they should cause the script to end
+		if ($errno === E_USER_ERROR) {
+			if ($this->old_error_handler !== null) {
+				call_user_func($this->old_error_handler,
+					$errno, $errstr, $errfile, $errline);
+			} else {
+				exit(1);
+			}
+		}
+
+		return false;
 	}
 
 	/**

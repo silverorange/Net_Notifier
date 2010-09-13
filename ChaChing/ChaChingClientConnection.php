@@ -1,161 +1,342 @@
 <?php
 
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Client connection to the cha-ching server class
+ *
+ * PHP version 5
+ *
+ * LICENSE:
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ * @category  Net
+ * @package   ChaChing
+ * @author    Michael Gauthier <mike@silverorange.com>
+ * @copyright 2006-2010 silverorange
+ * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ */
+
+/**
+ * WebSocket handshake class.
+ */
+require_once 'ChaChing/ChaChingWebSocketHandshake.php';
+
 /**
  * A client connection to the cha-ching server
  *
  * This class is intended to be used internally by the {@link ChaChingServer}
- * class.
+ * class. It handles both regular socket connections and WebSocket
+ * connections.
  *
+ * @category  Net
  * @package   ChaChing
- * @copyright 2006 silverorange
+ * @author    Michael Gauthier <mike@silverorange.com>
+ * @copyright 2006-2010 silverorange
+ * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class ChaChingClientConnection
 {
-	// {{{ private properties
+    // {{{ protected properties
 
-	/**
-	 * The socket this connection uses to communicate with the server
-	 *
-	 * @var resource
-	 */
-	private $socket;
+    /**
+     * The socket this connection uses to communicate with the server
+     *
+     * @var resource
+     */
+    protected $socket;
 
-	/**
-	 * The IP address ths connection originated from
-	 *
-	 * @var string
-	 */
-	private $ip_address;
+    /**
+     * The IP address ths connection originated from
+     *
+     * @var string
+     */
+    protected $ipAddress;
 
-	/**
-	 * A buffer containing data received by the server from this connection
-	 *
-	 * @var string
-	 *
-	 * @see ChaChingClientConnection::getMessage()
-	 */
-	private $buffer = '';
+    /**
+     * A buffer containing data received by the server from this connection
+     *
+     * @var string
+     *
+     * @see ChaChingClientConnection::getMessage()
+     */
+    protected $buffer = '';
 
-	/**
-	 * The size of the data payload of this connection in characters
-	 *
-	 * If -1 this means the payload size is not yet know.
-	 *
-	 * @var integer
-	 */
-	private $size = -1;
+    /**
+     * The size of the data payload of this connection in characters
+     *
+     * If -1 this means the payload size is not yet know.
+     *
+     * @var integer
+     */
+    protected $size = -1;
 
-	// }}}
-	// {{{ public function __construct()
+    /**
+     * Whether or not this connection is a WebSocket connection
+     *
+     * @var boolean
+     *
+     * @see ChaChingClientConnection::isWebSocket()
+     */
+    protected $isWebSocket = false;
 
-	/**
-	 * Creates a new client connection object
-	 *
-	 * @param resource $socket the socket this connection uses to communicate
-	 *                          with the server.
-	 */
-	public function __construct($socket)
-	{
-		$this->socket = $socket;
-		socket_getpeername($socket, $this->ip_address);
-	}
+    /**
+     * If this connection is a WebSocket connection, whether or not the
+     * connection handshake has been performed
+     *
+     * @var boolean
+     */
+    protected $hasHandshaken = false;
 
-	// }}}
-	// {{{ public function getSocket()
+    // }}}
+    // {{{ __construct()
 
-	/**
-	 * Gets the socket this connection uses to communicate with the server
-	 *
-	 * @return resource the socket this connection uses to communicate with the
-	 *                   server.
-	 */
-	public function getSocket()
-	{
-		return $this->socket;
-	}
+    /**
+     * Creates a new client connection object
+     *
+     * @param resource $socket the socket this connection uses to communicate
+     *                          with the server.
+     */
+    public function __construct($socket)
+    {
+        $this->socket = $socket;
+        socket_getpeername($socket, $this->ipAddress);
+    }
 
-	// }}}
-	// {{{ public function read()
+    // }}}
+    // {{{ getSocket()
 
-	/**
-	 * Reads data from this connection
-	 *
-	 * @return boolean true if this connection's data payload has finished
-	 *                  being read and false if this connection still has data
-	 *                  to send.
-	 */
-	public function read()
-	{
-		if (false === ($buffer = socket_read($this->socket,
-			ChaChingServer::READ_BUFFER_LENGTH, PHP_BINARY_READ))) {
-			echo "socket_read() failed: reason: ",
-				socket_strerror(socket_last_error()), "\n";
+    /**
+     * Gets the socket this connection uses to communicate with the server
+     *
+     * @return resource the socket this connection uses to communicate with the
+     *                   server.
+     */
+    public function getSocket()
+    {
+        return $this->socket;
+    }
 
-			exit(1);
-		}
+    // }}}
+    // {{{ read()
 
-		$this->buffer .= $buffer;
+    /**
+     * Reads data from this connection
+     *
+     * @return boolean true if this connection's data payload has finished
+     *                  being read and false if this connection still has data
+     *                  to send.
+     */
+    public function read()
+    {
+        if (false === ($buffer = socket_read($this->socket,
+            ChaChingServer::READ_BUFFER_LENGTH, PHP_BINARY_READ))) {
+            echo "socket_read() failed: reason: ",
+                socket_strerror(socket_last_error()), "\n";
 
-		if ($this->size == -1) {
-			$multi_byte = (function_exists('mb_strlen') &&
-				(ini_get('mbstring.func_overload') & 2) == 2 &&
-				mb_internal_encoding() == 'UTF-8');
+            exit(1);
+        }
 
-			$byte_length = ($multi_byte) ?
-				mb_strlen($this->buffer, 'latin1') : strlen($this->buffer);
+        $this->buffer .= $buffer;
+        $byteLength    = mb_strlen($this->buffer, '8bit');
 
-			if ($byte_length >= 2) {
-				$binary_data = ($multi_byte) ?
-					mb_substr($this->buffer, 0, 2, 'latin1') :
-					substr($this->buffer, 0, 2);
+        if ($this->size == -1 && $byteLength >= 3) {
+            $data = mb_substr($this->buffer, 0, 3, '8bit');
 
-				$message_data = ($multi_byte) ?
-					mb_substr($this->buffer, 2, $byte_length, 'latin1') :
-					substr($this->buffer, 2);
+            if ($data === 'GET') {
 
-				$data = unpack('n', $binary_data);
-				$this->size = $data[1];
-				$this->buffer = $message_data;
-			}
-		}
+                $this->isWebSocket = true;
 
-		return (strlen($this->buffer) == $this->size) ||
-			(strlen($buffer) == 0);
-	}
+                // treat as WebSocket client
+                if (!$this->hasHandshaken) {
 
-	// }}}
-	// {{{ public function getMessage()
+                    $headerPos = mb_strpos(
+                        $this->buffer,
+                        "\r\n\r\n",
+                        0,
+                        '8bit'
+                    );
 
-	/**
-	 * Gets the message received by the server from this connection
-	 *
-	 * @return string the message received by the server from this connection.
-	 *                 If the full message has not yet been received, false is
-	 *                 returned.
-	 */
-	public function getMessage()
-	{
-		$message = false;
-		if (strlen($this->buffer) == $this->size)
-			$message = $this->buffer;
+                    // Make sure last 8 bytes are present before attempting to
+                    // handshake.
+                    if (   $headerPos !== false
+                        && $byteLength >= $headerPos + 12
+                    ) {
+                        $data = mb_substr(
+                            $this->buffer,
+                            0,
+                            $headerPos + 12,
+                            '8bit'
+                        );
 
-		return $message;
-	}
+                        $this->handshake($data);
+                    }
+                }
 
-	// }}}
-	// {{{ public function getIpAddress()
+            } else {
 
-	/**
-	 * Gets the IP address of this connection
-	 *
-	 * @return string the IP address of this connection.
-	 */
-	public function getIpAddress()
-	{
-		return $this->ip_address;
-	}
+                // treat as a regular socket client
+                $binaryData = mb_substr($this->buffer, 0, 2, '8bit');
 
-	// }}}
+                $messageData = mb_substr(
+                    $this->buffer,
+                    2,
+                    $byteLength,
+                    '8bit'
+                );
+
+                $data         = unpack('n', $binaryData);
+                $this->size   = $data[1];
+                $this->buffer = $messageData;
+
+            }
+        }
+
+        return
+               mb_strlen($this->buffer, '8bit') === $this->size
+            || mb_strlen($buffer, '8bit') === 0;
+    }
+
+    // }}}
+    // {{{ getMessage()
+
+    /**
+     * Gets the message received by the server from this connection
+     *
+     * @return string the message received by the server from this connection.
+     *                 If the full message has not yet been received, false is
+     *                 returned.
+     */
+    public function getMessage()
+    {
+        $message = false;
+        if (strlen($this->buffer) == $this->size)
+            $message = $this->buffer;
+
+        return $message;
+    }
+
+    // }}}
+    // {{{ getIpAddress()
+
+    /**
+     * Gets the IP address of this connection
+     *
+     * @return string the IP address of this connection.
+     */
+    public function getIpAddress()
+    {
+        return $this->ipAddress;
+    }
+
+    // }}}
+    // {{{ write()
+
+    /**
+     * Writes a message to this connection's socket
+     *
+     * The message is sent in an application-specific wrapper so it is
+     * understood by the client.
+     *
+     * @param string $message the message to send.
+     *
+     * @return void
+     */
+    public function write($message)
+    {
+        $this->send($this->wrap($message));
+    }
+
+    // }}}
+    // {{{ isWebSocket()
+
+    /**
+     * Gets whether or not this connection is a WebSocket connection
+     *
+     * @return boolean true if this connection is a WebSocket connection;
+     *                 otherwise, false.
+     */
+    public function isWebSocket()
+    {
+        return $this->isWebSocket;
+    }
+
+    // }}}
+    // {{{ send()
+
+    /**
+     * Sends raw data over this connection's socket
+     *
+     * @param string $message the data to send.
+     *
+     * @return void
+     */
+    protected function send($message)
+    {
+        $length = mb_strlen($message, '8bit');
+        socket_write($this->socket, $message, $length);
+    }
+
+    // }}}
+    // {{{ wrap()
+
+    /**
+     * Wraps a message in an application-specific wrapper
+     *
+     * The type of message wrapper depends on whether or not this connection
+     * is a WebSocket connection.
+     *
+     * @param string $message the message data to wrap.
+     *
+     * @return string the wrapped message. After wrapping, the message is
+     *                suitable for sending over this client's socket.
+     */
+    protected function wrap($message)
+    {
+        if ($this->isWebSocket()) {
+            $message = "\x00" . $message . "\xff";
+        } else {
+            $length  = mb_strlen($message, '8bit');
+            $message = pack('n', $length) . $message;
+        }
+
+        return $message;
+    }
+
+    // }}}
+    // {{{ handshake()
+
+    /**
+     * Perform a WebSocket handshake for this client connection
+     *
+     * @param string $data the handshake data from the WebSocket client.
+     *
+     * @return void
+     */
+    protected function handshake($data)
+    {
+        $handshake = new ChaChingWebSocketHandshake();
+        $response  = $handshake->handshake($data);
+
+        $this->send($response);
+
+        $this->hasHandshaken = true;
+    }
+
+    // }}}
 }
 
 ?>

@@ -1,0 +1,16 @@
+<?php
+
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+$config = array(
+    'server' => 'localhost',
+    'port'   => 2000,
+    'sounds' => array(
+        'pop',
+        'beep',
+        'boom',
+        'cha-ching',
+    ),
+);
+
+?>

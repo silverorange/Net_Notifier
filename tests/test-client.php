@@ -40,9 +40,33 @@ if (   !isset($config['server'])
 }
 
 for ($i = 0; $i < 10; $i++) {
+    $id = $config['sounds'][array_rand($config['sounds'])];
+    $value = getValue() / 100;
     $client = new ChaChingClient($config['server'], $config['port']);
-    $client->chaChing($config['sounds'][array_rand($config['sounds'])]);
+    $client->chaChing($id, $value);
     usleep(rand(300000, 1500000));
+}
+
+/**
+ * Gets a random value from a probability density function using
+ * rejection-sampling
+ *
+ * It's not very efficient but it doesn't have to be since this is only a
+ * small simulation.
+ *
+ * @return float a value between 1 and 100000.
+ */
+function getValue()
+{
+    while (true) {
+        $value = mt_rand(1, 100000);
+        $threshold = exp(-($value - 1) / 10000) * 15;
+        if (mt_rand(0, 100) < $threshold) {
+            break;
+        }
+    }
+
+    return $value;
 }
 
 ?>

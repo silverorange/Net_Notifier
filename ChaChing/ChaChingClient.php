@@ -122,9 +122,9 @@ class ChaChingClient
     /**
      * Creates a new cha-ching client
      *
-     * @param string $address the address of the cha-ching server.
-     * @param integer $port an optional port number of the cha-ching server. If
-     *                       no port number is specified, 2000 is used.
+     * @param string  $address the address of the cha-ching server.
+     * @param integer $port    an optional port number of the cha-ching server.
+     *                         If no port number is specified, 2000 is used.
      */
     public function __construct($address, $port = 2000)
     {
@@ -153,18 +153,25 @@ class ChaChingClient
     /**
      * Sends a cha-ching request
      *
-     * @param string $id the id of the cha-ching sound to play.
+     * @param string $id    the id of the cha-ching sound to play.
+     * @param float  $value optional. A value to associate with the id.
      *
      * @return void
      */
-    public function chaChing($id)
+    public function chaChing($id, $value = null)
     {
         $this->oldErrorHandler = set_error_handler(
             array($this, 'handleError')
         );
 
+        // for backwards compatibility with older playback clients
         $this->connect();
         $this->send($id);
+        $this->disconnect();
+
+        $this->connect();
+        $message = json_encode(array('id' => $id, 'value' => $value));
+        $this->send($message);
         $this->disconnect();
 
         restore_error_handler();

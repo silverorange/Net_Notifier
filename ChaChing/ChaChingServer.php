@@ -265,23 +265,24 @@ class ChaChingServer
     /**
      * Notifies all connected clients of an event
      *
-     * @param string $eventId the id of the event that occurred (and the
-     *                        notification that is sent).
+     * @param string $message the JSON encoded object containing the event
+     *                        information. The object is a key-value hash
+     *                        containing 'id' and 'value'.
      *
      * @return void
      */
-    protected function dispatchEvent($eventId)
+    protected function dispatchEvent($message)
     {
         foreach ($this->clients as $client) {
             $type = ($client->isWebSocket()) ? " (websocket) " : " (socket) ";
 
             $this->output(
-                "=> writing message '" . $eventId . "' to " .
+                "=> writing message '" . $message . "' to " .
                 $client->getIpAddress() . $type . " ... ",
                 self::VERBOSITY_CLIENT
             );
 
-            $client->write($eventId);
+            $client->write($message);
 
             $this->output("done\n", self::VERBOSITY_CLIENT);
         }

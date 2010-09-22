@@ -32,10 +32,10 @@
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$apiVersion     = '1.2.0';
+$apiVersion     = '1.2.1';
 $apiState       = 'stable';
 
-$releaseVersion = '1.2.0';
+$releaseVersion = '1.2.1';
 $releaseState   = 'stable';
 
 $releaseNotes   = <<<EOT
@@ -95,7 +95,7 @@ $package->setPackageType('php');
 $package->setLicense('LGPL', 'http://www.gnu.org/copyleft/lesser.html');
 
 $package->setReleaseVersion($releaseVersion);
-$package->setReleaseStability($relaseState);
+$package->setReleaseStability($releaseState);
 $package->setAPIVersion($apiVersion);
 $package->setAPIStability($apiState);
 $package->setNotes($releaseNotes);

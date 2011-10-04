@@ -26,7 +26,7 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2010 silverorange
+ * @copyright 2010-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -38,11 +38,26 @@
  *
  * @category  Net
  * @package   ChaChing
- * @copyright 2010 silverorange
+ * @copyright 2010-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class ChaChingWebSocketHandshake
 {
+    // {{{ class constants
+
+    /**
+     * Magic number used to identify WebSocket handshake requests
+     *
+     * Taken from the IETF draft spec version 10.
+     */
+    const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+
+    /**
+     * Protocol version
+     */
+    const VERSION = 8;
+
+    // }}}
     // {{{ protected properties
 
     /**
@@ -84,68 +99,37 @@ class ChaChingWebSocketHandshake
      */
     public function handshake($handshake)
     {
-        $handshake = $this->parseHandshake($handshake);
-        $headers   = $handshake['headers']['headers'];
+        $handshake = $this->parseHeaders($handshake);
+        $headers   = $handshake['headers'];
+        $key       = $headers['Sec-WebSocket-Key'];
+        $accept    = $this->getAccept($key);
+        $version   = $headers['Sec-WebSocket-Version'];
 
-        $resource = explode(' ', $handshake['headers']['status'], 3);
-        $resource = $resource[1];
-        $location = 'ws://' . $headers['Host'] . $resource;
+        if ($version == self::VERSION) {
 
-        $response =
-            "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" .
-            "Upgrade: WebSocket\r\n" .
-            "Connection: Upgrade\r\n" .
-            "Sec-WebSocket-Origin: " . $headers['Origin'] . "\r\n" .
-            "Sec-WebSocket-Location: " . $location . "\r\n";
+            $response =
+                "HTTP/1.1 101 Switching Protocols\r\n" .
+                "Upgrade: websocket\r\n" .
+                "Connection: Upgrade\r\n" .
+                "Sec-WebSocket-Accept: " . $accept . "\r\n";
 
-        if (isset($headers['Sec-WebSocket-Protocol'])) {
-            // TODO: check against supported protocols
-            $response .= 'Sec-WebSocket-Protocol: ' .
-                $headers['Sec-WebSocket-Protocol'] . "\r\n";
+            if (isset($headers['Sec-WebSocket-Protocol'])) {
+                // TODO: check against supported protocols
+                $response .= 'Sec-WebSocket-Protocol: ' .
+                    $headers['Sec-WebSocket-Protocol'] . "\r\n";
+            }
+
+        } else {
+
+            $response =
+                "HTTP/1.1 426 Upgrade Required\r\n";
+                "Sec-WebSocket-Version: " . self::VERSION . "\r\n";
+
         }
 
         $response .= "\r\n";
 
-        if (   isset($headers['Sec-WebSocket-Key1'])
-            && isset($headers['Sec-WebSocket-Key2'])
-        ) {
-            $key1 = $this->parseKey($headers['Sec-WebSocket-Key1']);
-            $key2 = $this->parseKey($headers['Sec-WebSocket-Key2']);
-            $key  = $this->buildKey($key1, $key2, $handshake['data']);
-
-            $response .= $key . "\r\n";
-        }
-
-        $response .= "\xff";
-
         return $response;
-    }
-
-    // }}}
-    // {{{ parseHandshake()
-
-    /**
-     * Parses the raw handshake request into an array of headers and data
-     *
-     * @param string $handshake the raw handshake request.
-     *
-     * @return array a structured array containing the following:
-     *               - <kbd>headers</kbd> - a structured array of headers, and
-     *               - <kbd>data</kbd>    - a string containing additional
-     *                                      data like authentication keys.
-     */
-    protected function parseHandshake($handshake)
-    {
-        $handshake = explode("\r\n\r\n", $handshake, 2);
-        $headers   = $this->parseHeaders($handshake[0]);
-
-        // last 8 bytes are key data
-        $data = $handshake[1];
-
-        return array(
-            'headers' => $headers,
-            'data'    => $data,
-        );
     }
 
     // }}}
@@ -181,65 +165,31 @@ class ChaChingWebSocketHandshake
     }
 
     // }}}
-    // {{{ parseKey()
+    // {{{ getAccept()
 
     /**
-     * Parses a 32-bit integer out of a handshake key
+     * Gets the accept header value for this handshake
      *
-     * The 32-bit integer is derived through the following:
+     * The 20-character string is derived through the following:
      *
-     *  1. make a number from all the numeric characters in the key
-     *  2. divide the number by the number of space characters in the key
+     *  1. start with the key string
+     *  2. append the string 258EAFA5-E914-47DA-95CA-C5AB0DC85B11
+     *  3. take the sha1() of the resulting string
+     *  4. base-64 encode the sha1 result
      *
-     * See section 6.2 of {@link http://www.whatwg.org/specs/web-socket-protocol/ The WebSocket Protocol}
+     * See section 5.2.2 of {@link http://www.whatwg.org/specs/web-socket-protocol/ The WebSocket Protocol}
      * for further details.
      *
-     * @param string $key the key to parse.
+     * @param string $key the key from which to generate the accept hash.
      *
-     * @return integer the 32-bit integer.
+     * @return string the accept hash.
      */
-    protected function parseKey($key)
+    protected function getAccept($key)
     {
-        $number = '';
-        $spaces = 0;
-
-        $length = mb_strlen($key, '8bit');
-        for ($i = 0; $i < $length; $i++) {
-            $char = mb_substr($key, $i, 1, '8bit');
-            if (ctype_digit($char)) {
-                $number .= $char;
-            }
-            if ($char === ' ') {
-                $spaces++;
-            }
-        }
-
-        return intval($number / $spaces);
-    }
-
-    // }}}
-    // {{{ buildKey()
-
-    /**
-     * Builds the response key used in the handshake response
-     *
-     * See section 6.2 of {@link http://www.whatwg.org/specs/web-socket-protocol/ The WebSocket Protocol}
-     * for further details on how the key is generated.
-     *
-     * @param integer $key1 the first request key as parsed into a 32-bit
-     *                      integer.
-     * @param integer $key2 the second request key as parsed into a 32-bit
-     *                      integer.
-     * @param string  $data the third request key as 8 bytes (64 bits) of
-     *                      binary data.
-     *
-     * @return string the response key as 16 bytes (128 bits) of binary data.
-     */
-    protected function buildKey($key1, $key2, $data)
-    {
-        $key = pack('N', $key1) . pack('N', $key2) . $data;
-        $key = md5($key, true);
-        return $key;
+        $accept = $key . self::GUID;
+        $accept = sha1($accept, true);
+        $accept = base64_encode($accept);
+        return $accept;
     }
 
     // }}}

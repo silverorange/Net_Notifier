@@ -170,15 +170,11 @@ class ChaChingClientConnection
                         '8bit'
                     );
 
-                    // Make sure last 8 bytes are present before attempting to
-                    // handshake.
-                    if (   $headerPos !== false
-                        && $byteLength >= $headerPos + 12
-                    ) {
+                    if ($headerPos !== false) {
                         $data = mb_substr(
                             $this->buffer,
                             0,
-                            $headerPos + 12,
+                            $headerPos,
                             '8bit'
                         );
 

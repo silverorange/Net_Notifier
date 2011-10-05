@@ -19,10 +19,11 @@ class ChaChingWebsocketFrame implements SplSubject
 	const TYPE_CONTROL9  = 0x0e;
 	const TYPE_CONTROL10 = 0x0f;
 
-	const STATE_UNINITIALIZED = 0;
-	const STATE_LOADING = 1;
-	const STATE_LOADED = 2;
-	const STATE_COMPLETED = 4;
+	const STATE_UNSENT           = 0;
+	const STATE_OPENED           = 1;
+	const STATE_HEADERS_RECEIVED = 2;
+	const STATE_LOADING          = 3;
+	const STATE_DONE             = 4;
 
 	protected $opcode = 0;
 
@@ -58,7 +59,7 @@ class ChaChingWebsocketFrame implements SplSubject
 
 	protected $headerLength = 2;
 
-	protected $state = self::STATE_UNINITIALIZED;
+	protected $state = self::STATE_UNSENT;
 
 	public function __construct($data = '', $isMasked = false, $fin = true)
 	{
@@ -77,21 +78,28 @@ class ChaChingWebsocketFrame implements SplSubject
 
 	public function parse($data)
 	{
-		if ($this->state === self::STATE_UNINITIALIZED) {
-			$this->state = self::STATE_LOADING;
+		if ($this->state === self::STATE_UNSENT) {
+			$this->state = self::STATE_OPENED;
 		}
 
 		if ($this->isHeaderComplete) {
-			$this->parseData($data);
+			$data = $this->parseData($data);
 		} else {
-			$this->parseHeader($data);
+			$data = $this->parseHeader($data);
 		}
 
 		// notify if we've received all data for this frame
-		if ($this->cursor == $this->getLength() - $this->headerLength) {
-			$this->state = self::STATE_LOADED;
+		if ($this->cursor == $this->getLength() + $this->headerLength) {
+			$this->state = self::STATE_DONE;
 			$this->notify();
 		}
+
+		return $data;
+	}
+
+	public function isFinal()
+	{
+		return $this->fin;
 	}
 
 	public function isMasked()
@@ -157,6 +165,19 @@ class ChaChingWebsocketFrame implements SplSubject
 
 	protected function parseData($data)
 	{
+		$length = mb_strlen($data, '8bit');
+
+		if ($this->cursor + $length > $this->getLength() + $this->headerLength) {
+			$dataLength = $this->getLength()
+				- $this->cursor
+				+ $this->headerLength;
+		} else {
+			$dataLength = $length;
+		}
+
+		$data     = mb_substr($data, 0, $dataLength, '8bit');
+		$leftover = mb_substr($data, $length, $length - $dataLength, '8bit');
+
 		$this->data .= $data;
 		if ($this->isMasked()) {
 			$this->unmaskedData .= $this->unmask($data);
@@ -164,10 +185,14 @@ class ChaChingWebsocketFrame implements SplSubject
 			$this->unmaskedData .= $data;
 		}
 		$this->cursor += mb_strlen($data, '8bit');
+
+		return $leftover;
 	}
 
 	protected function parseHeader($data)
 	{
+		$leftover = '';
+
 		$length = mb_strlen($data, '8bit');
 
 		for ($i = 0; $i < $length; $i++) {
@@ -248,7 +273,8 @@ class ChaChingWebsocketFrame implements SplSubject
 
 			// check if finished parsing header
 			if ($this->cursor === $this->headerLength) {
-				$this->state = self::STATE_LOADED;
+				$this->isHeaderComplete = true;
+				$this->state = self::STATE_HEADERS_RECEIVED;
 				$this->notify();
 				break;
 			}
@@ -256,21 +282,23 @@ class ChaChingWebsocketFrame implements SplSubject
 
 		// we have more data
 		if ($i < $length) {
-			$data = mb_substr($data, $i, $length - $i, '8bit');
-			$this->parseData($data);
+			$data = mb_substr($data, $i + 1, $length - $i - 1, '8bit');
+			$leftover = $this->parseData($data);
 		}
+
+		return $leftover;
 	}
 
 	protected function unmask($data)
 	{
 		$out    = '';
 		$length = mb_strlen($data, '8bit');
-		$j      = $this->cursor % 4;
+		$j      = ($this->cursor - $this->headerLength) % 4;
 
 		for ($i = 0; $i < $length; $i++) {
 			$data_octet = $this->getChar($data, $i);
 			$mask_octet = $this->getChar($this->mask, $j);
-			$out .= pack('c', ($data_octet ^ $mask_octet));
+			$out .= pack('C', ($data_octet ^ $mask_octet));
 			$j++;
 			if ($j >= 4) {
 				$j = 0;
@@ -292,6 +320,7 @@ class ChaChingWebsocketFrame implements SplSubject
 
 	protected function getLong($data)
 	{
+		// TODO
 		return 0;
 	}
 }

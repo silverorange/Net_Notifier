@@ -61,19 +61,30 @@ class ChaChingWebsocketFrame implements SplSubject
 
 	protected $state = self::STATE_UNSENT;
 
-	public function __construct($data = '', $isMasked = false, $fin = true)
-	{
+	public function __construct(
+		$data = '',
+		$opcode = self::TYPE_TEXT,
+		$isMasked = false,
+		$fin = true
+	) {
 		if ($data !='') {
 			$this->unmaskedData = $data;
 			$this->isMasked = $isMasked;
+			if ($this->isMasked) {
+				$this->mask = $this->generateMask();
+			}
 			$this->fin = $fin;
-			// TODO
 		}
 	}
 
 	public function __toString()
 	{
-		// TODO
+		ob_start();
+
+		$this->displayHeader();
+		$this->displayData();
+
+		return ob_get_clean();
 	}
 
 	public function parse($data)
@@ -163,6 +174,46 @@ class ChaChingWebsocketFrame implements SplSubject
 		return $this->state;
 	}
 
+	protected function displayHeader()
+	{
+		$fin  = $this->fin  ? 0x80 : 0x00;
+
+		$rsv1 = $this->rsv1 ? 0x40 : 0x00;
+		$rsv2 = $this->rsv2 ? 0x20 : 0x00;
+		$rsv3 = $this->rsv3 ? 0x10 : 0x00;
+
+		$byte1 = $fin | $rsv1 | $rsv2 | $rsv3 | $this->opcode;
+
+		$mask = $this->isMasked ? 0x80 : 0x00;
+
+		$byte2 = $mask | $this->length;
+
+		echo pack('CC', $byte1, $byte2);
+
+		if ($this->length === 0x7e) {
+			echo pack('s', $this->length16);
+		}
+
+		if ($this->length === 0x7f) {
+			// TODO
+		}
+
+		if ($this->isMasked) {
+			echo $this->mask;
+		}
+	}
+
+	protected function displayData()
+	{
+		$data = $this->unmaskedData;
+
+		if ($this->isMasked) {
+			$data = $this->mask($data);
+		}
+
+		echo $data;
+	}
+
 	protected function parseData($data)
 	{
 		$length = mb_strlen($data, '8bit');
@@ -180,7 +231,7 @@ class ChaChingWebsocketFrame implements SplSubject
 
 		$this->data .= $data;
 		if ($this->isMasked()) {
-			$this->unmaskedData .= $this->unmask($data);
+			$this->unmaskedData .= $this->mask($data);
 		} else {
 			$this->unmaskedData .= $data;
 		}
@@ -289,7 +340,7 @@ class ChaChingWebsocketFrame implements SplSubject
 		return $leftover;
 	}
 
-	protected function unmask($data)
+	protected function mask($data)
 	{
 		$out    = '';
 		$length = mb_strlen($data, '8bit');
@@ -306,6 +357,16 @@ class ChaChingWebsocketFrame implements SplSubject
 		}
 
 		return $out;
+	}
+
+	protected function generateMask()
+	{
+		// get two random 16-bit integers
+		$short1 = mt_rand(0, 65536);
+		$short2 = mt_rand(0, 65536);
+
+		// pack them in a string
+		return pack('ss', $short1, $short2);
 	}
 
 	protected function getChar($data, $char)

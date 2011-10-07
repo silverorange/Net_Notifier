@@ -26,29 +26,23 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2010 silverorange
+ * @copyright 2006-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-
-/**
- * WebSocket handshake class.
- */
-require_once 'ChaChing/ChaChingWebSocketHandshake.php';
 
 /**
  * A client connection to the cha-ching server
  *
  * This class is intended to be used internally by the {@link ChaChingServer}
- * class. It handles both regular socket connections and WebSocket
- * connections.
+ * class.
  *
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2010 silverorange
+ * @copyright 2006-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class ChaChingClientConnection
+class ChaChingClientSocketConnection
 {
     // {{{ protected properties
 
@@ -71,7 +65,7 @@ class ChaChingClientConnection
      *
      * @var string
      *
-     * @see ChaChingClientConnection::getMessage()
+     * @see ChaChingClientSocketConnection::getMessage()
      */
     protected $buffer = '';
 
@@ -83,23 +77,6 @@ class ChaChingClientConnection
      * @var integer
      */
     protected $size = -1;
-
-    /**
-     * Whether or not this connection is a WebSocket connection
-     *
-     * @var boolean
-     *
-     * @see ChaChingClientConnection::isWebSocket()
-     */
-    protected $isWebSocket = false;
-
-    /**
-     * If this connection is a WebSocket connection, whether or not the
-     * connection handshake has been performed
-     *
-     * @var boolean
-     */
-    protected $hasHandshaken = false;
 
     // }}}
     // {{{ __construct()
@@ -153,52 +130,21 @@ class ChaChingClientConnection
         $this->buffer .= $buffer;
         $byteLength    = mb_strlen($this->buffer, '8bit');
 
-        if ($this->size == -1 && $byteLength >= 3) {
-            $data = mb_substr($this->buffer, 0, 3, '8bit');
+        if ($this->size == -1 && $byteLength >= 2) {
 
-            if ($data === 'GET') {
+            $binaryData = mb_substr($this->buffer, 0, 2, '8bit');
 
-                $this->isWebSocket = true;
+            $messageData = mb_substr(
+                $this->buffer,
+                2,
+                $byteLength,
+                '8bit'
+            );
 
-                // treat as WebSocket client
-                if (!$this->hasHandshaken) {
+            $data         = unpack('n', $binaryData);
+            $this->size   = $data[1];
+            $this->buffer = $messageData;
 
-                    $headerPos = mb_strpos(
-                        $this->buffer,
-                        "\r\n\r\n",
-                        0,
-                        '8bit'
-                    );
-
-                    if ($headerPos !== false) {
-                        $data = mb_substr(
-                            $this->buffer,
-                            0,
-                            $headerPos,
-                            '8bit'
-                        );
-
-                        $this->handshake($data);
-                    }
-                }
-
-            } else {
-
-                // treat as a regular socket client
-                $binaryData = mb_substr($this->buffer, 0, 2, '8bit');
-
-                $messageData = mb_substr(
-                    $this->buffer,
-                    2,
-                    $byteLength,
-                    '8bit'
-                );
-
-                $data         = unpack('n', $binaryData);
-                $this->size   = $data[1];
-                $this->buffer = $messageData;
-
-            }
         }
 
         return
@@ -219,8 +165,10 @@ class ChaChingClientConnection
     public function getMessage()
     {
         $message = false;
-        if (strlen($this->buffer) == $this->size)
+
+        if (strlen($this->buffer) == $this->size) {
             $message = $this->buffer;
+        }
 
         return $message;
     }
@@ -257,20 +205,6 @@ class ChaChingClientConnection
     }
 
     // }}}
-    // {{{ isWebSocket()
-
-    /**
-     * Gets whether or not this connection is a WebSocket connection
-     *
-     * @return boolean true if this connection is a WebSocket connection;
-     *                 otherwise, false.
-     */
-    public function isWebSocket()
-    {
-        return $this->isWebSocket;
-    }
-
-    // }}}
     // {{{ send()
 
     /**
@@ -292,9 +226,6 @@ class ChaChingClientConnection
     /**
      * Wraps a message in an application-specific wrapper
      *
-     * The type of message wrapper depends on whether or not this connection
-     * is a WebSocket connection.
-     *
      * @param string $message the message data to wrap.
      *
      * @return string the wrapped message. After wrapping, the message is
@@ -302,34 +233,25 @@ class ChaChingClientConnection
      */
     protected function wrap($message)
     {
-        if ($this->isWebSocket()) {
-            $message = "\x00" . $message . "\xff";
-        } else {
-            $length  = mb_strlen($message, '8bit');
-            $message = pack('n', $length) . $message;
-        }
+        $length  = mb_strlen($message, '8bit');
+        $message = pack('n', $length) . $message;
 
         return $message;
     }
 
     // }}}
-    // {{{ handshake()
+    // {{{ close()
 
     /**
-     * Perform a WebSocket handshake for this client connection
+     * Closes this connection
      *
-     * @param string $data the handshake data from the WebSocket client.
+     * @param string $reason the reason this connection was closed.
      *
      * @return void
      */
-    protected function handshake($data)
+    public function close($reason)
     {
-        $handshake = new ChaChingWebSocketHandshake();
-        $response  = $handshake->handshake($data);
-
-        $this->send($response);
-
-        $this->hasHandshaken = true;
+        socket_close($this->socket);
     }
 
     // }}}

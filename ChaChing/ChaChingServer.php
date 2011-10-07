@@ -26,14 +26,14 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2010 silverorange
+ * @copyright 2006-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 /**
- * Client connection class.
+ * Client connectionproxy factory class.
  */
-require_once 'ChaChing/ChaChingClientConnection.php';
+require_once 'ChaChing/ChaChingClientSocketConnection.php';
 
 /**
  * A server process for sending and receiving cha-ching notifications
@@ -46,7 +46,7 @@ require_once 'ChaChing/ChaChingClientConnection.php';
  *
  * @category  Net
  * @package   ChaChing
- * @copyright 2006-2010 silverorange
+ * @copyright 2006-2011 silverorange
  * @author    Michael Gauthier <mike@silverorange.com>
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
@@ -127,7 +127,7 @@ class ChaChingServer
     /**
      * Clients connected to this server
      *
-     * This is an array of {@link ChaChingClientConnection} objects.
+     * This is an array of {@link ChaChingClientSocketConnection} objects.
      *
      * @var array
      */
@@ -224,7 +224,7 @@ class ChaChingServer
                     exit(1);
                 }
 
-                $client = new ChaChingClientConnection($newSocket);
+                $client = new ChaChingClientSocketConnection($newSocket);
                 $this->clients[] = $client;
                 $this->output(
                     "client connected from " . $client->getIpAddress() . "\n",
@@ -234,10 +234,14 @@ class ChaChingServer
 
             foreach ($this->getReadClients($read) as $client) {
                 if ($client->read()) {
-                    $this->disconnectClient($client);
+                    $this->disconnectClient($client, 'Received message.');
                     $message = $client->getMessage();
 
                     if ($message === 'shutdown') {
+                        $this->output(
+                            "received shutdown request\n",
+                            self::VERBOSITY_MESSAGES
+                        );
                         break 2;
                     }
 
@@ -274,7 +278,7 @@ class ChaChingServer
     protected function dispatchEvent($message)
     {
         foreach ($this->clients as $client) {
-            $type = ($client->isWebSocket()) ? " (websocket) " : " (socket) ";
+            $type = '(' . $client->getType() . ')';
 
             $this->output(
                 "=> writing message '" . $message . "' to " .
@@ -379,18 +383,24 @@ class ChaChingServer
     /**
      * Closes a client socket and removes the client from the list of clients
      *
-     * @param ChaChingClientConnection $client the client to disconnect.
+     * @param ChaChingClientSocketConnection $client the client to disconnect.
+     * @param string                        $reason a text message explaining
+     *                                              why the client was
+     *                                              disconnected.
      *
      * @return void
      */
-    protected function disconnectClient(ChaChingClientConnection $client)
-    {
+    protected function disconnectClient(
+        ChaChingClientSocketConnection $client,
+        $reason
+    ) {
         $this->output(
-            "disconnecting client from " . $client->getIpAddress() . " ... ",
+            "disconnecting client from " . $client->getIpAddress() .
+            " with reason '" . $reason . "' ... ",
             self::VERBOSITY_CLIENT
         );
 
-        socket_close($client->getSocket());
+        $client->close($reason);
         $key = array_search($client, $this->clients);
         unset($this->clients[$key]);
 
@@ -405,7 +415,7 @@ class ChaChingServer
      *
      * @param array $read an array of sockets that were read.
      *
-     * @return array an array of {@link ChaChingClientConnection} objects
+     * @return array an array of {@link ChaChingClientSocketConnection} objects
      *               having sockets found in the given array of read sockets.
      */
     protected function &getReadClients(&$read)

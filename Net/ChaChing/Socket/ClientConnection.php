@@ -33,8 +33,8 @@
 /**
  * A client connection to the cha-ching server
  *
- * This class is intended to be used internally by the {@link ChaChingServer}
- * class.
+ * This class is intended to be used internally by the
+ * {@link Net_ChaChing_Socket_Server} class.
  *
  * @category  Net
  * @package   ChaChing
@@ -42,7 +42,7 @@
  * @copyright 2006-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class ChaChingClientSocketConnection
+class Net_ChaChing_Socket_ClientConnection
 {
     // {{{ protected properties
 
@@ -65,7 +65,7 @@ class ChaChingClientSocketConnection
      *
      * @var string
      *
-     * @see ChaChingClientSocketConnection::getMessage()
+     * @see Net_ChaChing_Socket_ClientConnection::getMessage()
      */
     protected $buffer = '';
 
@@ -85,7 +85,7 @@ class ChaChingClientSocketConnection
      * Creates a new client connection object
      *
      * @param resource $socket the socket this connection uses to communicate
-     *                          with the server.
+     *                         with the server.
      */
     public function __construct($socket)
     {
@@ -100,7 +100,7 @@ class ChaChingClientSocketConnection
      * Gets the socket this connection uses to communicate with the server
      *
      * @return resource the socket this connection uses to communicate with the
-     *                   server.
+     *                  server.
      */
     public function getSocket()
     {
@@ -114,13 +114,13 @@ class ChaChingClientSocketConnection
      * Reads data from this connection
      *
      * @return boolean true if this connection's data payload has finished
-     *                  being read and false if this connection still has data
-     *                  to send.
+     *                 being read and false if this connection still has data
+     *                 to send.
      */
     public function read()
     {
         if (false === ($buffer = socket_read($this->socket,
-            ChaChingServer::READ_BUFFER_LENGTH, PHP_BINARY_READ))) {
+            Net_ChaChing_Socket_Server::READ_BUFFER_LENGTH, PHP_BINARY_READ))) {
             echo "socket_read() failed: reason: ",
                 socket_strerror(socket_last_error()), "\n";
 
@@ -159,8 +159,8 @@ class ChaChingClientSocketConnection
      * Gets the message received by the server from this connection
      *
      * @return string the message received by the server from this connection.
-     *                 If the full message has not yet been received, false is
-     *                 returned.
+     *                If the full message has not yet been received, false is
+     *                returned.
      */
     public function getMessage()
     {

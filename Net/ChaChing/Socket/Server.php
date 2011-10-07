@@ -31,9 +31,9 @@
  */
 
 /**
- * Client connectionproxy factory class.
+ * Client connection class.
  */
-require_once 'ChaChing/ChaChingClientSocketConnection.php';
+require_once 'Net/ChaChing/Socket/ClientConnection.php';
 
 /**
  * A server process for sending and receiving cha-ching notifications
@@ -50,7 +50,7 @@ require_once 'ChaChing/ChaChingClientSocketConnection.php';
  * @author    Michael Gauthier <mike@silverorange.com>
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class ChaChingServer
+class Net_ChaChing_Socket_Server
 {
     // {{{ class constants
 
@@ -105,8 +105,9 @@ class ChaChingServer
     /**
      * The port this server runs on
      *
-     * By default this is 2000. See {@link ChaChingServer::__construct()} to
-     * use a different port.
+     * By default this is 2000. See
+     * {@link Net_ChaChingS_Socket_Server::__construct()} touse a different
+     * port.
      *
      * @var integer
      */
@@ -117,17 +118,19 @@ class ChaChingServer
      *
      * @var integer
      *
-     * @see ChaChingServer::setVerbosity(),
-     *      ChaChingServer::VERBOSITY_NONE, ChaChingServer::VERBOSITY_ERRORS,
-     *      ChaChingServer::VERBOSITY_MESSAGES,
-     *      ChaChingServer::VERBOSITY_CLIENT, ChaChingServer::VERBOSITY_ALL
+     * @see Net_ChaChing_Socket_Server::setVerbosity()
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_NONE
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_ERRORS
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_MESSAGES
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_CLIENT
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_ALL
      */
     protected $verbosity = 1;
 
     /**
      * Clients connected to this server
      *
-     * This is an array of {@link ChaChingClientSocketConnection} objects.
+     * This is an array of {@link Net_ChaChing_Socket_ClientConnection} objects.
      *
      * @var array
      */
@@ -144,12 +147,12 @@ class ChaChingServer
     // {{{ __construct()
 
     /**
-     * Creates a new chaching server
+     * Creates a new cha-ching server
      *
      * @param integer $port the port on which this server should listen for
-     *                       incomming connections.
+     *                      incomming connections.
      *
-     * @see ChaChingServer::run()
+     * @see Net_ChaChing_Socket_Server::run()
      */
     public function __construct($port = 2000)
     {
@@ -184,9 +187,11 @@ class ChaChingServer
      *
      * @return void
      *
-     * @see ChaChingServer::VERBOSITY_NONE, ChaChingServer::VERBOSITY_ERRORS,
-     *      ChaChingServer::VERBOSITY_MESSAGES,
-     *      ChaChingServer::VERBOSITY_CLIENT, ChaChingServer::VERBOSITY_ALL
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_NONE
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_ERRORS
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_MESSAGES
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_CLIENT
+     * @see Net_ChaChing_Socket_Server::VERBOSITY_ALL
      */
     public function setVerbosity($verbosity)
     {
@@ -224,7 +229,7 @@ class ChaChingServer
                     exit(1);
                 }
 
-                $client = new ChaChingClientSocketConnection($newSocket);
+                $client = new Net_ChaChing_Socket_ClientConnection($newSocket);
                 $this->clients[] = $client;
                 $this->output(
                     "client connected from " . $client->getIpAddress() . "\n",
@@ -278,11 +283,10 @@ class ChaChingServer
     protected function dispatchEvent($message)
     {
         foreach ($this->clients as $client) {
-            $type = '(' . $client->getType() . ')';
 
             $this->output(
                 "=> writing message '" . $message . "' to " .
-                $client->getIpAddress() . $type . " ... ",
+                $client->getIpAddress() . " ... ",
                 self::VERBOSITY_CLIENT
             );
 
@@ -383,20 +387,22 @@ class ChaChingServer
     /**
      * Closes a client socket and removes the client from the list of clients
      *
-     * @param ChaChingClientSocketConnection $client the client to disconnect.
-     * @param string                        $reason a text message explaining
-     *                                              why the client was
-     *                                              disconnected.
+     * @param Net_ChaChing_Socket_ClientConnection $client the client to
+     *                                                     disconnect.
+     * @param string                               $reason a text message
+     *                                                     explaining why the
+     *                                                     client was
+     *                                                     disconnected.
      *
      * @return void
      */
     protected function disconnectClient(
-        ChaChingClientSocketConnection $client,
+        Net_ChaChing_Socket_ClientConnection $client,
         $reason
     ) {
         $this->output(
             "disconnecting client from " . $client->getIpAddress() .
-            " with reason '" . $reason . "' ... ",
+            " for reason '" . $reason . "' ... ",
             self::VERBOSITY_CLIENT
         );
 
@@ -415,8 +421,9 @@ class ChaChingServer
      *
      * @param array $read an array of sockets that were read.
      *
-     * @return array an array of {@link ChaChingClientSocketConnection} objects
-     *               having sockets found in the given array of read sockets.
+     * @return array an array of {@link Net_ChaChing_Socket_ClientConnection}
+     *               objects having sockets found in the given array of read
+     *               sockets.
      */
     protected function &getReadClients(&$read)
     {
@@ -456,7 +463,7 @@ class ChaChingServer
     /**
      * Displays a debug string based on the verbosity level
      *
-     * @param string $string the string to display.
+     * @param string  $string    the string to display.
      * @param integer $verbosity an optional verbosity level to display at. By
      *                           default, this is 1.
      *

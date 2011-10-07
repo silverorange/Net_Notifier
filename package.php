@@ -1,5 +1,7 @@
 <?php
 
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
 /**
  * This is the package.xml generator for ChaChing
  *
@@ -25,17 +27,17 @@
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
  * @author    Nathan Fredrikson <nathan@silverorange.com>
- * @copyright 2006-2010 silverorange
+ * @copyright 2006-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$apiVersion     = '1.2.1';
+$apiVersion     = '2.0.0';
 $apiState       = 'stable';
 
-$releaseVersion = '1.2.1';
+$releaseVersion = '2.0.0';
 $releaseState   = 'stable';
 
 $releaseNotes   = <<<EOT
@@ -65,26 +67,29 @@ EOT;
 $package = new PEAR_PackageFileManager2();
 
 $package->setOptions(
-	array(
-		'filelistgenerator'            => 'svn',
-		'simpleoutput'                 => true,
-		'baseinstalldir'               => '/',
-		'packagedirectory'             => './',
-		'dir_roles'                    => array(
-			'ChaChing'                 => 'php',
-			'tests'                    => 'test'
-		),
-		'exceptions'                   => array(
-			'scripts/cha-ching-server' => 'script'
-		),
-		'ignore'                       => array(
-			'package.php',
-			'*.tgz'
-		),
-		'installexceptions'            => array(
-			'scripts/cha-ching-server' => '/'
-		)
-	)
+    array(
+        'filelistgenerator'                   => 'svn',
+        'simpleoutput'                        => true,
+        'baseinstalldir'                      => '/',
+        'packagedirectory'                    => './',
+        'dir_roles'                           => array(
+            'Net'                             => 'php',
+            'Net/ChaChing/'                   => 'php',
+            'Net/ChaChing/Socket'             => 'php',
+            'Net/ChaChing/WebSocket'          => 'php',
+            'tests'                           => 'test'
+        ),
+        'exceptions'                          => array(
+            'scripts/cha-ching-socket-server' => 'script'
+        ),
+        'ignore'                              => array(
+            'package.php',
+            '*.tgz'
+        ),
+        'installexceptions'                   => array(
+            'scripts/cha-ching-socket-server' => '/'
+        )
+    )
 );
 
 $package->setPackage('ChaChing');
@@ -101,17 +106,17 @@ $package->setAPIStability($apiState);
 $package->setNotes($releaseNotes);
 
 $package->addMaintainer(
-	'lead',
-	'nrf',
-	'Nathan Fredrickson',
-	'nathan@silverorange.com'
+    'lead',
+    'nrf',
+    'Nathan Fredrickson',
+    'nathan@silverorange.com'
 );
 
 $package->addMaintainer(
-	'lead',
-	'gauthierm',
-	'Mike Gauthier',
-	'mike@silverorange.com'
+    'lead',
+    'gauthierm',
+    'Mike Gauthier',
+    'mike@silverorange.com'
 );
 
 $package->setPhpDep('5.1.5');
@@ -121,14 +126,17 @@ $package->addExtensionDep('required', 'mbstring');
 $package->generateContents();
 
 $package->addRelease();
-$package->addInstallAs('scripts/cha-ching-server', 'cha-ching-server');
+$package->addInstallAs(
+    'scripts/cha-ching-socket-server',
+    'cha-ching-socket-server'
+);
 
 if (   isset($_GET['make'])
-	|| (isset($_SERVER['argv']) && @$_SERVER['argv'][1] == 'make')
+    || (isset($_SERVER['argv']) && @$_SERVER['argv'][1] == 'make')
 ) {
-	$package->writePackageFile();
+    $package->writePackageFile();
 } else {
-	$package->debugPackageFile();
+    $package->debugPackageFile();
 }
 
 ?>

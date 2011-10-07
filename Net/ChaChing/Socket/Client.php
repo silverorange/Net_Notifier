@@ -26,7 +26,7 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2010 silverorange
+ * @copyright 2006-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -62,10 +62,10 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2010 silverorange
+ * @copyright 2006-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class ChaChingClient
+class Net_ChaChing_Socket_Client
 {
     // {{{ class constants
 
@@ -112,7 +112,7 @@ class ChaChingClient
      *
      * @var mixed
      *
-     * @see ChachingClient::handleError()
+     * @see Net_Chaching_Socket_Client::handleError()
      */
     protected $oldErrorHandler = null;
 

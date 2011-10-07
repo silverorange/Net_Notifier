@@ -1,18 +1,18 @@
 #!/usr/bin/php
 <?php
 
-require_once 'ChaChing/ChaChingServer.php';
+require_once 'Net/ChaChing/Socket/Server.php';
 
 set_time_limit(0);
 
 function error($message)
 {
-    echo "cha-ching-server: ", $message;
+    echo "cha-ching-socket-server: ", $message;
     exit(1);
 }
 
-$verbosity = ChaChingServer::VERBOSITY_ERRORS;
-$port = 2000;
+$verbosity = Net_ChaChing_Socket_Server::VERBOSITY_ERRORS;
+$port = 3000;
 
 $args = $_SERVER['argv'];
 $numArgs = count($args);
@@ -21,11 +21,11 @@ for ($i = 1; $i < $numArgs; $i++) {
     case '-v':
     case '--verbose':
         $allowedLevels = array(
-            (string)ChaChingServer::VERBOSITY_NONE,
-            (string)ChaChingServer::VERBOSITY_ERRORS,
-            (string)ChaChingServer::VERBOSITY_MESSAGES,
-            (string)ChaChingServer::VERBOSITY_CLIENT,
-            (string)ChaChingServer::VERBOSITY_ALL,
+            (string)Net_ChaChing_Socket_Server::VERBOSITY_NONE,
+            (string)Net_ChaChing_Socket_Server::VERBOSITY_ERRORS,
+            (string)Net_ChaChing_Socket_Server::VERBOSITY_MESSAGES,
+            (string)Net_ChaChing_Socket_Server::VERBOSITY_CLIENT,
+            (string)Net_ChaChing_Socket_Server::VERBOSITY_ALL,
         );
 
         if (   isset($args[$i + 1])
@@ -53,7 +53,7 @@ for ($i = 1; $i < $numArgs; $i++) {
     }
 }
 
-$server = new ChaChingServer($port);
+$server = new Net_ChaChing_Socket_Server($port);
 $server->setVerbosity($verbosity);
 $server->run();
 

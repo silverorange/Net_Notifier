@@ -2,7 +2,7 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-class ChaChingWebsocketFrame implements SplSubject
+class ChaChingWebSocketFrame implements SplSubject
 {
     const TYPE_CONT      = 0x00;
     const TYPE_TEXT      = 0x01;

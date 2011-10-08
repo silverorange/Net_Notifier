@@ -1,0 +1,60 @@
+#!/usr/bin/php
+<?php
+
+require_once 'Net/ChaChing/WebSocket/Server.php';
+
+set_time_limit(0);
+
+function error($message)
+{
+    echo "cha-ching-web-socket-server: ", $message;
+    exit(1);
+}
+
+$verbosity = Net_ChaChing_WebSocket_Server::VERBOSITY_ERRORS;
+$port = 3001;
+
+$args = $_SERVER['argv'];
+$numArgs = count($args);
+for ($i = 1; $i < $numArgs; $i++) {
+    switch ($args[$i]) {
+    case '-v':
+    case '--verbose':
+        $allowedLevels = array(
+            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_NONE,
+            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_ERRORS,
+            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_MESSAGES,
+            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_CLIENT,
+            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_ALL,
+        );
+
+        if (   isset($args[$i + 1])
+            && in_array($args[$i + 1], $allowedLevels)
+        ) {
+            $verbosity = $args[$i + 1];
+            $i++;
+        } else {
+            error("--verbose expects verbosity level between 0 and 4\n");
+        }
+        break;
+
+    case '-p':
+    case '--port':
+        if (isset($args[$i + 1]) && is_numeric($args[$i + 1])) {
+            $port = (integer)$args[$i + 1];
+            $i++;
+        } else {
+            error("--port expects port number\n");
+        }
+        break;
+    default:
+        error("unrecognized argument: " . $args[$i] . "\n");
+        break;
+    }
+}
+
+$server = new Net_ChaChing_WebSocket_Server($port);
+$server->setVerbosity($verbosity);
+$server->run();
+
+?>

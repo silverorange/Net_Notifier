@@ -75,7 +75,20 @@ class Net_ChaChing_WebSocket_Frame implements SplSubject
             if ($this->isMasked) {
                 $this->mask = $this->generateMask();
             }
+            $this->opcode = $opcode;
             $this->fin = $fin;
+            $length = mb_strlen($data);
+            if ($length < 0x7e) {
+                $this->length = $length;
+            } elseif ($length <= 0xffff) {
+                $this->length = 0x7e;
+                $this->length16 = $length;
+                $this->length64 = 0;
+            } else {
+                $this->length = 0x7f;
+                $this->length16 = 0;
+                $this->length64 = $length;
+            }
         }
     }
 

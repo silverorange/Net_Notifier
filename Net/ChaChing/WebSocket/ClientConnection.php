@@ -177,15 +177,28 @@ class Net_ChaChing_WebSocket_ClientConnection
     /**
      * Writes a message to this connection's socket
      *
-     * The message is sent in an application-specific wrapper so it is
-     * understood by the client.
-     *
      * @param string $message the message to send.
      *
      * @return void
      */
     public function write($message)
     {
+        $final = false;
+        $pos = 0;
+        $totalLength = mb_strlen($message, '8bit');
+        while (!$final) {
+            $data = mb_substr($message, $pos, self::FRAME_SIZE, '8bit');
+            $dataLength = mb_strlen($data, '8bit');
+            $pos += $dataLength;
+            $final = ($pos === $totalLength);
+            $frame = new Net_ChaChing_WebSocket_Frame(
+                $data,
+                Net_ChaChing_WebSocket_Frame::TYPE_TEXT,
+                false,
+                $final
+            );
+            $this->send($frame->__toString());
+        }
     }
 
     // }}}

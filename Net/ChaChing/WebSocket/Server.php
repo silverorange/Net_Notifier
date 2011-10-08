@@ -258,6 +258,7 @@ class Net_ChaChing_WebSocket_Server
             foreach ($this->getReadClients($read) as $client) {
                 if ($client->read(self::READ_BUFFER_LENGTH)) {
 
+                    $this->disconnectClient($client, 'Received message.');
 
                     $messages = $client->getMessages();
                     foreach ($messages as $message) {
@@ -277,8 +278,6 @@ class Net_ChaChing_WebSocket_Server
                             $this->dispatchEvent($message);
                         }
                     }
-
-                    $this->disconnectClient($client, 'Received message.');
 
                 } else {
                     $this->output(

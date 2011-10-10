@@ -256,9 +256,28 @@ class Net_ChaChing_WebSocket_Server
 
             // check for client data
             foreach ($this->getReadClients($read) as $client) {
+
+                $moribund = false;
+
+                // check if client closed connection
+                $bytes = socket_recv(
+                    $client->getSocket(),
+                    $buffer,
+                    32,
+                    MSG_PEEK | MSG_DONTWAIT
+                );
+
+                if ($bytes === 0) {
+                    $moribund = true;
+                }
+
                 if ($client->read(self::READ_BUFFER_LENGTH)) {
 
-                    $this->disconnectClient($client, 'Received message.');
+                    $this->disconnectClient(
+                        $client,
+                        Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
+                        'Received message.'
+                    );
 
                     $messages = $client->getMessages();
                     foreach ($messages as $message) {
@@ -267,7 +286,7 @@ class Net_ChaChing_WebSocket_Server
                                 "received shutdown request\n",
                                 self::VERBOSITY_MESSAGES
                             );
-                            break 2;
+                            break 3;
                         }
 
                         if (mb_strlen($message, '8bit') > 0) {
@@ -280,11 +299,19 @@ class Net_ChaChing_WebSocket_Server
                     }
 
                 } else {
+
                     $this->output(
-                        "got a message chunk\n",
+                        "got a message chunk from " . $client->getIpAddress() .
+                        "\n",
                         self::VERBOSITY_CLIENT
                     );
+
                 }
+
+                if ($moribund) {
+                    $this->disconnectClient($client);
+                }
+
             }
 
         }
@@ -394,7 +421,10 @@ class Net_ChaChing_WebSocket_Server
         $this->output("closing sockets ... ", self::VERBOSITY_ALL);
 
         foreach ($this->clients as $client) {
-            socket_close($client->getSocket());
+            $client->close(
+                Net_ChaChing_WebSocket_ClientConnection::CLOSE_SHUTDOWN,
+                'Server shutting down.'
+            );
         }
 
         $this->clients = array();
@@ -413,6 +443,7 @@ class Net_ChaChing_WebSocket_Server
      *
      * @param Net_ChaChing_WebSocket_ClientConnection $client the client to
      *                                                        disconnect.
+     * @param integer                                 $code   close status code.
      * @param string                                  $reason a text message
      *                                                        explaining why
      *                                                        the client was
@@ -422,7 +453,8 @@ class Net_ChaChing_WebSocket_Server
      */
     protected function disconnectClient(
         Net_ChaChing_WebSocket_ClientConnection $client,
-        $reason
+        $code = Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
+        $reason = ''
     ) {
         $this->output(
             "disconnecting client from " . $client->getIpAddress() .
@@ -430,7 +462,7 @@ class Net_ChaChing_WebSocket_Server
             self::VERBOSITY_CLIENT
         );
 
-        $client->close($reason);
+        $client->close($code, $reason);
         $key = array_search($client, $this->clients);
         unset($this->clients[$key]);
 
@@ -475,7 +507,9 @@ class Net_ChaChing_WebSocket_Server
         $readArray = array();
         $readArray[] = $this->socket;
         foreach ($this->clients as $client) {
-            $readArray[] = $client->getSocket();
+            if (!$client->isClosed()) {
+                $readArray[] = $client->getSocket();
+            }
         }
 
         return $readArray;

@@ -14,7 +14,26 @@ class Net_ChaChing_WebSocket_ClientConnection
 {
     const FRAME_SIZE = 2048;
 
-    // {{{ private properties
+    const CLOSE_NORMAL = 1000;
+
+    const CLOSE_SHUTDOWN = 1001;
+
+    const CLOSE_ERROR = 1002;
+
+    const CLOSE_DATA_TYPE = 1003;
+
+    const CLOSE_FRAME_SIZE = 1004;
+
+    const CLOSE_ENCODING_ERROR = 1007;
+
+    // {{{ protected properties
+
+    /**
+     * Whether or not this connection is closed
+     *
+     * @var boolean
+     */
+    protected $isClosed = false;
 
     /**
      * The socket this connection uses to communicate with the server
@@ -139,10 +158,12 @@ class Net_ChaChing_WebSocket_ClientConnection
             }
         }
 
-        $frames = $this->parser->parse($buffer);
+        if ($this->hasHandshaken) {
+            $frames = $this->parser->parse($buffer);
 
-        foreach ($frames as $frame) {
-            $this->handleFrame($frame);
+            foreach ($frames as $frame) {
+                $this->handleFrame($frame);
+            }
         }
 
         return (count($this->messages) > 0);
@@ -223,16 +244,22 @@ class Net_ChaChing_WebSocket_ClientConnection
 
     // }}}
 
-    public function close($reason)
+    public function close($code = self::CLOSE_NORMAL, $reason = '')
     {
-        $frame = new Net_ChaChing_WebSocket_Frame(
-            '',
-            Net_ChaChing_WebSocket_Frame::TYPE_CLOSE
-        );
+        if (!$this->isClosed()) {
+            $code  = intval($code);
+            $data  = pack('S', $code) . $reason;
+            $frame = new Net_ChaChing_WebSocket_Frame(
+                $data,
+                Net_ChaChing_WebSocket_Frame::TYPE_CLOSE
+            );
 
-        $this->send($frame->__toString());
+            $this->send($frame->__toString());
 
-        socket_close($this->socket);
+            socket_close($this->socket);
+
+            $this->isClosed = true;
+        }
     }
 
     public function pong($message)
@@ -243,6 +270,11 @@ class Net_ChaChing_WebSocket_ClientConnection
         );
 
         $this->send($frame->__toString());
+    }
+
+    public function isClosed()
+    {
+        return $this->isClosed;
     }
 
     // {{{ getSocket()

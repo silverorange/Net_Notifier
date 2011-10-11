@@ -350,7 +350,7 @@ class Net_ChaChing_WebSocket_Server
                     self::VERBOSITY_CLIENT
                 );
 
-                $client->write($message);
+                $client->writeText($message);
 
                 $this->output("done\n", self::VERBOSITY_CLIENT, false);
 

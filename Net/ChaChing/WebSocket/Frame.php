@@ -140,7 +140,7 @@ class Net_ChaChing_WebSocket_Frame
         return $this->unmaskedData;
     }
 
-    public function getOpCode()
+    public function getOpcode()
     {
         return $this->opcode;
     }

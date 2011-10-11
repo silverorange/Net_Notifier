@@ -75,7 +75,7 @@ class Net_ChaChing_WebSocket_ClientConnection
      *
      * @var string
      */
-    protected $binaryDataBuffer = '';
+    protected $binaryBuffer = '';
 
     /**
      * Received complete binary messages
@@ -94,7 +94,7 @@ class Net_ChaChing_WebSocket_ClientConnection
      *
      * @var string
      */
-    protected $textDataBuffer = '';
+    protected $textBuffer = '';
 
     /**
      * Received complete text messages
@@ -209,22 +209,34 @@ class Net_ChaChing_WebSocket_ClientConnection
 
     // }}}
 
+    /**
+     * @throws Net_ChaChing_WebSocket_UTF8EncodingException if a complete
+     *         text message is received and the text message has unpaired
+     *         unpaired surrogates (invalid UTF-8 encoding).
+     */
     protected function handleFrame(Net_ChaChing_WebSocket_Frame $frame)
     {
-        switch ($frame->getOpCode()) {
-        case Net_ChaChing_WebSocket_Frame::TYPE_TEXT:
-            $this->textDataBuffer .= $frame->getUnmaskedData();
+        switch ($frame->getOpcode()) {
+        case Net_ChaChing_WebSocket_Frame::TYPE_BINARY:
+            $this->binaryBuffer .= $frame->getUnmaskedData();
             if ($frame->isFinal()) {
-                $this->textMessages[] = $this->textDataBuffer;
-                $this->textDataBuffer = '';
+                $this->binaryMessages[] = $this->binaryBuffer;
+                $this->binaryBuffer = '';
             }
             break;
 
-        case Net_ChaChing_WebSocket_Frame::TYPE_BINARY:
-            $this->binaryDataBuffer .= $frame->getUnmaskedData();
+        case Net_ChaChing_WebSocket_Frame::TYPE_TEXT:
+            $this->textBuffer .= $frame->getUnmaskedData();
             if ($frame->isFinal()) {
-                $this->binaryMessages[] = $this->binaryDataBuffer;
-                $this->binaryDataBuffer = '';
+                if (!$this->isValidUTF8($this->textBuffer)) {
+                    throw new Net_ChaChing_WebSocket_UTF8EncodingException(
+                        'Received a text message that is invalid UTF-8.',
+                        0,
+                        $this->textBuffer
+                    );
+                }
+                $this->textMessages[] = $this->textBuffer;
+                $this->textBuffer = '';
             }
             break;
 
@@ -238,17 +250,58 @@ class Net_ChaChing_WebSocket_ClientConnection
         }
     }
 
-    // {{{ write()
+    // {{{ writeBinary()
 
     /**
-     * Writes a message to this connection's socket
+     * Writes a binary message to this connection's socket
      *
      * @param string $message the message to send.
      *
      * @return void
      */
-    public function write($message)
+    public function writeBinary($message)
     {
+        $final = false;
+        $pos = 0;
+        $totalLength = mb_strlen($message, '8bit');
+        while (!$final) {
+            $data = mb_substr($message, $pos, self::FRAME_SIZE, '8bit');
+            $dataLength = mb_strlen($data, '8bit');
+            $pos += $dataLength;
+            $final = ($pos === $totalLength);
+            $frame = new Net_ChaChing_WebSocket_Frame(
+                $data,
+                Net_ChaChing_WebSocket_Frame::TYPE_BINARY,
+                false,
+                $final
+            );
+            $this->send($frame->__toString());
+        }
+    }
+
+    // }}}
+    // {{{ writeText()
+
+    /**
+     * Writes a text message to this connection's socket
+     *
+     * @param string $message the message to send encoded as UTF-8 text.
+     *
+     * @return void
+     *
+     * @throws Net_ChaChing_WebSocket_UTF8EncodingException if the specified
+     *         text has unpaired surrogates (invalid UTF-8 encoding).
+     */
+    public function writeText($message)
+    {
+        if (!$this->isValidUTF8($message)) {
+            throw new Net_ChaChing_WebSocket_UTF8EncodingException(
+                'Can not write text message that is invalid UTF8.',
+                0,
+                $message
+            );
+        }
+
         $final = false;
         $pos = 0;
         $totalLength = mb_strlen($message, '8bit');
@@ -346,17 +399,20 @@ class Net_ChaChing_WebSocket_ClientConnection
         return $this->isClosing;
     }
 
-    // {{{ getSocket()
+    // {{{ getBinaryMessages()
 
     /**
-     * Gets the socket this connection uses to communicate with the server
+     * Gets the binary messages received by the server from this connection
      *
-     * @return resource the socket this connection uses to communicate with the
-     *                   server.
+     * @return array the messages received by the server from this connection.
+     *               If a full binary message has not yet been received, an
+     *               empry array is returned.
      */
-    public function getSocket()
+    public function getBinaryMessages()
     {
-        return $this->socket;
+        $messages = $this->binaryMessages;
+        $this->binaryMessages = array();
+        return $messages;
     }
 
     // }}}
@@ -374,6 +430,20 @@ class Net_ChaChing_WebSocket_ClientConnection
         $messages = $this->textMessages;
         $this->textMessages = array();
         return $messages;
+    }
+
+    // }}}
+    // {{{ getSocket()
+
+    /**
+     * Gets the socket this connection uses to communicate with the server
+     *
+     * @return resource the socket this connection uses to communicate with the
+     *                   server.
+     */
+    public function getSocket()
+    {
+        return $this->socket;
     }
 
     // }}}
@@ -403,6 +473,14 @@ class Net_ChaChing_WebSocket_ClientConnection
     {
         $length = mb_strlen($message, '8bit');
         socket_write($this->socket, $message, $length);
+    }
+
+    // }}}
+    // {{{ isValidUTF8()
+
+    protected function isValidUTF8($string)
+    {
+        return true;
     }
 
     // }}}

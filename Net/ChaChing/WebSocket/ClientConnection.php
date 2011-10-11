@@ -4,6 +4,8 @@
 
 require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
 
+require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
+
 /**
  * WebSocket handshake class.
  */
@@ -51,7 +53,7 @@ class Net_ChaChing_WebSocket_ClientConnection
     protected $socket;
 
     /**
-     * The IP address ths connection originated from
+     * The IP address from which this connection originated
      *
      * @var string
      */
@@ -66,22 +68,42 @@ class Net_ChaChing_WebSocket_ClientConnection
     protected $handshakeBuffer = '';
 
     /**
-     * A buffer containing data frame data
+     * A buffer containing binary data
      *
-     * If data is sent in multiple frames, this will buffer the whole message.
+     * If binary data is sent in multiple frames, this will buffer the whole
+     * message.
      *
      * @var string
      */
-    protected $dataBuffer = '';
+    protected $binaryDataBuffer = '';
 
     /**
-     * Received complete messages
+     * Received complete binary messages
      *
      * @var array
      *
-     * @see Net_ChaChing_WebSocket_ClientConnection::getMessages()
+     * @see Net_ChaChing_WebSocket_ClientConnection::getBinaryMessages()
      */
-    protected $messages = array();
+    protected $binaryMessages = array();
+
+    /**
+     * A buffer containing text data
+     *
+     * If text data is sent in multiple frames, this will buffer the whole
+     * message.
+     *
+     * @var string
+     */
+    protected $textDataBuffer = '';
+
+    /**
+     * Received complete text messages
+     *
+     * @var array
+     *
+     * @see Net_ChaChing_WebSocket_ClientConnection::getTextMessages()
+     */
+    protected $textMessages = array();
 
     /**
      * Whether or not the connection handshake has been performed
@@ -179,7 +201,10 @@ class Net_ChaChing_WebSocket_ClientConnection
             }
         }
 
-        return (count($this->messages) > 0);
+        return (
+               count($this->textMessages) > 0
+            || count($this->binaryMessages) > 0
+        );
     }
 
     // }}}
@@ -188,11 +213,18 @@ class Net_ChaChing_WebSocket_ClientConnection
     {
         switch ($frame->getOpCode()) {
         case Net_ChaChing_WebSocket_Frame::TYPE_TEXT:
-        case Net_ChaChing_WebSocket_Frame::TYPE_BINARY:
-            $this->dataBuffer .= $frame->getUnmaskedData();
+            $this->textDataBuffer .= $frame->getUnmaskedData();
             if ($frame->isFinal()) {
-                $this->messages[] = $this->dataBuffer;
-                $this->dataBuffer = '';
+                $this->textMessages[] = $this->textDataBuffer;
+                $this->textDataBuffer = '';
+            }
+            break;
+
+        case Net_ChaChing_WebSocket_Frame::TYPE_BINARY:
+            $this->binaryDataBuffer .= $frame->getUnmaskedData();
+            if ($frame->isFinal()) {
+                $this->binaryMessages[] = $this->binaryDataBuffer;
+                $this->binaryDataBuffer = '';
             }
             break;
 
@@ -275,7 +307,7 @@ class Net_ChaChing_WebSocket_ClientConnection
     {
         if (!$this->isClosing() && !$this->isClosed()) {
             $code  = intval($code);
-            $data  = pack('S', $code) . $reason;
+            $data  = pack('s', $code) . $reason;
             $frame = new Net_ChaChing_WebSocket_Frame(
                 $data,
                 Net_ChaChing_WebSocket_Frame::TYPE_CLOSE
@@ -328,19 +360,19 @@ class Net_ChaChing_WebSocket_ClientConnection
     }
 
     // }}}
-    // {{{ getMessages()
+    // {{{ getTextMessages()
 
     /**
-     * Gets the messages received by the server from this connection
+     * Gets the text messages received by the server from this connection
      *
      * @return array the messages received by the server from this connection.
-     *               If a full message has not yet been received, an empty
+     *               If a full text message has not yet been received, an empty
      *               array is returned.
      */
-    public function getMessages()
+    public function getTextMessages()
     {
-        $messages = $this->messages;
-        $this->messages = array();
+        $messages = $this->textMessages;
+        $this->textMessages = array();
         return $messages;
     }
 

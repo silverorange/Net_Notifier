@@ -286,7 +286,7 @@ class Net_ChaChing_WebSocket_Server
                             'Received message.'
                         );
 
-                        $messages = $client->getMessages();
+                        $messages = $client->getTextMessages();
                         foreach ($messages as $message) {
                             if ($message === 'shutdown') {
                                 $this->output(

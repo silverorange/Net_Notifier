@@ -278,28 +278,31 @@ class Net_ChaChing_WebSocket_Server
 
                 if ($client->read(self::READ_BUFFER_LENGTH)) {
 
-                    $this->startCloseClient(
-                        $client,
-                        Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
-                        'Received message.'
-                    );
+                    if (!$client->isClosing() && !$client->isClosed()) {
 
-                    $messages = $client->getMessages();
-                    foreach ($messages as $message) {
-                        if ($message === 'shutdown') {
-                            $this->output(
-                                "received shutdown request\n",
-                                self::VERBOSITY_MESSAGES
-                            );
-                            break 3;
-                        }
+                        $this->startCloseClient(
+                            $client,
+                            Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
+                            'Received message.'
+                        );
 
-                        if (mb_strlen($message, '8bit') > 0) {
-                            $this->output(
-                                "received message: '" . $message . "'\n",
-                                self::VERBOSITY_MESSAGES
-                            );
-                            $this->dispatchEvent($message);
+                        $messages = $client->getMessages();
+                        foreach ($messages as $message) {
+                            if ($message === 'shutdown') {
+                                $this->output(
+                                    "received shutdown request\n",
+                                    self::VERBOSITY_MESSAGES
+                                );
+                                break 3;
+                            }
+
+                            if (mb_strlen($message, '8bit') > 0) {
+                                $this->output(
+                                    "received message: '" . $message . "'\n",
+                                    self::VERBOSITY_MESSAGES
+                                );
+                                $this->dispatchEvent($message);
+                            }
                         }
                     }
 
@@ -339,16 +342,19 @@ class Net_ChaChing_WebSocket_Server
     protected function dispatchEvent($message)
     {
         foreach ($this->clients as $client) {
+            if (!$client->isClosed() && !$client->isClosing()) {
 
-            $this->output(
-                "=> writing message '" . $message . "' to " .
-                $client->getIpAddress() . " ... ",
-                self::VERBOSITY_CLIENT
-            );
+                $this->output(
+                    "=> writing message '" . $message . "' to " .
+                    $client->getIpAddress() . " ... ",
+                    self::VERBOSITY_CLIENT
+                );
 
-            $client->write($message);
+                $client->write($message);
 
-            $this->output("done\n", self::VERBOSITY_CLIENT);
+                $this->output("done\n", self::VERBOSITY_CLIENT);
+
+            }
         }
     }
 

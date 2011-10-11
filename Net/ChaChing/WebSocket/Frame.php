@@ -2,7 +2,7 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-class Net_ChaChing_WebSocket_Frame implements SplSubject
+class Net_ChaChing_WebSocket_Frame
 {
     const TYPE_CONT      = 0x00;
     const TYPE_TEXT      = 0x01;
@@ -24,7 +24,6 @@ class Net_ChaChing_WebSocket_Frame implements SplSubject
     const STATE_UNSENT           = 0;
     const STATE_OPENED           = 1;
     const STATE_HEADERS_RECEIVED = 2;
-    const STATE_LOADING          = 3;
     const STATE_DONE             = 4;
 
     protected $opcode = 0;
@@ -114,10 +113,8 @@ class Net_ChaChing_WebSocket_Frame implements SplSubject
             $data = $this->parseHeader($data);
         }
 
-        // notify if we've received all data for this frame
         if ($this->cursor == $this->getLength() + $this->headerLength) {
             $this->state = self::STATE_DONE;
-            $this->notify();
         }
 
         return $data;
@@ -163,28 +160,7 @@ class Net_ChaChing_WebSocket_Frame implements SplSubject
         return $length;
     }
 
-    public function attach(SplObserver $observer)
-    {
-        if (!in_array($observer, $this->observers)) {
-            $this->observers[] = $observer;
-        }
-    }
-
-    public function detach(SplObserver $observer)
-    {
-        if (!in_array($observer, $this->observers)) {
-            $this->observers[] = $observer;
-        }
-    }
-
-    public function notify()
-    {
-        foreach ($this->observers as $observer) {
-            $observer->update($this);
-        }
-    }
-
-    public function getReadyState()
+    public function getState()
     {
         return $this->state;
     }
@@ -341,7 +317,6 @@ class Net_ChaChing_WebSocket_Frame implements SplSubject
             if ($this->cursor === $this->headerLength) {
                 $this->isHeaderComplete = true;
                 $this->state = self::STATE_HEADERS_RECEIVED;
-                $this->notify();
                 break;
             }
         }

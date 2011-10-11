@@ -4,14 +4,13 @@
 
 require_once 'Net/ChaChing/WebSocket/Frame.php';
 
-class Net_ChaChing_WebSocket_FrameParser implements SplObserver
+class Net_ChaChing_WebSocket_FrameParser
 {
     protected $currentFrame = null;
 
     public function __construct()
     {
         $this->currentFrame = new Net_ChaChing_WebSocket_Frame();
-        $this->currentFrame->attach($this);
     }
 
     public function parse($data)
@@ -23,30 +22,16 @@ class Net_ChaChing_WebSocket_FrameParser implements SplObserver
             if ($data != '') {
                 $frames[] = $this->currentFrame;
                 $this->currentFrame = new Net_ChaChing_WebSocket_Frame();
-                $this->currentFrame->attach($this);
             }
         }
 
-        $state = $this->currentFrame->getReadyState();
+        // if we received exactly enough data, the last frame is also complete
+        $state = $this->currentFrame->getState();
         if ($state === Net_ChaChing_WebSocket_Frame::STATE_DONE) {
             $frames[] = $this->currentFrame;
         }
 
         return $frames;
-    }
-
-    public function getReadyState()
-    {
-        return $this->state;
-    }
-
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    public function update(SplSubject $frame)
-    {
     }
 }
 

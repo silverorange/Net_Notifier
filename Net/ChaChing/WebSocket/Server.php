@@ -352,7 +352,7 @@ class Net_ChaChing_WebSocket_Server
 
                 $client->write($message);
 
-                $this->output("done\n", self::VERBOSITY_CLIENT);
+                $this->output("done\n", self::VERBOSITY_CLIENT, false);
 
             }
         }
@@ -373,22 +373,24 @@ class Net_ChaChing_WebSocket_Server
             $this->output(
                 "socket_create() failed: reason: " .
                 socket_strerror(socket_last_error()) . "\n",
-                self::VERBOSITY_ERRORS
+                self::VERBOSITY_ERRORS,
+                false
             );
             exit(1);
         }
-        $this->output("done\n", self::VERBOSITY_ALL);
+        $this->output("done\n", self::VERBOSITY_ALL, false);
 
         $this->output("setting socket as reusable ... ", self::VERBOSITY_ALL);
         if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
             $this->output(
                 "socket_set_option() failed: reason: " .
                 socket_strerror(socket_last_error($sock)) . "\n",
-                self::VERBOSITY_ERRORS
+                self::VERBOSITY_ERRORS,
+                false
             );
             exit(1);
         }
-        $this->output("done\n", self::VERBOSITY_ALL);
+        $this->output("done\n", self::VERBOSITY_ALL, false);
 
         $this->output("binding socket on port " . $this->port . " ... ",
             self::VERBOSITY_ALL);
@@ -397,23 +399,25 @@ class Net_ChaChing_WebSocket_Server
             $this->output(
                 "socket_bind() failed: reason: " .
                 socket_strerror(socket_last_error($sock)) . "\n",
-                self::VERBOSITY_ERRORS
+                self::VERBOSITY_ERRORS,
+                false
             );
 
             exit(1);
         }
-        $this->output("done\n", self::VERBOSITY_ALL);
+        $this->output("done\n", self::VERBOSITY_ALL, false);
 
         $this->output("setting socket to listen ... ", self::VERBOSITY_ALL);
         if (!socket_listen($sock, self::CONNECTION_QUEUE_LENGTH)) {
             $this->output(
                 "socket_listen() failed: reason: " .
                 socket_strerror(socket_last_error($sock)) . "\n",
-                self::VERBOSITY_ERRORS
+                self::VERBOSITY_ERRORS,
+                false
             );
             exit(1);
         }
-        $this->output("done\n", self::VERBOSITY_ALL);
+        $this->output("done\n", self::VERBOSITY_ALL, false);
 
         $this->socket = $sock;
         $this->connected = true;
@@ -441,7 +445,7 @@ class Net_ChaChing_WebSocket_Server
         $this->clients = array();
         socket_close($this->socket);
 
-        $this->output("done\n", self::VERBOSITY_ALL);
+        $this->output("done\n", self::VERBOSITY_ALL, false);
 
         $this->connected = false;
     }
@@ -474,7 +478,7 @@ class Net_ChaChing_WebSocket_Server
         $key = array_search($client, $this->clients);
         unset($this->clients[$key]);
 
-        $this->output("done\n", self::VERBOSITY_CLIENT);
+        $this->output("done\n", self::VERBOSITY_CLIENT, false);
     }
 
     // }}}
@@ -493,7 +497,7 @@ class Net_ChaChing_WebSocket_Server
 
         $client->startClose($code, $reason);
 
-        $this->output("done\n", self::VERBOSITY_CLIENT);
+        $this->output("done\n", self::VERBOSITY_CLIENT, false);
     }
 
     // }}}
@@ -551,13 +555,19 @@ class Net_ChaChing_WebSocket_Server
      * @param string  $string    the string to display.
      * @param integer $verbosity an optional verbosity level to display at. By
      *                           default, this is 1.
+     * @param boolean $timestamp optional. Whether or not to include a
+     *                           timestamp with the output.
      *
      * @return void
      */
-    protected function output($string, $verbosity = 1)
+    protected function output($string, $verbosity = 1, $timestamp = true)
     {
         if ($verbosity <= $this->verbosity) {
-            echo $string;
+            if ($timestamp) {
+                echo '[' . date('Y-m-d H:i:s') . '] ' . $string;
+            } else {
+                echo $string;
+            }
         }
     }
 

@@ -31,19 +31,15 @@ class Net_ChaChing_WebSocket_ClientConnection
 
     const CLOSE_ENCODING_ERROR = 1007;
 
+    const STATE_CONNECTING = 0;
+
+    const STATE_OPEN = 1;
+
+    const STATE_CLOSING = 2;
+
+    const STATE_CLOSED = 3;
+
     // {{{ protected properties
-
-    /**
-     * Whether or not this connection is closed
-     *
-     * @var boolean
-     */
-    protected $isClosed = false;
-
-    /**
-     * @var boolean
-     */
-    protected $isClosing = false;
 
     /**
      * The socket this connection uses to communicate with the server
@@ -106,18 +102,13 @@ class Net_ChaChing_WebSocket_ClientConnection
     protected $textMessages = array();
 
     /**
-     * Whether or not the connection handshake has been performed
-     *
-     * @var boolean
-     */
-    protected $hasHandshaken = false;
-
-    /**
      * WebSocket frame parser for this connection
      *
      * @var Net_ChaChing_WebSocket_FrameParser
      */
     protected $parser = null;
+
+    protected $state = self::STATE_CONNECTING;
 
     // }}}
     // {{{ __construct()
@@ -158,7 +149,7 @@ class Net_ChaChing_WebSocket_ClientConnection
             exit(1);
         }
 
-        if (!$this->hasHandshaken) {
+        if ($this->state < self::STATE_OPEN) {
             $this->handshakeBuffer .= $buffer;
 
             $headerPos = mb_strpos(
@@ -179,7 +170,7 @@ class Net_ChaChing_WebSocket_ClientConnection
                 try {
                     $this->handshake($data);
                 } catch (Net_ChaChing_WebSocket_ProtocolException $e) {
-                    $this->hasHandshaken = true;
+                    $this->state = self::STATE_CLOSED;
                     $this->shutdown();
                 }
 
@@ -193,7 +184,7 @@ class Net_ChaChing_WebSocket_ClientConnection
             }
         }
 
-        if ($this->hasHandshaken) {
+        if ($this->state > self::STATE_CONNECTING) {
             $frames = $this->parser->parse($buffer);
 
             foreach ($frames as $frame) {
@@ -342,7 +333,7 @@ class Net_ChaChing_WebSocket_ClientConnection
 
         $this->send($response);
 
-        $this->hasHandshaken = true;
+        $this->state = self::STATE_OPEN;
     }
 
     // }}}
@@ -358,7 +349,7 @@ class Net_ChaChing_WebSocket_ClientConnection
 
     public function startClose($code = self::CLOSE_NORMAL, $reason = '')
     {
-        if (!$this->isClosing() && !$this->isClosed()) {
+        if ($this->state < self::STATE_CLOSING) {
             $code  = intval($code);
             $data  = pack('s', $code) . $reason;
             $frame = new Net_ChaChing_WebSocket_Frame(
@@ -368,7 +359,7 @@ class Net_ChaChing_WebSocket_ClientConnection
 
             $this->send($frame->__toString());
 
-            $this->isClosing = true;
+            $this->state = self::STATE_CLOSING;
 
             $this->shutdown();
         }
@@ -377,6 +368,7 @@ class Net_ChaChing_WebSocket_ClientConnection
     public function close()
     {
         socket_close($this->socket);
+        $this->state = self::STATE_CLOSED;
     }
 
     public function pong($message)
@@ -389,14 +381,9 @@ class Net_ChaChing_WebSocket_ClientConnection
         $this->send($frame->__toString());
     }
 
-    public function isClosed()
+    public function getState()
     {
-        return $this->isClosed;
-    }
-
-    public function isClosing()
-    {
-        return $this->isClosing;
+        return $this->state;
     }
 
     // {{{ getBinaryMessages()

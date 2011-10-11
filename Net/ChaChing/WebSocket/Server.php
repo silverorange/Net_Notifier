@@ -278,8 +278,7 @@ class Net_ChaChing_WebSocket_Server
 
                 if ($client->read(self::READ_BUFFER_LENGTH)) {
 
-                    if (!$client->isClosing() && !$client->isClosed()) {
-
+                    if ($client->getState() < Net_ChaChing_WebSocket_ClientConnection::STATE_CLOSING) {
                         $this->startCloseClient(
                             $client,
                             Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
@@ -342,7 +341,7 @@ class Net_ChaChing_WebSocket_Server
     protected function dispatchEvent($message)
     {
         foreach ($this->clients as $client) {
-            if (!$client->isClosed() && !$client->isClosing()) {
+            if ($client->getState() < Net_ChaChing_WebSocket_ClientConnection::STATE_CLOSING) {
 
                 $this->output(
                     "=> writing message '" . $message . "' to " .
@@ -538,7 +537,7 @@ class Net_ChaChing_WebSocket_Server
         $readArray = array();
         $readArray[] = $this->socket;
         foreach ($this->clients as $client) {
-            if (!$client->isClosed()) {
+            if ($client->getState() < Net_ChaChing_WebSocket_ClientConnection::STATE_CLOSED) {
                 $readArray[] = $client->getSocket();
             }
         }

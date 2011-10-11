@@ -30,6 +30,8 @@
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
+require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
+
 /**
  * A client connection to the cha-ching server
  *
@@ -41,7 +43,7 @@
  * @copyright 2010-2011 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class ChaChingWebSocketHandshake
+class Net_ChaChing_WebSocket_Handshake
 {
     // {{{ class constants
 
@@ -114,9 +116,23 @@ class ChaChingWebSocketHandshake
                 "Sec-WebSocket-Accept: " . $accept . "\r\n";
 
             if (isset($headers['Sec-WebSocket-Protocol'])) {
-                // TODO: check against supported protocols
-                $response .= 'Sec-WebSocket-Protocol: ' .
-                    $headers['Sec-WebSocket-Protocol'] . "\r\n";
+                $protocols = explode(',', $headers['Sec-WebSocket-Protocol']);
+                $protocols = array_map('trim', $protocols);
+                $supportedProtocol = $this->getSupportedProtocol($protocols);
+
+                if ($supportedProtocol === null) {
+                    throw new Net_ChaChing_WebSocket_ProtocolException(
+                        'None of the requested sub-protocols ('
+                        . implode(', ', $protocols) . ') are supported by '
+                        . 'this server.',
+                        0,
+                        $this->protocols,
+                        $protocols
+                    );
+                }
+
+                $response .= 'Sec-WebSocket-Protocol: '
+                    . $supportedProtocol . "\r\n";
             }
 
         } else {
@@ -130,6 +146,23 @@ class ChaChingWebSocketHandshake
         $response .= "\r\n";
 
         return $response;
+    }
+
+    // }}}
+    // {{{ getSupportedProtocol()
+
+    protected function getSupportedProtocol(array $protocols)
+    {
+        $supportedProtocol = null;
+
+        foreach ($protocols as $protocol) {
+            if (in_array($protocol, $this->protocols)) {
+                $supportedProtocol = $protocol;
+                break;
+            }
+        }
+
+        return $supportedProtocol;
     }
 
     // }}}

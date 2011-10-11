@@ -2,12 +2,15 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
+
 /**
  * WebSocket handshake class.
  */
 require_once 'Net/ChaChing/WebSocket/Handshake.php';
 
 require_once 'Net/ChaChing/WebSocket/Frame.php';
+
 require_once 'Net/ChaChing/WebSocket/FrameParser.php';
 
 class Net_ChaChing_WebSocket_ClientConnection
@@ -34,6 +37,11 @@ class Net_ChaChing_WebSocket_ClientConnection
      * @var boolean
      */
     protected $isClosed = false;
+
+    /**
+     * @var boolean
+     */
+    protected $isClosing = false;
 
     /**
      * The socket this connection uses to communicate with the server
@@ -146,7 +154,12 @@ class Net_ChaChing_WebSocket_ClientConnection
                     '8bit'
                 );
 
-                $this->handshake($data);
+                try {
+                    $this->handshake($data);
+                } catch (Net_ChaChing_WebSocket_ProtocolException $e) {
+                    $this->hasHandshaken = true;
+                    $this->shutdown();
+                }
 
                 $length = mb_strlen($this->handshakeBuffer, '8bit');
                 $buffer = mb_substr(
@@ -184,7 +197,7 @@ class Net_ChaChing_WebSocket_ClientConnection
             break;
 
         case Net_ChaChing_WebSocket_Frame::TYPE_CLOSE:
-            $this->close();
+            $this->startClose();
             break;
 
         case Net_ChaChing_WebSocket_Frame::TYPE_PING:
@@ -234,7 +247,12 @@ class Net_ChaChing_WebSocket_ClientConnection
      */
     protected function handshake($data)
     {
-        $handshake = new ChaChingWebSocketHandshake();
+        $handshake = new Net_ChaChing_WebSocket_Handshake(
+            array(
+                Net_ChaChing_WebSocket_Server::PROTOCOL
+            )
+        );
+
         $response  = $handshake->handshake($data);
 
         $this->send($response);
@@ -244,9 +262,18 @@ class Net_ChaChing_WebSocket_ClientConnection
 
     // }}}
 
-    public function close($code = self::CLOSE_NORMAL, $reason = '')
+    /**
+     * Closes the WebSocket connection as per the IETF draft specification
+     * section 7.1.1
+     */
+    public function shutdown()
     {
-        if (!$this->isClosed()) {
+        socket_shutdown($this->socket, 1);
+    }
+
+    public function startClose($code = self::CLOSE_NORMAL, $reason = '')
+    {
+        if (!$this->isClosing() && !$this->isClosed()) {
             $code  = intval($code);
             $data  = pack('S', $code) . $reason;
             $frame = new Net_ChaChing_WebSocket_Frame(
@@ -256,10 +283,15 @@ class Net_ChaChing_WebSocket_ClientConnection
 
             $this->send($frame->__toString());
 
-            socket_close($this->socket);
+            $this->isClosing = true;
 
-            $this->isClosed = true;
+            $this->shutdown();
         }
+    }
+
+    public function close()
+    {
+        socket_close($this->socket);
     }
 
     public function pong($message)
@@ -275,6 +307,11 @@ class Net_ChaChing_WebSocket_ClientConnection
     public function isClosed()
     {
         return $this->isClosed;
+    }
+
+    public function isClosing()
+    {
+        return $this->isClosing;
     }
 
     // {{{ getSocket()

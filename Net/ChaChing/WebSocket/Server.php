@@ -97,6 +97,11 @@ class Net_ChaChing_WebSocket_Server
      */
     const VERBOSITY_ALL = 4;
 
+    /**
+     * WebSocket sub-protocol
+     */
+    const PROTOCOL = 'net.cha-ching.silverorange.com';
+
     // }}}
     // {{{ protected properties
 
@@ -273,7 +278,7 @@ class Net_ChaChing_WebSocket_Server
 
                 if ($client->read(self::READ_BUFFER_LENGTH)) {
 
-                    $this->disconnectClient(
+                    $this->startCloseClient(
                         $client,
                         Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
                         'Received message.'
@@ -309,7 +314,7 @@ class Net_ChaChing_WebSocket_Server
                 }
 
                 if ($moribund) {
-                    $this->disconnectClient($client);
+                    $this->closeClient($client);
                 }
 
             }
@@ -421,7 +426,7 @@ class Net_ChaChing_WebSocket_Server
         $this->output("closing sockets ... ", self::VERBOSITY_ALL);
 
         foreach ($this->clients as $client) {
-            $client->close(
+            $client->startClose(
                 Net_ChaChing_WebSocket_ClientConnection::CLOSE_SHUTDOWN,
                 'Server shutting down.'
             );
@@ -436,7 +441,7 @@ class Net_ChaChing_WebSocket_Server
     }
 
     // }}}
-    // {{{ disconnectClient()
+    // {{{ closeClient()
 
     /**
      * Closes a client socket and removes the client from the list of clients
@@ -451,7 +456,25 @@ class Net_ChaChing_WebSocket_Server
      *
      * @return void
      */
-    protected function disconnectClient(
+    protected function closeClient(
+        Net_ChaChing_WebSocket_ClientConnection $client
+    ) {
+        $this->output(
+            "Closing client " . $client->getIpAddress() . " ... ",
+            self::VERBOSITY_CLIENT
+        );
+
+        $client->close();
+        $key = array_search($client, $this->clients);
+        unset($this->clients[$key]);
+
+        $this->output("done\n", self::VERBOSITY_CLIENT);
+    }
+
+    // }}}
+    // {{{ startCloseClient()
+
+    protected function startCloseClient(
         Net_ChaChing_WebSocket_ClientConnection $client,
         $code = Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
         $reason = ''
@@ -462,9 +485,7 @@ class Net_ChaChing_WebSocket_Server
             self::VERBOSITY_CLIENT
         );
 
-        $client->close($code, $reason);
-        $key = array_search($client, $this->clients);
-        unset($this->clients[$key]);
+        $client->startClose($code, $reason);
 
         $this->output("done\n", self::VERBOSITY_CLIENT);
     }

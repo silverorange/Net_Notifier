@@ -26,7 +26,7 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2010-2011 silverorange
+ * @copyright 2010-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -38,9 +38,11 @@ require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
  * This class is intended to be used internally by the
  * {@link ChaChingServerClientConnection} class.
  *
+ * Latest update supports RFC 6455.
+ *
  * @category  Net
  * @package   ChaChing
- * @copyright 2010-2011 silverorange
+ * @copyright 2010-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class Net_ChaChing_WebSocket_Handshake
@@ -50,14 +52,20 @@ class Net_ChaChing_WebSocket_Handshake
     /**
      * Magic number used to identify WebSocket handshake requests
      *
-     * Taken from the IETF draft spec version 10.
+     * Taken from the IETF RFC 6455.
+     *
+     * @link http://datatracker.ietf.org/doc/rfc6455/
      */
     const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
     /**
      * Protocol version
+     *
+     * See IETF RFC 6455 Section 4.1 item 9.
+     *
+     * @link http://datatracker.ietf.org/doc/rfc6455/
      */
-    const VERSION = 8;
+    const VERSION = 13;
 
     // }}}
     // {{{ protected properties
@@ -91,9 +99,9 @@ class Net_ChaChing_WebSocket_Handshake
     /**
      * Does the actual WebSocket handshake
      *
-     * See sections 1.3 and 6.2 of
-     * {@link http://www.whatwg.org/specs/web-socket-protocol/ The WebSocket Protocol}
-     * for further details.
+     * See section 4.2.2 of
+     * {@link http://datatracker.ietf.org/doc/rfc6455/ IETF RFC 6455} for
+     * further details.
      *
      * @param string $handshake the handshake request.
      *

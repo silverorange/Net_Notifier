@@ -30,7 +30,7 @@
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
-require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
+require_once 'Net/ChaChing/WebSocket/AbstractHandshake.php';
 
 /**
  * A client connection to the cha-ching server
@@ -46,6 +46,7 @@ require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class Net_ChaChing_WebSocket_ServerHandshake
+    extends Net_ChaChing_WebSocket_AbstractHandshake
 {
     // {{{ class constants
 
@@ -68,16 +69,6 @@ class Net_ChaChing_WebSocket_ServerHandshake
     const VERSION = 13;
 
     // }}}
-    // {{{ protected properties
-
-    /**
-     * Supported application-specific sub-protocols
-     *
-     * @var array
-     */
-    protected $protocols = array();
-
-    // }}}
     // {{{ __construct()
 
     /**
@@ -90,7 +81,7 @@ class Net_ChaChing_WebSocket_ServerHandshake
      */
     public function __construct(array $protocols = array())
     {
-        $this->protocols = $protocols;
+        $this->setProtocols($protocols);
     }
 
     // }}}
@@ -154,83 +145,6 @@ class Net_ChaChing_WebSocket_ServerHandshake
         $response .= "\r\n";
 
         return $response;
-    }
-
-    // }}}
-    // {{{ getSupportedProtocol()
-
-    protected function getSupportedProtocol(array $protocols)
-    {
-        $supportedProtocol = null;
-
-        foreach ($protocols as $protocol) {
-            if (in_array($protocol, $this->protocols)) {
-                $supportedProtocol = $protocol;
-                break;
-            }
-        }
-
-        return $supportedProtocol;
-    }
-
-    // }}}
-    // {{{ parseHeaders()
-
-    /**
-     * Parses the raw handshake header into an array of headers
-     *
-     * @param string $header the raw handshake header.
-     *
-     * @return array a structured array containing the following:
-     *               - <kbd>status</kbd>  - the handshake status line, and
-     *               - <kbd>headers</kbd> - an array of headers. Array keys
-     *                                      are the header names and array
-     *                                      values are the values.
-     */
-    protected function parseHeaders($header)
-    {
-        $parsedHeaders = array(
-            'status'  => '',
-            'headers' => array()
-        );
-
-        $headers = explode("\r\n", $header);
-        $parsedHeaders['status'] = array_shift($headers);
-
-        foreach ($headers as $header) {
-            list($name, $value) = explode(':', $header, 2);
-            $parsedHeaders['headers'][$name] = ltrim($value);
-        }
-
-        return $parsedHeaders;
-    }
-
-    // }}}
-    // {{{ getAccept()
-
-    /**
-     * Gets the accept header value for this handshake
-     *
-     * The 20-character string is derived through the following:
-     *
-     *  1. start with the key string
-     *  2. append the string 258EAFA5-E914-47DA-95CA-C5AB0DC85B11
-     *  3. take the sha1() of the resulting string
-     *  4. base-64 encode the sha1 result
-     *
-     * See section 5.2.2 of {@link http://www.whatwg.org/specs/web-socket-protocol/ The WebSocket Protocol}
-     * for further details.
-     *
-     * @param string $key the key from which to generate the accept hash.
-     *
-     * @return string the accept hash.
-     */
-    protected function getAccept($key)
-    {
-        $accept = $key . self::GUID;
-        $accept = sha1($accept, true);
-        $accept = base64_encode($accept);
-        return $accept;
     }
 
     // }}}

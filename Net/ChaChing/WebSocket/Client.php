@@ -14,6 +14,10 @@ class Net_ChaChing_WebSocket_Client
 
     protected $resource = '/';
 
+    protected $protocols = array();
+
+    protected $timeout = 10;
+
     /**
      * @var Net_ChaChing_WebSocket_Connection
      */
@@ -24,9 +28,10 @@ class Net_ChaChing_WebSocket_Client
     public function __construct(
         $address,
         array $protocols = array(),
-        $timeout = 1
+        $timeout = 10
     ) {
         $this->parseAddress($address);
+        $this->setProtocols($protocols);
         $this->setTimeout($timeout);
     }
 
@@ -88,6 +93,12 @@ class Net_ChaChing_WebSocket_Client
     public function setResource($resource)
     {
         $this->resource = (string)$resource;
+        return $this;
+    }
+
+    public function setProtocols(array $protocols)
+    {
+        $this->protocols = $protocols;
         return $this;
     }
 
@@ -166,7 +177,14 @@ class Net_ChaChing_WebSocket_Client
 
         $this->connection = new Net_ChaChing_WebSocket_Connection($socket);
 
-        $this->connection->sendHandshake($this->host, $this->port, $this->resource, $this->protocols);
+        $this->connection->sendHandshake(
+            $this->host,
+            $this->port,
+            $this->resource,
+            $this->protocols
+        );
+
+        $this->connection->read(2048);
     }
 
     protected function disconnect()

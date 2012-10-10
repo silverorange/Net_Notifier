@@ -110,6 +110,14 @@ class Net_ChaChing_WebSocket_Connection
      */
     protected $parser = null;
 
+    /**
+     * @var string
+     */
+    protected $handshakeNonce = '';
+
+    /**
+     * @var integer
+     */
     protected $state = self::STATE_CONNECTING;
 
     // }}}
@@ -154,6 +162,7 @@ class Net_ChaChing_WebSocket_Connection
     public function read($length)
     {
         $buffer = socket_read($this->socket, $length, PHP_BINARY_READ);
+        echo $buffer;
 
         if (false === $buffer) {
             echo "socket_read() failed: reason: ",
@@ -355,23 +364,34 @@ class Net_ChaChing_WebSocket_Connection
     /**
      * Perform a WebSocket handshake for this client connection
      *
-     * @param string $data the handshake data from the WebSocket client.
+     * @param string  $host      
+     * @param integer $port      
+     * @param string  $resource  optional.
+     * @param array   $protocols optional.
      *
      * @return void
      */
-    public function sendHandshake()
-    {
+    public function sendHandshake(
+        $host,
+        $port,
+        $resource = '/',
+        array $protocols = array()
+    ) {
+        $this->handshakeNonce = $this->getNonce();
+
         $handshake = new Net_ChaChing_WebSocket_ClientHandshake(
-            array(
-                Net_ChaChing_WebSocket_Server::PROTOCOL
-            )
+            $host,
+            $port,
+            $resource,
+            $this->handshakeNonce,
+            $protocols
         );
 
-        $response = $handshake->handshake($data);
+        $request = $handshake->handshake();
 
-        $this->send($response);
+        $this->send($request);
 
-        $this->state = self::STATE_OPEN;
+//        $this->state = self::STATE_OPEN;
     }
 
     // }}}
@@ -517,6 +537,7 @@ class Net_ChaChing_WebSocket_Connection
      */
     protected function send($message)
     {
+        echo $message;
         $length = mb_strlen($message, '8bit');
         socket_write($this->socket, $message, $length);
     }
@@ -530,6 +551,21 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
+
+    protected function getNonce()
+    {
+        $nonce = '';
+
+        // get 16 random bytes
+        for ($i = 0; $i < 16; $i++) {
+            $nonce .= chr(mt_rand(0, 255));
+        }
+
+        // base-64 encode them
+        $nonce = base64_encode($nonce);
+
+        return $nonce;
+    }
 }
 
 ?>

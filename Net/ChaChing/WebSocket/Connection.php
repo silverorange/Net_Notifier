@@ -9,13 +9,15 @@ require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
 /**
  * WebSocket handshake class.
  */
-require_once 'Net/ChaChing/WebSocket/Handshake.php';
+require_once 'Net/ChaChing/WebSocket/ServerHandshake.php';
+
+require_once 'Net/ChaChing/WebSocket/ClientHandshake.php';
 
 require_once 'Net/ChaChing/WebSocket/Frame.php';
 
 require_once 'Net/ChaChing/WebSocket/FrameParser.php';
 
-class Net_ChaChing_WebSocket_ClientConnection
+class Net_ChaChing_WebSocket_Connection
 {
     const FRAME_SIZE = 2048;
 
@@ -78,7 +80,7 @@ class Net_ChaChing_WebSocket_ClientConnection
      *
      * @var array
      *
-     * @see Net_ChaChing_WebSocket_ClientConnection::getBinaryMessages()
+     * @see Net_ChaChing_WebSocket_Connection::getBinaryMessages()
      */
     protected $binaryMessages = array();
 
@@ -97,7 +99,7 @@ class Net_ChaChing_WebSocket_ClientConnection
      *
      * @var array
      *
-     * @see Net_ChaChing_WebSocket_ClientConnection::getTextMessages()
+     * @see Net_ChaChing_WebSocket_Connection::getTextMessages()
      */
     protected $textMessages = array();
 
@@ -116,12 +118,23 @@ class Net_ChaChing_WebSocket_ClientConnection
     /**
      * Creates a new client connection object
      *
-     * @param resource $socket the socket this connection uses to communicate
-     *                          with the server.
+     * @param resource                           $socket the socket this
+     *                                                   connection uses to
+     *                                                   communicate with the
+     *                                                   server.
+     * @param Net_ChaChing_WebSocket_FrameParser $parser optional. The frame
+     *                                                   parser to use for this
+     *                                                   connection.
      */
-    public function __construct($socket)
-    {
-        $this->parser = new Net_ChaChing_WebSocket_FrameParser();
+    public function __construct(
+        $socket,
+        Net_ChaChing_WebSocket_FrameParser $parser = null
+    ) {
+        if ($parser === null) {
+            $parser = new Net_ChaChing_WebSocket_FrameParser();
+        }
+
+        $this->setFrameParser($parser);
         $this->socket = $socket;
         socket_getpeername($socket, $this->ipAddress);
     }
@@ -168,7 +181,7 @@ class Net_ChaChing_WebSocket_ClientConnection
                 );
 
                 try {
-                    $this->handshake($data);
+                    $this->receiveHandshake($data);
                 } catch (Net_ChaChing_WebSocket_ProtocolException $e) {
                     $this->state = self::STATE_CLOSED;
                     $this->shutdown();
@@ -312,7 +325,7 @@ class Net_ChaChing_WebSocket_ClientConnection
     }
 
     // }}}
-    // {{{ handshake()
+    // {{{ receiveHandshake()
 
     /**
      * Perform a WebSocket handshake for this client connection
@@ -321,15 +334,15 @@ class Net_ChaChing_WebSocket_ClientConnection
      *
      * @return void
      */
-    protected function handshake($data)
+    protected function receiveHandshake($data)
     {
-        $handshake = new Net_ChaChing_WebSocket_Handshake(
+        $handshake = new Net_ChaChing_WebSocket_ServerHandshake(
             array(
                 Net_ChaChing_WebSocket_Server::PROTOCOL
             )
         );
 
-        $response  = $handshake->handshake($data);
+        $response = $handshake->handshake($data);
 
         $this->send($response);
 
@@ -337,6 +350,32 @@ class Net_ChaChing_WebSocket_ClientConnection
     }
 
     // }}}
+    // {{{ sendHandshake()
+
+    /**
+     * Perform a WebSocket handshake for this client connection
+     *
+     * @param string $data the handshake data from the WebSocket client.
+     *
+     * @return void
+     */
+    public function sendHandshake()
+    {
+        $handshake = new Net_ChaChing_WebSocket_ClientHandshake(
+            array(
+                Net_ChaChing_WebSocket_Server::PROTOCOL
+            )
+        );
+
+        $response = $handshake->handshake($data);
+
+        $this->send($response);
+
+        $this->state = self::STATE_OPEN;
+    }
+
+    // }}}
+    // {{{ shutdown()
 
     /**
      * Closes the WebSocket connection as per the IETF draft specification
@@ -346,6 +385,8 @@ class Net_ChaChing_WebSocket_ClientConnection
     {
         socket_shutdown($this->socket, 1);
     }
+
+    // }}}
 
     public function startClose($code = self::CLOSE_NORMAL, $reason = '')
     {
@@ -444,6 +485,24 @@ class Net_ChaChing_WebSocket_ClientConnection
     public function getIpAddress()
     {
         return $this->ipAddress;
+    }
+
+    // }}}
+    // {{{ setFrameParser()
+
+    /**
+     * Sets the frame parser to use for this connection
+     *
+     * @param Net_ChaChing_WebSocket_FrameParser $parser the parser to use for
+     *                                                   this connection.
+     *
+     * @return Net_ChaChing_Connection the current object, for fluent
+     *                                       interface.
+     */
+    public function setFrameParser(Net_ChaChing_WebSocket_FrameParser $parser)
+    {
+        $this->parser = $parser;
+        return $this;
     }
 
     // }}}

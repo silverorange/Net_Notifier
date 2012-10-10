@@ -33,7 +33,7 @@
 /**
  * Client connection class.
  */
-require_once 'Net/ChaChing/WebSocket/ClientConnection.php';
+require_once 'Net/ChaChing/WebSocket/Connection.php';
 
 /**
  * A server process for sending and receiving cha-ching notifications
@@ -140,7 +140,7 @@ class Net_ChaChing_WebSocket_Server
     /**
      * Clients connected to this server
      *
-     * This is an array of {@link Net_ChaChing_Socket_ClientConnection} objects.
+     * This is an array of {@link Net_ChaChing_Socket_Connection} objects.
      *
      * @var array
      */
@@ -249,7 +249,7 @@ class Net_ChaChing_WebSocket_Server
                     exit(1);
                 }
 
-                $client = new Net_ChaChing_WebSocket_ClientConnection(
+                $client = new Net_ChaChing_WebSocket_Connection(
                     $newSocket
                 );
                 $this->clients[] = $client;
@@ -278,10 +278,10 @@ class Net_ChaChing_WebSocket_Server
 
                 if ($client->read(self::READ_BUFFER_LENGTH)) {
 
-                    if ($client->getState() < Net_ChaChing_WebSocket_ClientConnection::STATE_CLOSING) {
+                    if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSING) {
                         $this->startCloseClient(
                             $client,
-                            Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
+                            Net_ChaChing_WebSocket_Connection::CLOSE_NORMAL,
                             'Received message.'
                         );
 
@@ -341,7 +341,7 @@ class Net_ChaChing_WebSocket_Server
     protected function dispatchEvent($message)
     {
         foreach ($this->clients as $client) {
-            if ($client->getState() < Net_ChaChing_WebSocket_ClientConnection::STATE_CLOSING) {
+            if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSING) {
 
                 $this->output(
                     "=> writing message '" . $message . "' to " .
@@ -436,7 +436,7 @@ class Net_ChaChing_WebSocket_Server
 
         foreach ($this->clients as $client) {
             $client->startClose(
-                Net_ChaChing_WebSocket_ClientConnection::CLOSE_SHUTDOWN,
+                Net_ChaChing_WebSocket_Connection::CLOSE_SHUTDOWN,
                 'Server shutting down.'
             );
         }
@@ -455,7 +455,7 @@ class Net_ChaChing_WebSocket_Server
     /**
      * Closes a client socket and removes the client from the list of clients
      *
-     * @param Net_ChaChing_WebSocket_ClientConnection $client the client to
+     * @param Net_ChaChing_WebSocket_Connection $client the client to
      *                                                        disconnect.
      * @param integer                                 $code   close status code.
      * @param string                                  $reason a text message
@@ -466,7 +466,7 @@ class Net_ChaChing_WebSocket_Server
      * @return void
      */
     protected function closeClient(
-        Net_ChaChing_WebSocket_ClientConnection $client
+        Net_ChaChing_WebSocket_Connection $client
     ) {
         $this->output(
             "Closing client " . $client->getIpAddress() . " ... ",
@@ -484,8 +484,8 @@ class Net_ChaChing_WebSocket_Server
     // {{{ startCloseClient()
 
     protected function startCloseClient(
-        Net_ChaChing_WebSocket_ClientConnection $client,
-        $code = Net_ChaChing_WebSocket_ClientConnection::CLOSE_NORMAL,
+        Net_ChaChing_WebSocket_Connection $client,
+        $code = Net_ChaChing_WebSocket_Connection::CLOSE_NORMAL,
         $reason = ''
     ) {
         $this->output(
@@ -507,7 +507,7 @@ class Net_ChaChing_WebSocket_Server
      *
      * @param array $read an array of sockets that were read.
      *
-     * @return array an array of {@link Net_ChaChing_Socket_ClientConnection}
+     * @return array an array of {@link Net_ChaChing_Socket_Connection}
      *               objects having sockets found in the given array of read
      *               sockets.
      */
@@ -537,7 +537,7 @@ class Net_ChaChing_WebSocket_Server
         $readArray = array();
         $readArray[] = $this->socket;
         foreach ($this->clients as $client) {
-            if ($client->getState() < Net_ChaChing_WebSocket_ClientConnection::STATE_CLOSED) {
+            if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSED) {
                 $readArray[] = $client->getSocket();
             }
         }

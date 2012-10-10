@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * WebSocket handshake parser used by cha-ching client connection
+ * WebSocket handshake parser used by cha-ching server
  *
  * PHP version 5
  *
@@ -45,7 +45,7 @@ require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
  * @copyright 2010-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_Handshake
+class Net_ChaChing_WebSocket_ServerHandshake
 {
     // {{{ class constants
 

@@ -9,9 +9,7 @@ require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
 /**
  * WebSocket handshake class.
  */
-require_once 'Net/ChaChing/WebSocket/ServerHandshake.php';
-
-require_once 'Net/ChaChing/WebSocket/ClientHandshake.php';
+require_once 'Net/ChaChing/WebSocket/Handshake.php';
 
 require_once 'Net/ChaChing/WebSocket/Frame.php';
 
@@ -162,7 +160,6 @@ class Net_ChaChing_WebSocket_Connection
     public function read($length)
     {
         $buffer = socket_read($this->socket, $length, PHP_BINARY_READ);
-        echo $buffer;
 
         if (false === $buffer) {
             echo "socket_read() failed: reason: ",
@@ -190,7 +187,7 @@ class Net_ChaChing_WebSocket_Connection
                 );
 
                 try {
-                    $this->receiveHandshake($data);
+                    $this->handleHandshake($data);
                 } catch (Net_ChaChing_WebSocket_ProtocolException $e) {
                     $this->state = self::STATE_CLOSED;
                     $this->shutdown();
@@ -254,6 +251,7 @@ class Net_ChaChing_WebSocket_Connection
             break;
 
         case Net_ChaChing_WebSocket_Frame::TYPE_CLOSE:
+            echo "GOT CLOSE FRAME\n";
             $this->startClose();
             break;
 
@@ -334,7 +332,7 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
-    // {{{ receiveHandshake()
+    // {{{ handleHandshake()
 
     /**
      * Perform a WebSocket handshake for this client connection
@@ -343,23 +341,27 @@ class Net_ChaChing_WebSocket_Connection
      *
      * @return void
      */
-    protected function receiveHandshake($data)
+    protected function handleHandshake($data)
     {
-        $handshake = new Net_ChaChing_WebSocket_ServerHandshake(
-            array(
-                Net_ChaChing_WebSocket_Server::PROTOCOL
-            )
+        include_once 'Net/ChaChing/WebSocket/Server.php';
+
+        $handshake = new Net_ChaChing_WebSocket_Handshake();
+
+        $response = $handshake->receive(
+            $data,
+            $this->handshakeNonce,
+            array(Net_ChaChing_WebSocket_Server::PROTOCOL)
         );
 
-        $response = $handshake->handshake($data);
-
-        $this->send($response);
+        if ($response !== null) {
+            $this->send($response);
+        }
 
         $this->state = self::STATE_OPEN;
     }
 
     // }}}
-    // {{{ sendHandshake()
+    // {{{ startHandshake()
 
     /**
      * Perform a WebSocket handshake for this client connection
@@ -371,7 +373,7 @@ class Net_ChaChing_WebSocket_Connection
      *
      * @return void
      */
-    public function sendHandshake(
+    public function startHandshake(
         $host,
         $port,
         $resource = '/',
@@ -379,19 +381,19 @@ class Net_ChaChing_WebSocket_Connection
     ) {
         $this->handshakeNonce = $this->getNonce();
 
-        $handshake = new Net_ChaChing_WebSocket_ClientHandshake(
+        $handshake = new Net_ChaChing_WebSocket_Handshake();
+
+        $request = $handshake->start(
             $host,
             $port,
-            $resource,
             $this->handshakeNonce,
+            $resource,
             $protocols
         );
 
-        $request = $handshake->handshake();
-
         $this->send($request);
 
-//        $this->state = self::STATE_OPEN;
+        $this->state = self::STATE_CONNECTING;
     }
 
     // }}}
@@ -403,6 +405,7 @@ class Net_ChaChing_WebSocket_Connection
      */
     public function shutdown()
     {
+        echo "SHUTDOWN\n";
         socket_shutdown($this->socket, 1);
     }
 
@@ -410,6 +413,7 @@ class Net_ChaChing_WebSocket_Connection
 
     public function startClose($code = self::CLOSE_NORMAL, $reason = '')
     {
+        echo "START CLOSE\n";
         if ($this->state < self::STATE_CLOSING) {
             $code  = intval($code);
             $data  = pack('s', $code) . $reason;
@@ -428,6 +432,7 @@ class Net_ChaChing_WebSocket_Connection
 
     public function close()
     {
+        echo "CLOSE\n";
         socket_close($this->socket);
         $this->state = self::STATE_CLOSED;
     }
@@ -537,7 +542,6 @@ class Net_ChaChing_WebSocket_Connection
      */
     protected function send($message)
     {
-        echo $message;
         $length = mb_strlen($message, '8bit');
         socket_write($this->socket, $message, $length);
     }

@@ -16,7 +16,7 @@ class Net_ChaChing_WebSocket_Client
 
     protected $protocols = array();
 
-    protected $timeout = 10;
+    protected $timeout = 100;
 
     /**
      * @var Net_ChaChing_WebSocket_Connection
@@ -28,7 +28,7 @@ class Net_ChaChing_WebSocket_Client
     public function __construct(
         $address,
         array $protocols = array(),
-        $timeout = 10
+        $timeout = 1
     ) {
         $this->parseAddress($address);
         $this->setProtocols($protocols);
@@ -177,7 +177,7 @@ class Net_ChaChing_WebSocket_Client
 
         $this->connection = new Net_ChaChing_WebSocket_Connection($socket);
 
-        $this->connection->sendHandshake(
+        $this->connection->startHandshake(
             $this->host,
             $this->port,
             $this->resource,
@@ -189,7 +189,13 @@ class Net_ChaChing_WebSocket_Client
 
     protected function disconnect()
     {
-        $this->connection->shutdown();
+/*        $this->connection->startClose(
+            Net_ChaChing_WebSocket_Connection::CLOSE_SHUTDOWN,
+            'Client sent message.'
+        );
+*/
+        $this->connection->read(2048);
+//:        $this->connection->shutdown();
         $this->connection = null;
     }
 

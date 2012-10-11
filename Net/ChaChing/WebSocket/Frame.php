@@ -506,3 +506,5 @@ class Net_ChaChing_WebSocket_Frame
 
     // }}}
 }
+
+?>

@@ -109,11 +109,24 @@ class Net_ChaChing_WebSocket_Connection
     protected $parser = null;
 
     /**
+     * The nonce value used during the connection handshake
+     *
+     * This is only used for clients connecting to servers.
+     *
      * @var string
      */
     protected $handshakeNonce = '';
 
     /**
+     * The current connection state
+     *
+     * One of:
+     *
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CONNECTING}
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_OPEN}
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSING}
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSED}
+     *
      * @var integer
      */
     protected $state = self::STATE_CONNECTING;

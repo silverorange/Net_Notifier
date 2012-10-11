@@ -359,7 +359,10 @@ class Net_ChaChing_WebSocket_Connection
     // {{{ handleHandshake()
 
     /**
-     * Perform a WebSocket handshake for this client connection
+     * Performs a WebSocket handshake step for this client connection
+     *
+     * Depending on the handshake data received from the socket, this either
+     * completes a server connection or completes a client connection.
      *
      * @param string $data the handshake data from the WebSocket client.
      *
@@ -367,6 +370,7 @@ class Net_ChaChing_WebSocket_Connection
      */
     protected function handleHandshake($data)
     {
+        // clients don't include the server class
         include_once 'Net/ChaChing/WebSocket/Server.php';
 
         $handshake = new Net_ChaChing_WebSocket_Handshake();
@@ -377,6 +381,8 @@ class Net_ChaChing_WebSocket_Connection
             array(Net_ChaChing_WebSocket_Server::PROTOCOL)
         );
 
+        // for client-connecting to server handshakes, we need to send the
+        // Sec-WebSocket-Accept response.
         if ($response !== null) {
             $this->send($response);
         }

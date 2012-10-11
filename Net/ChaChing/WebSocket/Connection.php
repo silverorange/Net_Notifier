@@ -218,8 +218,18 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
+    // {{{ handleFrame()
 
     /**
+     * Handles a completed received frame
+     *
+     * This handles saving completed text or binary messages, sending pongs
+     * to pings and closing the connection if a close frame is received.
+     *
+     * @param Net_ChaChing_WebSocket_Frame $frame the frame to handle.
+     *
+     * @return void
+     *
      * @throws Net_ChaChing_WebSocket_UTF8EncodingException if a complete
      *         text message is received and the text message has unpaired
      *         unpaired surrogates (invalid UTF-8 encoding).
@@ -261,6 +271,7 @@ class Net_ChaChing_WebSocket_Connection
         }
     }
 
+    // }}}
     // {{{ writeBinary()
 
     /**
@@ -361,7 +372,7 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
-    // {{{ startHandshake()
+    // {{ startHandshake()
 
     /**
      * Perform a WebSocket handshake for this client connection
@@ -396,12 +407,11 @@ class Net_ChaChing_WebSocket_Connection
         $this->state = self::STATE_CONNECTING;
     }
 
-    // }}}
+    // }}
     // {{{ shutdown()
 
     /**
-     * Closes the WebSocket connection as per the IETF draft specification
-     * section 7.1.1
+     * Closes the WebSocket connection as per the IETF RFC 6455 section 7.1.1
      */
     public function shutdown()
     {
@@ -437,6 +447,18 @@ class Net_ChaChing_WebSocket_Connection
         $this->state = self::STATE_CLOSED;
     }
 
+    // {{{ pong()
+
+    /**
+     * Sends a pong frame
+     *
+     * Pongs are sent automatically in response to pings. They can be sent
+     * manually with this method.
+     *
+     * @param string $message the message to include with the pong frame.
+     *
+     * @return void
+     */
     public function pong($message)
     {
         $frame = new Net_ChaChing_WebSocket_Frame(
@@ -446,6 +468,8 @@ class Net_ChaChing_WebSocket_Connection
 
         $this->send($frame->__toString());
     }
+
+    // }}}
 
     public function getState()
     {
@@ -547,15 +571,24 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
-    // {{{ isValidUTF8()
+    // {{ isValidUTF8()
 
     protected function isValidUTF8($string)
     {
         return true;
     }
 
-    // }}}
+    // }}
+    // {{{ getNonce()
 
+    /**
+     * Gets a random 16-byte base-64 encoded value
+     *
+     * The nonce is used during the WebSocket connection handshake. See
+     * IETF RFC 6455 section 4.1 handshake requirements item 7.
+     *
+     * @return string a base-64 encoded randomly selected 16-byte value.
+     */
     protected function getNonce()
     {
         $nonce = '';
@@ -570,6 +603,8 @@ class Net_ChaChing_WebSocket_Connection
 
         return $nonce;
     }
+
+    // }}}
 }
 
 ?>

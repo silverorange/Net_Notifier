@@ -391,15 +391,15 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
-    // {{ startHandshake()
+    // {{{ startHandshake()
 
     /**
-     * Perform a WebSocket handshake for this client connection
+     * Initiates a WebSocket handshake for this client connection
      *
-     * @param string  $host      
-     * @param integer $port      
-     * @param string  $resource  optional.
-     * @param array   $protocols optional.
+     * @param string  $host      the server host name or IP address.
+     * @param integer $port      the server connection port.
+     * @param string  $resource  optional. The WebSocket resource name.
+     * @param array   $protocols optional. An array of requested sub-protocols.
      *
      * @return void
      */
@@ -426,11 +426,13 @@ class Net_ChaChing_WebSocket_Connection
         $this->state = self::STATE_CONNECTING;
     }
 
-    // }}
+    // }}}
     // {{{ shutdown()
 
     /**
      * Closes the WebSocket connection as per the IETF RFC 6455 section 7.1.1
+     *
+     * @return void
      */
     public function shutdown()
     {

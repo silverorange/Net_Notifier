@@ -391,8 +391,10 @@ class Net_ChaChing_WebSocket_Server
         }
         $this->output("done\n", self::VERBOSITY_ALL, false);
 
-        $this->output("binding socket on port " . $this->port . " ... ",
-            self::VERBOSITY_ALL);
+        $this->output(
+            "binding socket on port " . $this->port . " ... ",
+            self::VERBOSITY_ALL
+        );
 
         if (!socket_bind($sock, 0, $this->port)) {
             $this->output(
@@ -455,13 +457,7 @@ class Net_ChaChing_WebSocket_Server
     /**
      * Closes a client socket and removes the client from the list of clients
      *
-     * @param Net_ChaChing_WebSocket_Connection $client the client to
-     *                                                        disconnect.
-     * @param integer                                 $code   close status code.
-     * @param string                                  $reason a text message
-     *                                                        explaining why
-     *                                                        the client was
-     *                                                        disconnected.
+     * @param Net_ChaChing_WebSocket_Connection $client the client to close.
      *
      * @return void
      */
@@ -505,7 +501,7 @@ class Net_ChaChing_WebSocket_Server
     /**
      * Gets an array of client connections whose sockets were read
      *
-     * @param array $read an array of sockets that were read.
+     * @param array &$read an array of sockets that were read.
      *
      * @return array an array of {@link Net_ChaChing_Socket_Connection}
      *               objects having sockets found in the given array of read

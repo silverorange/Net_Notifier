@@ -146,7 +146,7 @@ class Net_ChaChing_WebSocket_Client
         if (!preg_match($exp, $address, $matches)) {
             throw new Net_ChaChing_WebSocket_ClientException(
                 sprintf(
-                      'Invalid WebSocket address: %s. Should be in the form '
+                    'Invalid WebSocket address: %s. Should be in the form '
                     . 'ws://host[:port][/resource]',
                     $address
                 )

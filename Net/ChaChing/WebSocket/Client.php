@@ -3,11 +3,24 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 require_once 'Net/ChaChing/WebSocket/Connection.php';
+
 require_once 'Net/ChaChing/WebSocket/ClientException.php';
+
 require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
 
 class Net_ChaChing_WebSocket_Client
 {
+    // {{{ class constants
+
+    /**
+     * How long the read buffer for connections is.
+     *
+     * If this is too short, multiple read calls will be made on client
+     * connections to receive messages.
+     */
+    const READ_BUFFER_LENGTH = 2048;
+
+    // }}}
     protected $port = 3000;
 
     protected $host = 'localhost';
@@ -184,7 +197,9 @@ class Net_ChaChing_WebSocket_Client
             $this->protocols
         );
 
-        $this->connection->read(2048);
+        // Read handshake response
+        // TODO: put in a while loop in case buffer length is too small
+        $this->connection->read(self::READ_BUFFER_LENGTH);
     }
 
     protected function disconnect()
@@ -194,7 +209,9 @@ class Net_ChaChing_WebSocket_Client
             'Client sent message.'
         );
 */
-        $this->connection->read(2048);
+        // read server close frame
+        // TODO: put in a while loop in case buffer length is too small
+        $this->connection->read(self::READ_BUFFER_LENGTH);
 //:        $this->connection->shutdown();
         $this->connection = null;
     }

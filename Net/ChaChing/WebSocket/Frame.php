@@ -330,6 +330,15 @@ class Net_ChaChing_WebSocket_Frame
         return $leftover;
     }
 
+    // {{{ mask()
+
+    /**
+     * Masks data according the the algorithm described in RFC 6455 Section 5.3
+     *
+     * @param string $data a binary string containing the data to mask.
+     *
+     * @return string a binary string containing the the masked data.
+     */
     protected function mask($data)
     {
         $out    = '';
@@ -349,6 +358,14 @@ class Net_ChaChing_WebSocket_Frame
         return $out;
     }
 
+    // }}}
+    // {{{ generateMask()
+
+    /**
+     * Gets a masking key for masked WebSocket frames
+     *
+     * @return string a binary stirng containing a 32-bit random value.
+     */
     protected function generateMask()
     {
         // get two random 16-bit integers
@@ -359,15 +376,49 @@ class Net_ChaChing_WebSocket_Frame
         return pack('ss', $short1, $short2);
     }
 
+    // }}}
+    // {{{ getChar()
+
+    /**
+     * Gets an integer representing the specified 8-bit unsigned char in a
+     * binary string
+     *
+     * This is used for data masking and parsing values from WebSocket frames.
+     * Since PHP has no unsigned char type the integer type (at least 32-bit)
+     * is used.
+     *
+     * @param string  $data the string.
+     * @param integer $char the character position for which to get the integer
+     *                      value.
+     *
+     * @return integer the integer representing the specified character.
+     */
     protected function getChar($data, $char)
     {
         return reset(unpack('C', mb_substr($data, $char, 1, '8bit')));
     }
 
+    // }}}
+    // {{{ getShort()
+
+    /**
+     * Gets an integer representing the 16-bit unsigned short of the first
+     * two bytes of a binary string
+     *
+     * This is used for parsing values from WebSocket frames. Since PHP has no
+     * unsigned short type the integer type (at least 32-bit) is used.
+     *
+     * @param string $data the binary string.
+     *
+     * @return integer the integer representing the 16-bit unsigned short of
+     *                 first two bytes of the binary string.
+     */
     protected function getShort($data)
     {
         return reset(unpack('n', mb_substr($data, 0, 2, '8bit')));
     }
+
+    // }}}
 
     protected function getLong($data)
     {

@@ -44,8 +44,8 @@ require_once 'Net/ChaChing/WebSocket/ClientException.php';
  *
  * @category  Net
  * @package   ChaChing
- * @copyright 2012 silverorange
  * @author    Michael Gauthier <mike@silverorange.com>
+ * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class Net_ChaChing_WebSocket_Client

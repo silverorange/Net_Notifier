@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Cha-ching server class
+ * Cha-ching WebSocket server class
  *
  * PHP version 5
  *
@@ -26,7 +26,7 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2011 silverorange
+ * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -46,8 +46,8 @@ require_once 'Net/ChaChing/WebSocket/Connection.php';
  *
  * @category  Net
  * @package   ChaChing
- * @copyright 2006-2011 silverorange
  * @author    Michael Gauthier <mike@silverorange.com>
+ * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class Net_ChaChing_WebSocket_Server

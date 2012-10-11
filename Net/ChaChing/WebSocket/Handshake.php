@@ -37,6 +37,7 @@ require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
  *
  * @category  Net
  * @package   ChaChing
+ * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2010-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */

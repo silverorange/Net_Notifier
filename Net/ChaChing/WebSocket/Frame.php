@@ -91,6 +91,16 @@ class Net_ChaChing_WebSocket_Frame
         }
     }
 
+    // {{{ __toString()
+
+    /**
+     * Gets a binary string of this frame ready to send over the wire
+     *
+     * The string is formatted according to IETF RFC 6455.
+     *
+     * @return string a binary string of this frame ready to send over
+     *                the wire.
+     */
     public function __toString()
     {
         ob_start();
@@ -100,6 +110,8 @@ class Net_ChaChing_WebSocket_Frame
 
         return ob_get_clean();
     }
+
+    // }}}
 
     public function parse($data)
     {
@@ -120,15 +132,34 @@ class Net_ChaChing_WebSocket_Frame
         return $data;
     }
 
+    // {{{ isFinal()
+
+    /**
+     * Gets whether or not this frame is the final frame in a multi-frame
+     * message
+     *
+     * @return boolean true if this frame is the final frame in a multi-frame
+     *                 message. Otherwise false.
+     */
     public function isFinal()
     {
         return $this->fin;
     }
 
+    // }}}
+    // {{{ isMasked()
+
+    /**
+     * Gets whether or not this frame is masked
+     *
+     * @return boolean true if this frame is masked. Otherwise false.
+     */
     public function isMasked()
     {
         return $this->isMasked;
     }
+
+    // }}}
 
     public function getRawData()
     {
@@ -145,6 +176,16 @@ class Net_ChaChing_WebSocket_Frame
         return $this->opcode;
     }
 
+    // {{{ getLength()
+
+    /**
+     * Gets the length of this frame's payload data in bytes
+     *
+     * @return integer the length of this frame's payload data in bytes.
+     *
+     * @todo Support long lengths (length values larger than a 32-bit signed
+     *       integer.)
+     */
     public function getLength()
     {
         $length = $this->length64;
@@ -160,11 +201,23 @@ class Net_ChaChing_WebSocket_Frame
         return $length;
     }
 
+    // }}}
+
     public function getState()
     {
         return $this->state;
     }
 
+    // {{{ displayHeader()
+
+    /**
+     * Displays this frame's header as a binary string
+     *
+     * @return void
+     *
+     * @todo Support long lengths (length values larger than a 32-bit signed
+     *       integer.)
+     */
     protected function displayHeader()
     {
         $fin  = $this->fin  ? 0x80 : 0x00;
@@ -194,6 +247,16 @@ class Net_ChaChing_WebSocket_Frame
         }
     }
 
+    // }}}
+    // {{{ displayData()
+
+    /**
+     * Displays the data portion of this frame
+     *
+     * If this frame is masked, the displayed data is masked.
+     *
+     * @return void
+     */
     protected function displayData()
     {
         $data = $this->unmaskedData;
@@ -204,6 +267,8 @@ class Net_ChaChing_WebSocket_Frame
 
         echo $data;
     }
+
+    // }}}
 
     protected function parseData($data)
     {
@@ -419,10 +484,25 @@ class Net_ChaChing_WebSocket_Frame
     }
 
     // }}}
+    // {{{ getLong()
 
+    /**
+     * Gets a 64-bit unsigned integer value from the first 4 bytes of the
+     * specified binary string
+     *
+     * This is used for parsing values from WebSocket frames. Because PHP has
+     * no native support for 64-bit unsigned integers, the
+     * {@link http://www.php.net/bcmath} module is used.
+     *
+     * @return string a string representing the decimal value of the 64-bit
+     *                unsigned integer.
+     *
+     * @todo This method is currently unimplemented.
+     */
     protected function getLong($data)
     {
-        // TODO
-        return 0;
+        return '0';
     }
+
+    // }}}
 }

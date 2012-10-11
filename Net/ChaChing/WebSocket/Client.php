@@ -293,9 +293,25 @@ class Net_ChaChing_WebSocket_Client
             $this->protocols
         );
 
-        // Read handshake response
-        // TODO: put in a while loop in case buffer length is too small
-        $this->connection->read(self::READ_BUFFER_LENGTH);
+        // read handshake response
+        $state = $this->connection->getState();
+        while ($state < Net_ChaChing_WebSocket_Connection::STATE_OPEN) {
+
+            $read = array($socket);
+
+            $result = socket_select(
+                $read,
+                $write = null,
+                $except = null,
+                null
+            );
+
+            if ($result === 1) {
+                $this->connection->read(self::READ_BUFFER_LENGTH);
+            }
+
+            $state = $this->connection->getState();
+        }
     }
 
     protected function disconnect()

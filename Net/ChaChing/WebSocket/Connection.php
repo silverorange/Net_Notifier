@@ -571,14 +571,21 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
-    // {{ isValidUTF8()
+    // {{{ isValidUTF8()
 
+    /**
+     * Gets whether or not a string is valid UTF-8
+     *
+     * @param string $string the binary string to check.
+     *
+     * @return boolean true if the string is valud UTF-8 and false if it is not.
+     */
     protected function isValidUTF8($string)
     {
-        return true;
+        return (mb_detect_encoding($string, 'UTF-8', true) === 'UTF-8');
     }
 
-    // }}
+    // }}}
     // {{{ getNonce()
 
     /**

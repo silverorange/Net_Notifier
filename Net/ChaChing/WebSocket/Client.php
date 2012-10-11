@@ -2,12 +2,52 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Cha-ching WebSocket client class
+ *
+ * PHP version 5
+ *
+ * LICENSE:
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ * @category  Net
+ * @package   ChaChing
+ * @author    Michael Gauthier <mike@silverorange.com>
+ * @copyright 2006-2012 silverorange
+ * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ */
+
+/**
+ * Client connection class.
+ */
 require_once 'Net/ChaChing/WebSocket/Connection.php';
 
 require_once 'Net/ChaChing/WebSocket/ClientException.php';
 
-require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
-
+/**
+ * A client sending cha-ching notifications
+ *
+ * This client connects to a WebSocket server and sends a message.
+ *
+ * @category  Net
+ * @package   ChaChing
+ * @copyright 2012 silverorange
+ * @author    Michael Gauthier <mike@silverorange.com>
+ * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ */
 class Net_ChaChing_WebSocket_Client
 {
     // {{{ class constants
@@ -21,22 +61,73 @@ class Net_ChaChing_WebSocket_Client
     const READ_BUFFER_LENGTH = 2048;
 
     // }}}
-    protected $port = 3000;
-
-    protected $host = 'localhost';
-
-    protected $resource = '/';
-
-    protected $protocols = array();
-
-    protected $timeout = 100;
+    // {{{ protected properties
 
     /**
+     * Server connection port
+     *
+     * @var integer
+     *
+     * @see Net_ChaChing_WebSocket_Client::parseAddress()
+     * @see Net_ChaChing_WebSocket_Client::setPort()
+     */
+    protected $port = 3000;
+
+    /**
+     * Server host name or IP address
+     *
+     * @var string
+     *
+     * @see Net_ChaChing_WebSocket_Client::parseAddress()
+     * @see Net_ChaChing_WebSocket_Client::setHost()
+     */
+    protected $host = 'localhost';
+
+    /**
+     * WebSocket resource name
+     *
+     * @var string
+     *
+     * @see Net_ChaChing_WebSocket_Client::parseAddress()
+     * @see Net_ChaChing_WebSocket_Client::setResource()
+     */
+    protected $resource = '/';
+
+    /**
+     * Requested WebSocket subprotocols
+     *
+     * @var array
+     *
+     * @see Net_ChaChing_WebSocket_Client::setProtocols()
+     */
+    protected $protocols = array();
+
+    /**
+     * Client connection timeout in seconds
+     *
+     * @var integer
+     */
+    protected $timeout = 1;
+
+    /**
+     * The connection to the WebSocket server
+     *
      * @var Net_ChaChing_WebSocket_Connection
      */
     protected $connection = null;
 
+    /**
+     * Error handler that was set before being overridden by this client's
+     * error handling
+     *
+     * @var callable
+     *
+     * @see Net_ChaChing_WebSocket_Client::setErrorHandler()
+     * @see Net_ChaChing_WebSocket_Client::restoreErrorHandler()
+     */
     protected $oldErrorHandler = false;
+
+    // }}}
 
     public function __construct(
         $address,
@@ -85,10 +176,15 @@ class Net_ChaChing_WebSocket_Client
     public function sendText($message)
     {
         $this->setErrorHandler();
-        $this->connect();
-        $this->connection->writeText($message);
-        $this->disconnect();
-        $this->restoreErrorHandler();
+        try {
+            $this->connect();
+            $this->connection->writeText($message);
+            $this->disconnect();
+            $this->restoreErrorHandler();
+        } catch (Exception $e) {
+            $this->restoreErrorHandler();
+            throw $e;
+        }
     }
 
     public function setHost($host)

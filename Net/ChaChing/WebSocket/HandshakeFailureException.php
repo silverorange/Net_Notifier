@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Client exception class definition
+ * Handshake failure exception class definition
  *
  * PHP version 5
  *
@@ -36,8 +36,10 @@
 require_once 'Net/ChaChing/Exception.php';
 
 /**
- * Exception thrown when a WebSocket client fails to connect due to bad
- * client parameters
+ * Exception thrown when a WebSocket handshake fails
+ *
+ * When this exception is caught, the client or server should fail the
+ * WebSocket connection as per RFC 6455 Section 7.1.7.
  *
  * @category  Net
  * @package   Net_ChaChing

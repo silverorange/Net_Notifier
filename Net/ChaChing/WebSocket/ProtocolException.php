@@ -26,14 +26,14 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2011 silverorange
+ * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 /**
- * Base exception interface
+ * Handshake failure exception
  */
-require_once 'Net/ChaChing/Exception.php';
+require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
 
 /**
  * Exception thrown when a WebSocket client requests an unsupported protocol
@@ -41,25 +41,22 @@ require_once 'Net/ChaChing/Exception.php';
  * @category  Net
  * @package   Net_ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2011 silverorange
+ * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class Net_ChaChing_WebSocket_ProtocolException
-    extends Exception
-    implements Net_ChaChing_Exception
+    extends Next_ChaChing_WebSocket_HandshakeFailureException
 {
     // {{{ protected properties
 
     /**
-     * The protocols supported by the server
+     * The protocol supported by the server
      *
-     * This is an array of strings.
+     * @var string
      *
-     * @var array
-     *
-     * @see Net_ChaChing_WebSocket_ProtocolException::getSupportedProtocols()
+     * @see Net_ChaChing_WebSocket_ProtocolException::getSupportedProtocol()
      */
-    protected $supportedProtocols = array();
+    protected $supportedProtocol = null;
 
     /**
      * The protocols requested by the client
@@ -80,33 +77,35 @@ class Net_ChaChing_WebSocket_ProtocolException
      *
      * @param string  $message            the exception message.
      * @param integer $code               optional. The error code.
-     * @param array   $supportedProtocols optional. An array of protocols
-     *                                    supported by the server.
+     * @param string  $supportedProtocol  optional. The protocol supported by
+     *                                    the server or null if the server
+     *                                    supports none of the requested
+     *                                    protocols.
      * @param array   $requestedProtocols optional. An array of protocols
      *                                    requested by the client.
      */
     public function __construct(
         $message,
         $code = 0,
-        array $supportedProtocols = array(),
+        $supportedProtocol = null,
         array $requestedProtocols = array()
     ) {
         parent::__construct($message, $code);
-        $this->supportedProtocols = $supportedProtocols;
+        $this->supportedProtocol  = $supportedProtocol;
         $this->requestedProtocols = $requestedProtocols;
     }
 
     // }}}
-    // {{{ getSupportedProtocols()
+    // {{{ getSupportedProtocol()
 
     /**
-     * Gets an array of the protocols supported by the server
+     * Gets the protocol supported by the server
      *
-     * @return array the protocols supported by the server.
+     * @return string|null the protocol supported by the server.
      */
-    public function getSupportedProtocols()
+    public function getSupportedProtocol()
     {
-        return $this->supportedProtocols;
+        return $this->supportedProtocol;
     }
 
     // }}}

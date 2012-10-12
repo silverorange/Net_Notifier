@@ -350,23 +350,29 @@ class Net_ChaChing_WebSocket_Handshake
         // them. See RFC 6455 Section 4.1 server response validation item 6.
         if (count($protocols) > 0) {
             if (!isset($headers['Sec-WebSocket-Protocol'])) {
-                throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                throw new Net_ChaChing_WebSocket_ProtocolException(
                     sprintf(
                         "Client requested '%s' sub-protocols but server does "
                         . "not support any of them.",
                         implode(' ', $protocols)
-                    )
+                    ),
+                    0,
+                    null,
+                    $protocols
                 );
             }
 
             if (!in_array($headers['Sec-WebSocket-Protocol'], $protocols)) {
-                throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                throw new Net_ChaChing_WebSocket_ProtocolException(
                     sprintf(
                         "Client requested '%s' sub-protocols. Server "
                         . "responded with unsupported sub-protocol: '%s'.",
                         implode(' ', $protocols),
                         $headers['Sec-WebSocket-Protocol']
-                    )
+                    ),
+                    0,
+                    $headers['Sec-WebSocket-Protocol'],
+                    $protocols
                 );
             }
         }

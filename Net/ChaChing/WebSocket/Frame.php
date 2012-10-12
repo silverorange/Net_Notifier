@@ -278,22 +278,49 @@ class Net_ChaChing_WebSocket_Frame
     }
 
     // }}}
+    // {{{ getData()
 
+    /**
+     * Gets the raw data payload of this frame
+     *
+     * If this frame is masked, the raw data is masked.
+     *
+     * @return string the raw data payload of this frame.
+     */
     public function getRawData()
     {
         return $this->data;
     }
 
+    // }}}
+    // {{{ getUnmaskedData()
+
+    /**
+     * Gets the unmasked data payload of this frame
+     *
+     * If this frame is masked, the raw data is unmasked.
+     *
+     * @return string the unmasked data payload of this frame.
+     */
     public function getUnmaskedData()
     {
         return $this->unmaskedData;
     }
 
+    // }}}
+    // {{{ getOpcode()
+
+    /**
+     * Gets the WebSocket frame opcode of this frame
+     *
+     * @return integer the WebSocket frame opcode of this frame.
+     */
     public function getOpcode()
     {
         return $this->opcode;
     }
 
+    // }}}
     // {{{ getLength()
 
     /**
@@ -320,12 +347,23 @@ class Net_ChaChing_WebSocket_Frame
     }
 
     // }}}
+    // {{{ getState()
 
+    /**
+     * Gets the current parsing state of this frame
+     *
+     * @return integer the current parsing state of this frame. One of
+     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_UNSENT},
+     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_OPENED},
+     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_HEADERS_RECEIVED}, or
+     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_DONE}.
+     */
     public function getState()
     {
         return $this->state;
     }
 
+    // }}}
     // {{{ getHeader()
 
     /**

@@ -21,17 +21,60 @@ class Net_ChaChing_WebSocket_Connection
 {
     const FRAME_SIZE = 2048;
 
+    /**
+     * Normal connection close code
+     */
     const CLOSE_NORMAL = 1000;
 
-    const CLOSE_SHUTDOWN = 1001;
+    /**
+     * Connection closed because endpoint is going away
+     *
+     * Use for server shutdown, for example.
+     */
+    const CLOSE_GOING_AWAY = 1001;
 
-    const CLOSE_ERROR = 1002;
+    /**
+     * Connection closed due to protocol error.
+     */
+    const CLOSE_PROTOCOL_ERROR = 1002;
 
+    /**
+     * Connection closed because endpoint doesn't understand requested
+     * data type.
+     */
     const CLOSE_DATA_TYPE = 1003;
 
-    const CLOSE_FRAME_SIZE = 1004;
-
+    /**
+     * Connection closed because frame data payload was not encoded correctly
+     * according to frame type
+     */
     const CLOSE_ENCODING_ERROR = 1007;
+
+    /**
+     * Connection closed because the endpoint violated server policy.
+     *
+     * This is a generic close code that may be used when the policy violation
+     * doesn't match another defined code or the specific policy violation
+     * should remain hidden.
+     */
+    const CLOSE_POLICY_VIOLATION = 1008;
+
+    /**
+     * Connection closed because the message payload is too large to process.
+     */
+    const CLOSE_TOO_LARGE = 1009;
+
+    /**
+     * Connection closed because an unsupported WebSocket extension was
+     * requested.
+     */
+    const CLOSE_UNSUPPORTED_EXTENSION = 1010;
+
+    /**
+     * Connection closed because of an unexpected error while processing
+     * request
+     */
+    const CLOSE_UNEXPECTED_ERROR = 1011;
 
     const STATE_CONNECTING = 0;
 

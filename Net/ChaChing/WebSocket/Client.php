@@ -373,7 +373,7 @@ class Net_ChaChing_WebSocket_Client
     protected function disconnect()
     {
 /*        $this->connection->startClose(
-            Net_ChaChing_WebSocket_Connection::CLOSE_SHUTDOWN,
+            Net_ChaChing_WebSocket_Connection::CLOSE_GOING_AWAY,
             'Client sent message.'
         );
 */

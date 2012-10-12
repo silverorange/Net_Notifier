@@ -461,7 +461,7 @@ class Net_ChaChing_WebSocket_Server
 
         foreach ($this->clients as $client) {
             $client->startClose(
-                Net_ChaChing_WebSocket_Connection::CLOSE_SHUTDOWN,
+                Net_ChaChing_WebSocket_Connection::CLOSE_GOING_AWAY,
                 'Server shutting down.'
             );
         }

@@ -273,6 +273,12 @@ class Net_ChaChing_WebSocket_Server
                 );
 
                 if ($bytes === 0) {
+                    $this->output(
+                        "client " . $client->getIpAddress() . " closed "
+                        . "connection.\n",
+                        self::VERBOSITY_CLIENT
+                    );
+
                     $moribund = true;
                 }
 

@@ -139,9 +139,27 @@ class Net_ChaChing_WebSocket_Client
         $this->setTimeout($timeout);
     }
 
+    // {{{ parseAddress()
+
+    /**
+     * Parses a WebSocket address and sets the constituent parts for this
+     * client
+     *
+     * A WebSocket address looks like 'ws://hostname:port/resource-name'. If
+     * present, the host, port and resource of this client are set from the
+     * parsed values.
+     *
+     * @param string $address the address to parse.
+     *
+     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
+     *                                       interface.
+     *
+     * @throws Net_ChaChing_WebSocket_ClientException if the specified address
+     *         is not a properly formatted websocket address.
+     */
     public function parseAddress($address)
     {
-        $exp = '!^ws://([\w-.]+?)(?::(\d+))?(/.*)?$!';
+        $exp = '!^wss?://([\w-.]+?)(?::(\d+))?(/.*)?$!';
         $matches = array();
         if (!preg_match($exp, $address, $matches)) {
             throw new Net_ChaChing_WebSocket_ClientException(
@@ -164,7 +182,11 @@ class Net_ChaChing_WebSocket_Client
         if (isset($matches[3])) {
             $this->setResource($matches[3]);
         }
+
+        return $this;
     }
+
+    // }}}
 
     public function __destruct()
     {
@@ -187,23 +209,57 @@ class Net_ChaChing_WebSocket_Client
         }
     }
 
+    // {{{ setHost()
+
+    /**
+     * Sets the server host name or IP address for this client
+     *
+     * @param string $host the server host name or IP address for this client.
+     *
+     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
+     *                                       interface.
+     */
     public function setHost($host)
     {
         $this->host = (string)$host;
         return $this;
     }
 
+    // }}}
+    // {{{ setPort()
+
+    /**
+     * Sets the connection port for this client
+     *
+     * @param integer $port the connection port for this client.
+     *
+     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
+     *                                       interface.
+     */
     public function setPort($port)
     {
         $this->port = (integer)$port;
         return $this;
     }
 
+    // }}}
+    // {{{ setResource()
+
+    /**
+     * Sets the WebSocket resource for this client
+     *
+     * @param string $resource the WebSocket resource name for this client.
+     *
+     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
+     *                                       interface.
+     */
     public function setResource($resource)
     {
         $this->resource = (string)$resource;
         return $this;
     }
+
+    // }}}
 
     public function setProtocols(array $protocols)
     {

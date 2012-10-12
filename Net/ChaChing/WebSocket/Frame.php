@@ -43,27 +43,111 @@
  */
 class Net_ChaChing_WebSocket_Frame
 {
-    const TYPE_CONT      = 0x00;
-    const TYPE_TEXT      = 0x01;
-    const TYPE_BINARY    = 0x02;
-    const TYPE_CONTROL1  = 0x03;
-    const TYPE_CONTROL2  = 0x04;
-    const TYPE_CONTROL3  = 0x05;
-    const TYPE_CONTROL4  = 0x06;
-    const TYPE_CONTROL5  = 0x07;
-    const TYPE_CLOSE     = 0x08;
-    const TYPE_PING      = 0x09;
-    const TYPE_PONG      = 0x0a;
-    const TYPE_CONTROL6  = 0x0b;
-    const TYPE_CONTROL7  = 0x0c;
-    const TYPE_CONTROL8  = 0x0d;
-    const TYPE_CONTROL9  = 0x0e;
-    const TYPE_CONTROL10 = 0x0f;
+    // {{{ class constants
 
-    const STATE_UNSENT           = 0;
-    const STATE_OPENED           = 1;
+    /**
+     * WebSocket continuation frame type.
+     */
+    const TYPE_CONT = 0x00;
+
+    /**
+     * WebSocket UTF-8 text frame type.
+     */
+    const TYPE_TEXT = 0x01;
+
+    /**
+     * WebSocket binary data frame type.
+     */
+    const TYPE_BINARY = 0x02;
+
+    /**
+     * WebSocket undefined reserved non-control frame type.
+     */
+    const TYPE_FRAME1 = 0x03;
+
+    /**
+     * WebSocket undefined reserved non-control frame type.
+     */
+    const TYPE_FRAME2 = 0x04;
+
+    /**
+     * WebSocket undefined reserved non-control frame type.
+     */
+    const TYPE_FRAME3 = 0x05;
+
+    /**
+     * WebSocket undefined reserved non-control frame type.
+     */
+    const TYPE_FRAME4 = 0x06;
+
+    /**
+     * WebSocket undefined reserved non-control frame type.
+     */
+    const TYPE_FRAME5 = 0x07;
+
+    /**
+     * WebSocket connection close control frame type.
+     */
+    const TYPE_CLOSE = 0x08;
+
+    /**
+     * WebSocket ping control frame type.
+     */
+    const TYPE_PING = 0x09;
+
+    /**
+     * WebSocket pong control frame type.
+     */
+    const TYPE_PONG = 0x0a;
+
+    /**
+     * WebSocket undefined reserved control frame type.
+     */
+    const TYPE_CONTROL1 = 0x0b;
+
+    /**
+     * WebSocket undefined reserved control frame type.
+     */
+    const TYPE_CONTROL2 = 0x0c;
+
+    /**
+     * WebSocket undefined reserved control frame type.
+     */
+    const TYPE_CONTROL3 = 0x0d;
+
+    /**
+     * WebSocket undefined reserved control frame type.
+     */
+    const TYPE_CONTROL4 = 0x0e;
+
+    /**
+     * WebSocket undefined reserved control frame type.
+     */
+    const TYPE_CONTROL5 = 0x0f;
+
+    /**
+     * Frame parse state for unsent frames.
+     *
+     * Used for sending frames.
+     */
+    const STATE_UNSENT = 0;
+
+    /**
+     * Frame parse state for frame that has not finished parsing header.
+     */
+    const STATE_OPENED = 1;
+
+    /**
+     * Frame parse state for frame with complete header but incomplete payload.
+     */
     const STATE_HEADERS_RECEIVED = 2;
-    const STATE_DONE             = 4;
+
+    /**
+     * Frame parse state for completely parsed frames (headers and payload).
+     */
+    const STATE_DONE = 4;
+
+    // }}}
 
     protected $opcode = 0;
 

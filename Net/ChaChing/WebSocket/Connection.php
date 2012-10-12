@@ -19,6 +19,13 @@ require_once 'Net/ChaChing/WebSocket/FrameParser.php';
 
 class Net_ChaChing_WebSocket_Connection
 {
+    // {{{ class constants
+
+    /**
+     * The maximum size in bytes of WebSocket frames sent by this connection
+     *
+     * Larger messages are split into multiple frames.
+     */
     const FRAME_SIZE = 2048;
 
     /**
@@ -76,14 +83,28 @@ class Net_ChaChing_WebSocket_Connection
      */
     const CLOSE_UNEXPECTED_ERROR = 1011;
 
+    /**
+     * Connection state for TCP connection open but handshake not complete.
+     */
     const STATE_CONNECTING = 0;
 
+    /**
+     * Connection state when handshake completes successfully.
+     */
     const STATE_OPEN = 1;
 
+    /**
+     * Connection state when connection sent a close frame but is not yet
+     * closed.
+     */
     const STATE_CLOSING = 2;
 
+    /**
+     * Connection state for connections that are closed.
+     */
     const STATE_CLOSED = 3;
 
+    // }}}
     // {{{ protected properties
 
     /**

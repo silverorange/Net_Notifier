@@ -226,12 +226,7 @@ class Net_ChaChing_WebSocket_Frame
      */
     public function __toString()
     {
-        ob_start();
-
-        $this->displayHeader();
-        $this->displayData();
-
-        return ob_get_clean();
+        return $this->getHeader().$this->getData();
     }
 
     // }}}
@@ -331,18 +326,20 @@ class Net_ChaChing_WebSocket_Frame
         return $this->state;
     }
 
-    // {{{ displayHeader()
+    // {{{ getHeader()
 
     /**
-     * Displays this frame's header as a binary string
+     * Gets this frame's header as a binary string
      *
-     * @return void
+     * @return string this frame's header as a binary string.
      *
      * @todo Support long lengths (length values larger than a 32-bit signed
      *       integer.)
      */
-    protected function displayHeader()
+    protected function getHeader()
     {
+        $header = '';
+
         $fin  = $this->fin  ? 0x80 : 0x00;
 
         $rsv1 = $this->rsv1 ? 0x40 : 0x00;
@@ -355,10 +352,10 @@ class Net_ChaChing_WebSocket_Frame
 
         $byte2 = $mask | $this->length;
 
-        echo pack('CC', $byte1, $byte2);
+        $header .= pack('CC', $byte1, $byte2);
 
         if ($this->length === 0x7e) {
-            echo pack('s', $this->length16);
+            $header .= pack('s', $this->length16);
         }
 
         if ($this->length === 0x7f) {
@@ -366,21 +363,23 @@ class Net_ChaChing_WebSocket_Frame
         }
 
         if ($this->isMasked) {
-            echo $this->mask;
+            $header .= $this->mask;
         }
+
+        return $header;
     }
 
     // }}}
-    // {{{ displayData()
+    // {{{ getData()
 
     /**
-     * Displays the data portion of this frame
+     * Gets the data portion of this frame as a binary string
      *
      * If this frame is masked, the displayed data is masked.
      *
-     * @return void
+     * @return string the data portion of this frame as a binary string.
      */
-    protected function displayData()
+    protected function getData()
     {
         $data = $this->unmaskedData;
 
@@ -388,7 +387,7 @@ class Net_ChaChing_WebSocket_Frame
             $data = $this->mask($data);
         }
 
-        echo $data;
+        return $data;
     }
 
     // }}}

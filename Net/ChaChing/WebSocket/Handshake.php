@@ -104,6 +104,7 @@ class Net_ChaChing_WebSocket_Handshake
             = "GET " . $resource . " HTTP/1.1\r\n"
             . "Host: " . $host . "\r\n"
             . "Connection: Upgrade\r\n"
+            . "Upgrade: websocket\r\n"
             . "Sec-WebSocket-Key: " . $nonce . "\r\n"
             . "Sec-WebSocket-Version: " . $version . "\r\n";
 
@@ -142,6 +143,8 @@ class Net_ChaChing_WebSocket_Handshake
      *
      * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the
      *         handshake fails.
+     *
+     * @todo Handle 4XX responses from server properly on client.
      */
     public function receive($data, $nonce, array $supportedProtocols = array())
     {
@@ -170,7 +173,6 @@ class Net_ChaChing_WebSocket_Handshake
             $response = "HTTP/1.1 400 Bad Request\r\n\r\n";
         }
 
-
         return $response;
     }
 
@@ -198,7 +200,7 @@ class Net_ChaChing_WebSocket_Handshake
         if (!isset($headers['Host'])) {
 
             $response
-                = "HTTP/1.1 400 Bad Requestr\r\n"
+                = "HTTP/1.1 400 Bad Request\r\n"
                 . "X-WebSocket-Message: Client request Host header is "
                 . "missing.\r\n";
 
@@ -207,7 +209,7 @@ class Net_ChaChing_WebSocket_Handshake
         ) {
 
             $response
-                = "HTTP/1.1 400 Bad Requestr\r\n"
+                = "HTTP/1.1 400 Bad Request\r\n"
                 . "X-WebSocket-Message: Client request Upgrade header is "
                 . "missing or not set to 'websocket'.\r\n";
 
@@ -216,21 +218,21 @@ class Net_ChaChing_WebSocket_Handshake
         ) {
 
             $response
-                = "HTTP/1.1 400 Bad Requestr\r\n"
+                = "HTTP/1.1 400 Bad Request\r\n"
                 . "X-WebSocket-Message: Client request Connection header is "
                 . "missing or not set to 'Upgrade'.\r\n";
 
         } elseif (!isset($headers['Sec-WebSocket-Key'])) {
 
             $response
-                = "HTTP/1.1 400 Bad Requestr\r\n"
+                = "HTTP/1.1 400 Bad Request\r\n"
                 . "X-WebSocket-Message: Client request Sec-WebSocket-Key "
                 . "header is missing.\r\n";
 
         } elseif (!isset($headers['Sec-WebSocket-Version'])) {
 
             $response
-                = "HTTP/1.1 400 Bad Requestr\r\n"
+                = "HTTP/1.1 400 Bad Request\r\n"
                 . "X-WebSocket-Message: Client request Sec-WebSocket-Version "
                 . "header is missing.\r\n";
 

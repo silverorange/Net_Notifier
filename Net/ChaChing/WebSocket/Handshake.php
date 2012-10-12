@@ -72,12 +72,23 @@ class Net_ChaChing_WebSocket_Handshake
     const VERSION = 13;
 
     // }}}
+    // {{{ start
 
     /**
-     * @param array $protocols optional. A list of supported application-
-     *                         specific sub-protocols. If this array is
-     *                         specified, only handshake requests for the
-     *                         specified protocols will succeed.
+     * Initiates a WebSocket handshake
+     *
+     * @param string  $host      the server host name or IP address.
+     * @param integer $port      the server connection port.
+     * @param string  $nonce     the nonce value used to validate this
+     *                           handshake.
+     * @param string  $resource  optional. The WebSocket resource name.
+     * @param array   $protocols optional. A list of requested application-
+     *                           specific sub-protocols. If this array is
+     *                           specified, only handshake requests for the
+     *                           specified protocols will succeed.
+     *
+     * @return string the HTTP GET request data for initiating a WebSocket
+     *                handshake for a WebSocket client.
      */
     public function start(
         $host,
@@ -88,8 +99,8 @@ class Net_ChaChing_WebSocket_Handshake
     ) {
         $version = Net_ChaChing_WebSocket_Handshake::VERSION;
 
-        $request =
-              "GET " . $resource . " HTTP/1.1\r\n"
+        $request
+            = "GET " . $resource . " HTTP/1.1\r\n"
             . "Host: " . $host . "\r\n"
             . "Connection: Upgrade\r\n"
             . "Sec-WebSocket-Key: " . $nonce . "\r\n"
@@ -105,6 +116,7 @@ class Net_ChaChing_WebSocket_Handshake
         return $request;
     }
 
+    // }}}
     // {{{ receive()
 
     /**
@@ -116,8 +128,8 @@ class Net_ChaChing_WebSocket_Handshake
      *
      * @param string $data               the handshake request/response data.
      * @param string $nonce              the nonce value used to validate
-     *                                   WebSocket requests. Not set for
-     *                                   receiving client handshakes.
+     *                                   this handshake. Not set for receiving
+     *                                   client handshake requests.
      * @param array  $supportedProtocols optional. A list of supported
      *                                   application-specific sub-protocols. If
      *                                   this array is specified, only
@@ -180,8 +192,8 @@ class Net_ChaChing_WebSocket_Handshake
 
         if ($version == self::VERSION) {
 
-            $response =
-                  "HTTP/1.1 101 Switching Protocols\r\n"
+            $response
+                = "HTTP/1.1 101 Switching Protocols\r\n"
                 . "Upgrade: websocket\r\n"
                 . "Connection: Upgrade\r\n"
                 . "Sec-WebSocket-Accept: " . $accept . "\r\n";
@@ -212,9 +224,9 @@ class Net_ChaChing_WebSocket_Handshake
 
         } else {
 
-            $response =
-                "HTTP/1.1 426 Upgrade Required\r\n";
-                "Sec-WebSocket-Version: " . self::VERSION . "\r\n";
+            $response
+                = "HTTP/1.1 426 Upgrade Required\r\n"
+                . "Sec-WebSocket-Version: " . self::VERSION . "\r\n";
 
         }
 
@@ -223,6 +235,19 @@ class Net_ChaChing_WebSocket_Handshake
         return $response;
     }
 
+    // {{{ receiveServerHandshake()
+
+    /**
+     * Receives and validates a server handshake response
+     *
+     * @param array  $headers the parsed response headers from the server.
+     * @param string $nonce   the nonce value used to validate this handshake.
+     *
+     * @return null
+     *
+     * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the handshake
+     *         response is invalid according to RFC 6455.
+     */
     protected function receiveServerHandshake(array $headers, $nonce)
     {
         // Make sure required headers and values are present as per RFC 6455
@@ -268,6 +293,7 @@ class Net_ChaChing_WebSocket_Handshake
         return null;
     }
 
+    // }}}
     // {{{ getSupportedProtocol()
 
     protected function getSupportedProtocol(array $supported, array $requested)
@@ -329,8 +355,7 @@ class Net_ChaChing_WebSocket_Handshake
      *  3. take the sha1() of the resulting string
      *  4. base-64 encode the sha1 result
      *
-     * See section 5.2.2 of {@link http://www.whatwg.org/specs/web-socket-protocol/ The WebSocket Protocol}
-     * for further details.
+     * See section 4.2.2 item 5 subitem 4 of RFC 6455 for further details.
      *
      * @param string $key the key from which to generate the accept hash.
      *

@@ -128,15 +128,13 @@ class Net_ChaChing_WebSocket_Handshake
      * {@link http://datatracker.ietf.org/doc/rfc6455/ IETF RFC 6455} for
      * further details.
      *
-     * @param string $data               the handshake request/response data.
-     * @param string $nonce              the nonce value used to validate
-     *                                   this handshake. Not set for receiving
-     *                                   client handshake requests.
-     * @param array  $supportedProtocols optional. A list of supported
-     *                                   application-specific sub-protocols. If
-     *                                   this array is specified, only
-     *                                   handshake requests for the specified
-     *                                   protocols will succeed.
+     * @param string $data      the handshake request/response data.
+     * @param string $nonce     the nonce value used to validate this handshake.
+     *                          Not set for receiving client handshake requests.
+     * @param array  $protocols optional. A list of supported or requested
+     *                          application-specific sub-protocols. If
+     *                          specified, only handshake requests for the
+     *                          specified protocols will succeed.
      *
      * @return string|null the handshake response or null if there is no
      *                     response.
@@ -146,7 +144,7 @@ class Net_ChaChing_WebSocket_Handshake
      *
      * @todo Handle 4XX responses from server properly on client.
      */
-    public function receive($data, $nonce, array $supportedProtocols = array())
+    public function receive($data, $nonce, array $protocols = array())
     {
         $handshake = $this->parseHeaders($data);
         $headers   = $handshake['headers'];
@@ -163,12 +161,13 @@ class Net_ChaChing_WebSocket_Handshake
         $method = $status_parts[0];
 
         if ($status == '101') {
-            $response = $this->receiveServerHandshake($headers, $nonce);
-        } elseif ($method === 'GET') {
-            $response = $this->receiveClientHandshake(
+            $response = $this->receiveServerHandshake(
                 $headers,
-                $supportedProtocols
+                $nonce,
+                $protocols
             );
+        } elseif ($method === 'GET') {
+            $response = $this->receiveClientHandshake($headers, $protocols);
         } else {
             $response = "HTTP/1.1 400 Bad Request\r\n\r\n";
         }
@@ -290,18 +289,23 @@ class Net_ChaChing_WebSocket_Handshake
     /**
      * Receives and validates a server handshake response
      *
-     * @param array  $headers the parsed response headers from the server.
-     * @param string $nonce   the nonce value used to validate this handshake.
+     * @param array  $headers   the parsed response headers from the server.
+     * @param string $nonce     the nonce value used to validate this handshake.
+     * @param array  $protocols optional. A list of requested application-
+     *                          specific sub-protocols. If the server handshake
+     *                          response does not contain one of the requested
+     *                          protocols, this handshake will fail.
      *
      * @return null
      *
      * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the handshake
      *         response is invalid according to RFC 6455.
-     *
-     * @todo Validate sub-protocols returned in the server response.
      */
-    protected function receiveServerHandshake(array $headers, $nonce)
-    {
+    protected function receiveServerHandshake(
+        array $headers,
+        $nonce,
+        array $protocols = array()
+    ) {
         // Make sure required headers and values are present as per RFC 6455
         // section 4.1 client validation of server response.
         if (!isset($headers['Sec-WebSocket-Accept'])) {
@@ -340,6 +344,31 @@ class Net_ChaChing_WebSocket_Handshake
                     $nonce
                 )
             );
+        }
+
+        // If specific subprotocols were requested, verify the server supports
+        // them. See RFC 6455 Section 4.1 server response validation item 6.
+        if (count($protocols) > 0) {
+            if (!isset($headers['Sec-WebSocket-Protocol'])) {
+                throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                    sprintf(
+                        "Client requested '%s' sub-protocols but server does "
+                        . "not support any of them.",
+                        implode(' ', $protocols)
+                    )
+                );
+            }
+
+            if (!in_array($headers['Sec-WebSocket-Protocol'], $protocols)) {
+                throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                    sprintf(
+                        "Client requested '%s' sub-protocols. Server "
+                        . "responded with unsupported sub-protocol: '%s'.",
+                        implode(' ', $protocols),
+                        $headers['Sec-WebSocket-Protocol']
+                    )
+                );
+            }
         }
 
         return null;

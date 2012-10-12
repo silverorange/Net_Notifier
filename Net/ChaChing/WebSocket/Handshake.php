@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * WebSocket handshake parser used by cha-ching server
+ * WebSocket handshake parser used by cha-ching connections
  *
  * PHP version 5
  *
@@ -48,6 +48,7 @@ require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2010-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @see       Net_ChaChing_WebSocket_Connection
  */
 class Net_ChaChing_WebSocket_Handshake
 {
@@ -174,23 +175,78 @@ class Net_ChaChing_WebSocket_Handshake
     }
 
     // }}}
+    // {{{ receiveClientHandshake()
 
+    /**
+     * Receives and validates a client handshake request and returns an
+     * appropriate server response
+     *
+     * @param array $headers            the parsed request headers from the
+     *                                  client.
+     * @param array $supportedProtocols optional. A list of sub-protocols
+     *                                  supported by the server.
+     *
+     * @return string an appropriate HTTP response for the client handshake
+     *                request. If there were errors in the client request,
+     *                an appropriate HTTP 4XX response is returned. If the
+     *                handshake response was successful, a HTTP 101 is returned.
+     */
     protected function receiveClientHandshake(
         array $headers,
         array $supportedProtocols
     ) {
-/*        if (
-               isset($headers['Sec-WebSocket-Version'])
-               isset($headers['Connection'])
-               $headers['Connection'] == 'Upgrade'
+        if (!isset($headers['Host'])) {
+
+            $response
+                = "HTTP/1.1 400 Bad Requestr\r\n"
+                . "X-WebSocket-Message: Client request Host header is "
+                . "missing.\r\n";
+
+        } elseif (   !isset($headers['Upgrade'])
+                  || strtolower($headers['Upgrade']) != 'websocket'
         ) {
-        }*/
 
-        $key     = $headers['Sec-WebSocket-Key'];
-        $accept  = $this->getAccept($key);
-        $version = $headers['Sec-WebSocket-Version'];
+            $response
+                = "HTTP/1.1 400 Bad Requestr\r\n"
+                . "X-WebSocket-Message: Client request Upgrade header is "
+                . "missing or not set to 'websocket'.\r\n";
 
-        if ($version == self::VERSION) {
+        } elseif (   !isset($headers['Connection'])
+                  || strtolower($headers['Connection']) != 'upgrade'
+        ) {
+
+            $response
+                = "HTTP/1.1 400 Bad Requestr\r\n"
+                . "X-WebSocket-Message: Client request Connection header is "
+                . "missing or not set to 'Upgrade'.\r\n";
+
+        } elseif (!isset($headers['Sec-WebSocket-Key'])) {
+
+            $response
+                = "HTTP/1.1 400 Bad Requestr\r\n"
+                . "X-WebSocket-Message: Client request Sec-WebSocket-Key "
+                . "header is missing.\r\n";
+
+        } elseif (!isset($headers['Sec-WebSocket-Version'])) {
+
+            $response
+                = "HTTP/1.1 400 Bad Requestr\r\n"
+                . "X-WebSocket-Message: Client request Sec-WebSocket-Version "
+                . "header is missing.\r\n";
+
+        } elseif ($headers['Sec-WebSocket-Version'] != self::VERSION) {
+
+            $response
+                = "HTTP/1.1 426 Upgrade Required\r\n"
+                . "Sec-WebSocket-Version: " . self::VERSION . "\r\n"
+                . "X-WebSocket-Message: Client request protocol version is "
+                . "unsupported.\r\n";
+
+        } else {
+
+            $key     = $headers['Sec-WebSocket-Key'];
+            $accept  = $this->getAccept($key);
+            $version = $headers['Sec-WebSocket-Version'];
 
             $response
                 = "HTTP/1.1 101 Switching Protocols\r\n"
@@ -207,26 +263,17 @@ class Net_ChaChing_WebSocket_Handshake
                     $protocols
                 );
 
-                if ($supportedProtocol === null) {
-                    throw new Net_ChaChing_WebSocket_ProtocolException(
-                        'None of the requested sub-protocols ('
-                        . implode(', ', $protocols) . ') are supported by '
-                        . 'this server.',
-                        0,
-                        $supportedProtocols,
-                        $protocols
-                    );
+                // If no protocol is agreed upon, don't send a protocol header
+                // in the response. It it up to the client to fail the
+                // connection if no protocols are agreed upon. See RFC 6455
+                // Section 4.1 server response validation item 6 and Section
+                // 4.2.2 /subprotocol/.
+                if ($supportedProtocol !== null) {
+                    $response
+                        .= 'Sec-WebSocket-Protocol: '
+                        .  $supportedProtocol . "\r\n";
                 }
-
-                $response .= 'Sec-WebSocket-Protocol: '
-                    . $supportedProtocol . "\r\n";
             }
-
-        } else {
-
-            $response
-                = "HTTP/1.1 426 Upgrade Required\r\n"
-                . "Sec-WebSocket-Version: " . self::VERSION . "\r\n";
 
         }
 
@@ -235,6 +282,7 @@ class Net_ChaChing_WebSocket_Handshake
         return $response;
     }
 
+    // }}}
     // {{{ receiveServerHandshake()
 
     /**
@@ -247,6 +295,8 @@ class Net_ChaChing_WebSocket_Handshake
      *
      * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the handshake
      *         response is invalid according to RFC 6455.
+     *
+     * @todo Validate sub-protocols returned in the server response.
      */
     protected function receiveServerHandshake(array $headers, $nonce)
     {

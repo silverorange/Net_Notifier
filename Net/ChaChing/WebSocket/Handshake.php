@@ -346,6 +346,16 @@ class Net_ChaChing_WebSocket_Handshake
     // }}}
     // {{{ getSupportedProtocol()
 
+    /**
+     * Gets the first supported protocol from a list of requested protocols
+     *
+     * @param array $supported the list of supported protocols.
+     * @param array $requested the list of requested protocols.
+     *
+     * @return string|null the first matching requested protocol in the list
+     *                     of supported protocols or null if no such protocol
+     *                     exists.
+     */
     protected function getSupportedProtocol(array $supported, array $requested)
     {
         $supportedProtocol = null;

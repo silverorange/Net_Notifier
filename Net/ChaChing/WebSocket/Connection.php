@@ -6,6 +6,8 @@ require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
 
 require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
 
+require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
+
 /**
  * WebSocket handshake class.
  */
@@ -367,6 +369,9 @@ class Net_ChaChing_WebSocket_Connection
      * @param string $data the handshake data from the WebSocket client.
      *
      * @return void
+     *
+     * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the
+     *         handshake fails and the connection is closed.
      */
     protected function handleHandshake($data)
     {
@@ -375,19 +380,27 @@ class Net_ChaChing_WebSocket_Connection
 
         $handshake = new Net_ChaChing_WebSocket_Handshake();
 
-        $response = $handshake->receive(
-            $data,
-            $this->handshakeNonce,
-            array(Net_ChaChing_WebSocket_Server::PROTOCOL)
-        );
+        try {
+            $response = $handshake->receive(
+                $data,
+                $this->handshakeNonce,
+                array(Net_ChaChing_WebSocket_Server::PROTOCOL)
+            );
 
-        // for client-connecting to server handshakes, we need to send the
-        // Sec-WebSocket-Accept response.
-        if ($response !== null) {
-            $this->send($response);
+            // for client-connecting to server handshakes, we need to send the
+            // Sec-WebSocket-Accept response.
+            if ($response !== null) {
+                $this->send($response);
+            }
+
+            $this->state = self::STATE_OPEN;
+        } catch (Net_ChaChing_WebSocket_HandshakeFailureException $e) {
+            // fail the WebSocket connection
+            $this->close();
+
+            // continue to throw exception so it may be logged/reported
+            throw $e;
         }
-
-        $this->state = self::STATE_OPEN;
     }
 
     // }}}

@@ -276,43 +276,60 @@ class Net_ChaChing_WebSocket_Server
                     $moribund = true;
                 }
 
-                if ($client->read(self::READ_BUFFER_LENGTH)) {
+                try {
 
-                    if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSING) {
-                        $this->startCloseClient(
-                            $client,
-                            Net_ChaChing_WebSocket_Connection::CLOSE_NORMAL,
-                            'Received message.'
-                        );
+                    if ($client->read(self::READ_BUFFER_LENGTH)) {
 
-                        $messages = $client->getTextMessages();
-                        foreach ($messages as $message) {
-                            if ($message === 'shutdown') {
-                                $this->output(
-                                    "received shutdown request\n",
-                                    self::VERBOSITY_MESSAGES
-                                );
-                                break 3;
-                            }
+                        if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSING) {
+                            $this->startCloseClient(
+                                $client,
+                                Net_ChaChing_WebSocket_Connection::CLOSE_NORMAL,
+                                'Received message.'
+                            );
 
-                            if (mb_strlen($message, '8bit') > 0) {
-                                $this->output(
-                                    "received message: '" . $message . "'\n",
-                                    self::VERBOSITY_MESSAGES
-                                );
-                                $this->dispatchEvent($message);
+                            $messages = $client->getTextMessages();
+                            foreach ($messages as $message) {
+                                if ($message === 'shutdown') {
+                                    $this->output(
+                                        "received shutdown request\n",
+                                        self::VERBOSITY_MESSAGES
+                                    );
+                                    break 3;
+                                }
+
+                                if (mb_strlen($message, '8bit') > 0) {
+                                    $this->output(
+                                        sprintf(
+                                            "received message: '%s'\n",
+                                            $message
+                                        ),
+                                        self::VERBOSITY_MESSAGES
+                                    );
+                                    $this->dispatchEvent($message);
+                                }
                             }
                         }
+
+                    } else {
+
+                        $this->output(
+                            sprintf(
+                                "got a message chunk from %s\n",
+                                $client->getIpAddress()
+                            ),
+                            self::VERBOSITY_CLIENT
+                        );
+
                     }
 
-                } else {
-
+                } catch (Net_ChaChing_WebSocket_HandshakeFailureException $e) {
                     $this->output(
-                        "got a message chunk from " . $client->getIpAddress() .
-                        "\n",
+                        sprintf(
+                            "failed client handshake: %s\n",
+                            $e->getMessage()
+                        ),
                         self::VERBOSITY_CLIENT
                     );
-
                 }
 
                 if ($moribund) {
@@ -477,7 +494,7 @@ class Net_ChaChing_WebSocket_Server
     }
 
     // }}}
-    // {{{ startCloseClient()
+    // {{ startCloseClient()
 
     protected function startCloseClient(
         Net_ChaChing_WebSocket_Connection $client,
@@ -495,7 +512,7 @@ class Net_ChaChing_WebSocket_Server
         $this->output("done\n", self::VERBOSITY_CLIENT, false);
     }
 
-    // }}}
+    // }}
     // {{{ getReadClients()
 
     /**

@@ -30,7 +30,15 @@
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
+/**
+ * Exception class for unsupported requested sub-protocol
+ */
 require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
+
+/**
+ * Exception class for failing the WebSocket connection
+ */
+require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
 
 /**
  * Latest update supports RFC 6455.
@@ -97,6 +105,8 @@ class Net_ChaChing_WebSocket_Handshake
         return $request;
     }
 
+    // {{{ receive()
+
     /**
      * Does the actual WebSocket handshake
      *
@@ -105,30 +115,40 @@ class Net_ChaChing_WebSocket_Handshake
      * further details.
      *
      * @param string $data               the handshake request/response data.
-     * @param string $nonce              
+     * @param string $nonce              the nonce value used to validate
+     *                                   WebSocket requests. Not set for
+     *                                   receiving client handshakes.
      * @param array  $supportedProtocols optional. A list of supported
      *                                   application-specific sub-protocols. If
      *                                   this array is specified, only
      *                                   handshake requests for the specified
      *                                   protocols will succeed.
      *
-     * @return string the handshake response.
+     * @return string|null the handshake response or null if there is no
+     *                     response.
+     *
+     * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the
+     *         handshake fails.
      */
     public function receive($data, $nonce, array $supportedProtocols = array())
     {
         $handshake = $this->parseHeaders($data);
         $headers   = $handshake['headers'];
 
-        if (      isset($headers['Sec-WebSocket-Accept'])
-               && isset($headers['Upgrade'])
-               && $headers['Upgrade'] == 'websocket'
-        ) {
+        // get status code from status line
+        $status_parts = explode(' ', $handshake['status']);
+        if (count($status_parts) > 1) {
+            $status = (integer)$status_parts[1];
+        } else {
+            $status = 400;
+        }
+
+        // get method from status line
+        $method = $status_parts[0];
+
+        if ($status == '101') {
             $response = $this->receiveServerHandshake($headers, $nonce);
-        } elseif (isset($headers['Sec-WebSocket-Key'])
-               && isset($headers['Sec-WebSocket-Version'])
-               && isset($headers['Connection'])
-               && $headers['Connection'] == 'Upgrade'
-        ) {
+        } elseif ($method === 'GET') {
             $response = $this->receiveClientHandshake(
                 $headers,
                 $supportedProtocols
@@ -141,10 +161,19 @@ class Net_ChaChing_WebSocket_Handshake
         return $response;
     }
 
+    // }}}
+
     protected function receiveClientHandshake(
         array $headers,
         array $supportedProtocols
     ) {
+/*        if (
+               isset($headers['Sec-WebSocket-Version'])
+               isset($headers['Connection'])
+               $headers['Connection'] == 'Upgrade'
+        ) {
+        }*/
+
         $key     = $headers['Sec-WebSocket-Key'];
         $accept  = $this->getAccept($key);
         $version = $headers['Sec-WebSocket-Version'];
@@ -196,7 +225,46 @@ class Net_ChaChing_WebSocket_Handshake
 
     protected function receiveServerHandshake(array $headers, $nonce)
     {
-        // TODO: check accept-nonce
+        // Make sure required headers and values are present as per RFC 6455
+        // section 4.1 client validation of server response.
+        if (!isset($headers['Sec-WebSocket-Accept'])) {
+            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                'Sec-WebSocket-Accept header missing.'
+            );
+        }
+
+        if (   !isset($headers['Upgrade'])
+            || strtolower($headers['Upgrade']) != 'websocket'
+        ) {
+            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                'Upgrade header missing or not set to "websocket".'
+            );
+        }
+
+        if (   !isset($headers['Connection'])
+            || strtolower($headers['Connection']) != 'upgrade'
+        ) {
+            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                'Connection header missing or not set to "Upgrade".'
+            );
+        }
+
+        // Make sure server responded with appropriate Sec-WebSocket-Accept
+        // header. Ignore leading and trailing whitespace as per RFC 6455
+        // section 4.1 client validation of server response item 4.
+        $responseAccept = trim($headers['Sec-WebSocket-Accept']);
+        $validAccept = $this->getAccept($nonce);
+        if ($responseAccept != $validAccept) {
+            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+                sprintf(
+                    'Sec-WebSocket-Accept header "%s" does not validate '
+                    . 'against nonce "%s"',
+                    $responseAccept,
+                    $nonce
+                )
+            );
+        }
+
         return null;
     }
 

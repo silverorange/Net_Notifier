@@ -116,17 +116,6 @@ class Net_ChaChing_WebSocket_Client
      */
     protected $connection = null;
 
-    /**
-     * Error handler that was set before being overridden by this client's
-     * error handling
-     *
-     * @var callable
-     *
-     * @see Net_ChaChing_WebSocket_Client::setErrorHandler()
-     * @see Net_ChaChing_WebSocket_Client::restoreErrorHandler()
-     */
-    protected $oldErrorHandler = false;
-
     // }}}
 
     public function __construct(
@@ -197,16 +186,9 @@ class Net_ChaChing_WebSocket_Client
 
     public function sendText($message)
     {
-        $this->setErrorHandler();
-        try {
-            $this->connect();
-            $this->connection->writeText($message);
-            $this->disconnect();
-            $this->restoreErrorHandler();
-        } catch (Exception $e) {
-            $this->restoreErrorHandler();
-            throw $e;
-        }
+        $this->connect();
+        $this->connection->writeText($message);
+        $this->disconnect();
     }
 
     // {{{ setHost()
@@ -271,27 +253,6 @@ class Net_ChaChing_WebSocket_Client
     {
         $this->timeout = (integer)$timeout;
         return $this;
-    }
-
-    public function handleError($errno, $errstr, $errfile, $errline)
-    {
-        if ($errno === E_USER_ERROR) {
-            if (   $this->oldErrorHandler !== false
-                && $this->oldErrorHandler !== null
-            ) {
-                call_user_func(
-                    $this->oldErrorHandler,
-                    $errno,
-                    $errstr,
-                    $errfile,
-                    $errline
-                );
-            } else {
-                exit(1);
-            }
-        }
-
-        return false;
     }
 
     protected function connect()
@@ -382,29 +343,6 @@ class Net_ChaChing_WebSocket_Client
         $this->connection->read(self::READ_BUFFER_LENGTH);
 //:        $this->connection->shutdown();
         $this->connection = null;
-    }
-
-    protected function setErrorHandler()
-    {
-        if ($this->oldErrorHandler !== false) {
-            $this->restoreErrorHandler();
-        }
-
-        $this->oldErrorHandler = set_error_handler(
-            array($this, 'handleError')
-        );
-
-        return $this;
-    }
-
-    protected function restoreErrorHandler()
-    {
-        if ($this->oldErrorHandler !== false) {
-            restore_error_handler();
-            $this->oldErrorHandler = false;
-        }
-
-        return $this;
     }
 }
 

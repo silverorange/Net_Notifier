@@ -45,7 +45,7 @@ require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class Net_ChaChing_WebSocket_ProtocolException
-    extends Next_ChaChing_WebSocket_HandshakeFailureException
+    extends Net_ChaChing_WebSocket_HandshakeFailureException
 {
     // {{{ protected properties
 

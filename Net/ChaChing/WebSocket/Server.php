@@ -97,11 +97,6 @@ class Net_ChaChing_WebSocket_Server
      */
     const VERBOSITY_ALL = 4;
 
-    /**
-     * WebSocket sub-protocol
-     */
-    const PROTOCOL = 'net.cha-ching.silverorange.com';
-
     // }}}
     // {{{ protected properties
 

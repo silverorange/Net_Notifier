@@ -26,9 +26,11 @@
  * @category  Net
  * @package   ChaChing
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2012 silverorange
+ * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
+
+require_once 'Net/ChaChing/WebSocket.php';
 
 /**
  * Client connection class.
@@ -94,20 +96,11 @@ class Net_ChaChing_WebSocket_Client
     protected $resource = '/';
 
     /**
-     * Requested WebSocket subprotocols
-     *
-     * @var array
-     *
-     * @see Net_ChaChing_WebSocket_Client::setProtocols()
-     */
-    protected $protocols = array();
-
-    /**
-     * Client connection timeout in seconds
+     * Client connection timeout in milliseconds
      *
      * @var integer
      */
-    protected $timeout = 1;
+    protected $timeout = 200;
 
     /**
      * The connection to the WebSocket server
@@ -120,11 +113,9 @@ class Net_ChaChing_WebSocket_Client
 
     public function __construct(
         $address,
-        array $protocols = array(),
         $timeout = 1
     ) {
         $this->parseAddress($address);
-        $this->setProtocols($protocols);
         $this->setTimeout($timeout);
     }
 
@@ -243,12 +234,14 @@ class Net_ChaChing_WebSocket_Client
 
     // }}}
 
-    public function setProtocols(array $protocols)
-    {
-        $this->protocols = $protocols;
-        return $this;
-    }
-
+    /**
+     * Sets this client's connection timeout in milliseconds
+     *
+     * @param integer $timeout this client's connection timeout in milliseconds.
+     *
+     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
+     *                                       interface.
+     */
     public function setTimeout($timeout)
     {
         $this->timeout = (integer)$timeout;
@@ -257,8 +250,8 @@ class Net_ChaChing_WebSocket_Client
 
     protected function connect()
     {
-        $errorno = 0;
-        $errstr  = '';
+        $errno  = 0;
+        $errstr = '';
 
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if ($socket === false) {
@@ -270,11 +263,15 @@ class Net_ChaChing_WebSocket_Client
             );
         }
 
+        // set socket receive timeout
+        $sec  = intval($this->timeout / 1000);
+        $usec = ($this->timeout % 1000) * 1000;
+
         $result = socket_set_option(
             $socket,
             SOL_SOCKET,
             SO_RCVTIMEO,
-            array('sec' => $this->timeout, 'usec' => 0)
+            array('sec' => $sec, 'usec' => $usec)
         );
 
         if (!$result) {
@@ -286,20 +283,63 @@ class Net_ChaChing_WebSocket_Client
             );
         }
 
-        $result = socket_connect(
+        // set socket non-blocking for connect
+        socket_set_nonblock($socket);
+
+        // PHP raises a warning when a non-blocking socket is connected. We're
+        // explicitly checking the error code below, so suppress this warning.
+        $result = @socket_connect(
             $socket,
             $this->host,
             $this->port
         );
 
+        // connect with timeout
         if (!$result) {
-            throw new Net_ChaChing_WebSocket_Client_Exception(
-                sprintf(
-                    'Unable to connect client TCP socket: %s',
-                    socket_strerror(socket_last_error())
-                )
-            );
+            $errno = socket_last_error($socket);
+            socket_clear_error($socket);
+            if ($errno === SOCKET_EINPROGRESS) {
+
+                $write  = array($socket);
+                $result = socket_select(
+                    $read = null,
+                    $write,
+                    $except = null,
+                    $sec,
+                    $usec
+                );
+
+                if ($result === 0) {
+                    throw new Net_ChaChing_WebSocket_Client_Exception(
+                        sprintf(
+                            'Connection timed out after %s milliseconds.',
+                            $this->timeout
+                        )
+                    );
+                } else {
+                    $errno = socket_last_error($socket);
+                    if ($errno > 0) {
+                        throw new Net_ChaChing_WebSocket_Client_Exception(
+                            sprintf(
+                                'Unable to connect client TCP socket: %s',
+                                socket_strerror($errno)
+                            )
+                        );
+                    }
+                }
+
+            } else {
+                throw new Net_ChaChing_WebSocket_Client_Exception(
+                    sprintf(
+                        'Unable to connect client TCP socket: %s',
+                        socket_strerror($errno)
+                    )
+                );
+            }
         }
+
+        // set back to blocking
+        socket_set_block($socket);
 
         $this->connection = new Net_ChaChing_WebSocket_Connection($socket);
 
@@ -307,7 +347,7 @@ class Net_ChaChing_WebSocket_Client
             $this->host,
             $this->port,
             $this->resource,
-            $this->protocols
+            array(Net_ChaChing_WebSocket::PROTOCOL)
         );
 
         // read handshake response

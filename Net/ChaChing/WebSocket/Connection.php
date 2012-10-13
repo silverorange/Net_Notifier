@@ -11,6 +11,8 @@ require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
 /**
  * WebSocket handshake class.
  */
+require_once 'Net/ChaChing/WebSocket.php';
+
 require_once 'Net/ChaChing/WebSocket/Handshake.php';
 
 require_once 'Net/ChaChing/WebSocket/Frame.php';
@@ -439,16 +441,13 @@ class Net_ChaChing_WebSocket_Connection
      */
     protected function handleHandshake($data)
     {
-        // clients don't include the server class
-        include_once 'Net/ChaChing/WebSocket/Server.php';
-
         $handshake = new Net_ChaChing_WebSocket_Handshake();
 
         try {
             $response = $handshake->receive(
                 $data,
                 $this->handshakeNonce,
-                array(Net_ChaChing_WebSocket_Server::PROTOCOL)
+                array(Net_ChaChing_WebSocket::PROTOCOL)
             );
 
             // for client-connecting to server handshakes, we need to send the

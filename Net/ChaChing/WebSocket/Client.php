@@ -323,8 +323,6 @@ class Net_ChaChing_WebSocket_Client
                     $usec
                 );
 
-                echo "test\n";
-
                 if ($result === 0) {
                     throw new Net_ChaChing_WebSocket_Client_Exception(
                         sprintf(
@@ -387,7 +385,6 @@ class Net_ChaChing_WebSocket_Client
 
             $state = $this->connection->getState();
         }
-        echo "read handshake\n";
     }
 
     // {{{ disconnect()

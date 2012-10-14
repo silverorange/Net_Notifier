@@ -595,7 +595,7 @@ class Net_ChaChing_WebSocket_Connection
      * - {@link Net_ChaChing_Connection::CLOSE_UNSUPPORTED_EXTENSION}, and
      * - {@link Net_ChaChing_Connection::CLOSE_UNEXPECTED_ERROR}.
      *
-     * Other codes may be used depeding on the application.
+     * Other codes may be used depending on the application.
      *
      * @param integer $code   the close reason code.
      * @param string  $reason optional. A text description of why the

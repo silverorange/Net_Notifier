@@ -277,26 +277,6 @@ class Net_ChaChing_WebSocket_Client
             );
         }
 
-        // set socket receive timeout
-        $sec  = intval($this->timeout / 1000);
-        $usec = ($this->timeout % 1000) * 1000;
-
-        $result = socket_set_option(
-            $this->socket,
-            SOL_SOCKET,
-            SO_RCVTIMEO,
-            array('sec' => $sec, 'usec' => $usec)
-        );
-
-        if (!$result) {
-            throw new Net_ChaChing_WebSocket_Client_Exception(
-                sprintf(
-                    'Unable to set socket timeout: %s',
-                    socket_strerror(socket_last_error())
-                )
-            );
-        }
-
         // set socket non-blocking for connect
         socket_set_nonblock($this->socket);
 
@@ -313,6 +293,10 @@ class Net_ChaChing_WebSocket_Client
             $errno = socket_last_error($this->socket);
             socket_clear_error($this->socket);
             if ($errno === SOCKET_EINPROGRESS) {
+
+                // get connect timeout parts
+                $sec  = intval($this->timeout / 1000);
+                $usec = ($this->timeout % 1000) * 1000;
 
                 $write  = array($this->socket);
                 $result = socket_select(

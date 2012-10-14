@@ -30,6 +30,9 @@
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
+/**
+ * ChaChing WebSocket protocol definition.
+ */
 require_once 'Net/ChaChing/WebSocket.php';
 
 /**
@@ -37,6 +40,9 @@ require_once 'Net/ChaChing/WebSocket.php';
  */
 require_once 'Net/ChaChing/WebSocket/Connection.php';
 
+/**
+ * Client exception class.
+ */
 require_once 'Net/ChaChing/WebSocket/ClientException.php';
 
 /**
@@ -174,7 +180,13 @@ class Net_ChaChing_WebSocket_Client
     }
 
     // }}}
+    // {{{ __destruct()
 
+    /**
+     * Disconnects this client upon object destruction if it is connected
+     *
+     * @return void
+     */
     public function __destruct()
     {
         if ($this->connection instanceof Net_ChaChing_WebSocket_Connection) {
@@ -182,17 +194,27 @@ class Net_ChaChing_WebSocket_Client
         }
     }
 
-    // {{ sendText()
+    // }}}
+    // {{{ sendText()
 
+    /**
+     * Connects to the WebSocket server, sends a text message and disconnects
+     *
+     * @param string $message the UTF-8 text message to send.
+     *
+     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
+     *                                       interface.
+     */
     public function sendText($message)
     {
         $this->connect();
         $this->connection->writeText($message);
         $this->disconnect();
+
+        return $this;
     }
 
-
-    // }}
+    // }}}
     // {{{ setHost()
 
     /**

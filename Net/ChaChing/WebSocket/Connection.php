@@ -401,7 +401,11 @@ class Net_ChaChing_WebSocket_Connection
 
         case Net_ChaChing_WebSocket_Frame::TYPE_CLOSE:
             echo "GOT CLOSE FRAME\n";
-            $this->startClose();
+            if ($this->state === self::STATE_CLOSING) {
+                $this->close();
+            } else {
+                $this->startClose();
+            }
             break;
 
         case Net_ChaChing_WebSocket_Frame::TYPE_PING:
@@ -571,6 +575,7 @@ class Net_ChaChing_WebSocket_Connection
     public function shutdown()
     {
         echo "SHUTDOWN\n";
+        // close the socket for writing
         socket_shutdown($this->socket, 1);
     }
 

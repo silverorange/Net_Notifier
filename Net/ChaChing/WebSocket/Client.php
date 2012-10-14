@@ -109,6 +109,13 @@ class Net_ChaChing_WebSocket_Client
      */
     protected $connection = null;
 
+    /**
+     * The raw socket connection of this client
+     *
+     * @var resource
+     */
+    protected $socket = null;
+
     // }}}
 
     public function __construct(
@@ -175,6 +182,8 @@ class Net_ChaChing_WebSocket_Client
         }
     }
 
+    // {{ sendText()
+
     public function sendText($message)
     {
         $this->connect();
@@ -182,6 +191,8 @@ class Net_ChaChing_WebSocket_Client
         $this->disconnect();
     }
 
+
+    // }}
     // {{{ setHost()
 
     /**
@@ -233,6 +244,7 @@ class Net_ChaChing_WebSocket_Client
     }
 
     // }}}
+    // {{{ setTimeout()
 
     /**
      * Sets this client's connection timeout in milliseconds
@@ -248,13 +260,15 @@ class Net_ChaChing_WebSocket_Client
         return $this;
     }
 
+    // }}}
+
     protected function connect()
     {
         $errno  = 0;
         $errstr = '';
 
-        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if ($socket === false) {
+        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($this->socket === false) {
             throw new Net_ChaChing_WebSocket_Client_Exception(
                 sprintf(
                     'Unable to create client TCP socket: %s',
@@ -268,7 +282,7 @@ class Net_ChaChing_WebSocket_Client
         $usec = ($this->timeout % 1000) * 1000;
 
         $result = socket_set_option(
-            $socket,
+            $this->socket,
             SOL_SOCKET,
             SO_RCVTIMEO,
             array('sec' => $sec, 'usec' => $usec)
@@ -284,23 +298,23 @@ class Net_ChaChing_WebSocket_Client
         }
 
         // set socket non-blocking for connect
-        socket_set_nonblock($socket);
+        socket_set_nonblock($this->socket);
 
         // PHP raises a warning when a non-blocking socket is connected. We're
         // explicitly checking the error code below, so suppress this warning.
         $result = @socket_connect(
-            $socket,
+            $this->socket,
             $this->host,
             $this->port
         );
 
         // connect with timeout
         if (!$result) {
-            $errno = socket_last_error($socket);
-            socket_clear_error($socket);
+            $errno = socket_last_error($this->socket);
+            socket_clear_error($this->socket);
             if ($errno === SOCKET_EINPROGRESS) {
 
-                $write  = array($socket);
+                $write  = array($this->socket);
                 $result = socket_select(
                     $read = null,
                     $write,
@@ -308,6 +322,8 @@ class Net_ChaChing_WebSocket_Client
                     $sec,
                     $usec
                 );
+
+                echo "test\n";
 
                 if ($result === 0) {
                     throw new Net_ChaChing_WebSocket_Client_Exception(
@@ -317,7 +333,7 @@ class Net_ChaChing_WebSocket_Client
                         )
                     );
                 } else {
-                    $errno = socket_last_error($socket);
+                    $errno = socket_last_error($this->socket);
                     if ($errno > 0) {
                         throw new Net_ChaChing_WebSocket_Client_Exception(
                             sprintf(
@@ -339,9 +355,11 @@ class Net_ChaChing_WebSocket_Client
         }
 
         // set back to blocking
-        socket_set_block($socket);
+        socket_set_block($this->socket);
 
-        $this->connection = new Net_ChaChing_WebSocket_Connection($socket);
+        $this->connection = new Net_ChaChing_WebSocket_Connection(
+            $this->socket
+        );
 
         $this->connection->startHandshake(
             $this->host,
@@ -354,7 +372,7 @@ class Net_ChaChing_WebSocket_Client
         $state = $this->connection->getState();
         while ($state < Net_ChaChing_WebSocket_Connection::STATE_OPEN) {
 
-            $read = array($socket);
+            $read = array($this->socket);
 
             $result = socket_select(
                 $read,
@@ -369,21 +387,57 @@ class Net_ChaChing_WebSocket_Client
 
             $state = $this->connection->getState();
         }
+        echo "read handshake\n";
     }
 
+    // {{{ disconnect()
+
+    /**
+     * Disconnects this client from the server
+     *
+     * @return void
+     */
     protected function disconnect()
     {
-/*        $this->connection->startClose(
+        // Initiate connection close. The WebSockets RFC recomends against
+        // clients initiating the close handshake but we want to ensure the
+        // connection is closed as soon as possible.
+        $this->connection->startClose(
             Net_ChaChing_WebSocket_Connection::CLOSE_GOING_AWAY,
             'Client sent message.'
         );
-*/
+
         // read server close frame
-        // TODO: put in a while loop in case buffer length is too small
-        $this->connection->read(self::READ_BUFFER_LENGTH);
-//:        $this->connection->shutdown();
+        $state = $this->connection->getState();
+
+        $sec  = intval($this->timeout / 1000);
+        $usec = ($this->timeout % 1000) * 1000;
+
+        while ($state < Net_ChaChing_WebSocket_Connection::STATE_CLOSED) {
+            $read = array($this->socket);
+
+            $result = socket_select(
+                $read,
+                $write = null,
+                $except = null,
+                $sec,
+                $usec
+            );
+
+            if ($result === 1) {
+                $this->connection->read(self::READ_BUFFER_LENGTH);
+            } else {
+                // read timed out, just close the connection
+                $this->connection->close();
+            }
+
+            $state = $this->connection->getState();
+        }
+
         $this->connection = null;
     }
+
+    // }}}
 }
 
 ?>

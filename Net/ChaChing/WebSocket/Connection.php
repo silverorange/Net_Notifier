@@ -400,7 +400,6 @@ class Net_ChaChing_WebSocket_Connection
             break;
 
         case Net_ChaChing_WebSocket_Frame::TYPE_CLOSE:
-            echo "GOT CLOSE FRAME\n";
             if ($this->state === self::STATE_CLOSING) {
                 $this->close();
             } else {

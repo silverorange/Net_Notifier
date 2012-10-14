@@ -359,7 +359,20 @@ class Net_ChaChing_WebSocket_Frame
     }
 
     // }}}
+    // {{{ parse()
 
+    /**
+     * Parses raw data for this frame
+     *
+     * This is intented to be called after reading a raw data chunk from a
+     * WebSocket endpoint. If the chunk contains more data than this frame, the
+     * extra data is returned so it may be passed to the next frame for
+     * parsing.
+     *
+     * @param string $data the raw data to parse.
+     *
+     * @return string any remaining unparsed data not belonging to this frame.
+     */
     public function parse($data)
     {
         if ($this->state === self::STATE_UNSENT) {
@@ -379,11 +392,15 @@ class Net_ChaChing_WebSocket_Frame
         return $data;
     }
 
+    // }}}
     // {{{ isFinal()
 
     /**
      * Gets whether or not this frame is the final frame in a multi-frame
      * message
+     *
+     * See RFC 6455 Section 5.4 for a description of WebSocket frame
+     * fragmentation.
      *
      * @return boolean true if this frame is the final frame in a multi-frame
      *                 message. Otherwise false.
@@ -558,7 +575,18 @@ class Net_ChaChing_WebSocket_Frame
     }
 
     // }}}
+    // {{{ parseData()
 
+    /**
+     * Parses the data payload of this frame from a raw data stream
+     *
+     * If this frame is masked, the data is unmasked as it is parsed according
+     * to RFC 6455 section 5.3.
+     *
+     * @param string $data the raw data.
+     *
+     * @return string any remaining unparsed data not belonging to this frame.
+     */
     protected function parseData($data)
     {
         $length = mb_strlen($data, '8bit');
@@ -585,6 +613,19 @@ class Net_ChaChing_WebSocket_Frame
         return $leftover;
     }
 
+    // }}}
+    // {{{ parseHeader()
+
+    /**
+     * Parses the header of this frame from a raw data stream
+     *
+     * See RFC 6455 section 5.2 for a description of the WebSocket frame
+     * header format.
+     *
+     * @param string $data the raw data.
+     *
+     * @return string any remaining unparsed data not belonging to this frame.
+     */
     protected function parseHeader($data)
     {
         $leftover = '';
@@ -684,6 +725,7 @@ class Net_ChaChing_WebSocket_Frame
         return $leftover;
     }
 
+    // }}}
     // {{{ mask()
 
     /**

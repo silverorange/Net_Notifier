@@ -148,42 +148,155 @@ class Net_ChaChing_WebSocket_Frame
     const STATE_DONE = 4;
 
     // }}}
+    // {{{ protected properties
 
+    /**
+     * The opcode of this frame
+     *
+     * @var integer
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getOpcode()
+     */
     protected $opcode = 0;
 
+    /**
+     * Whether or not this frame's data payload is masked
+     *
+     * @var boolean
+     *
+     * @see Net_ChaChing_WebSocket_Frame::isMasked()
+     */
     protected $isMasked = false;
 
+    /**
+     * The mask value used to mask the payload data of this frame
+     *
+     * @var string
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getOpcode()
+     */
     protected $mask = '';
 
+    /**
+     * Whether or not this frame is the final frame in a multi-frame message
+     *
+     * @var boolean
+     *
+     * @see Net_ChaChing_WebSocket_Frame::isFinal()
+     */
     protected $fin = false;
 
+    /**
+     * Reserved bit 1 of this frame
+     *
+     * @param boolean
+     */
     protected $rsv1 = 0;
 
+    /**
+     * Reserved bit 2 of this frame
+     *
+     * @param boolean
+     */
     protected $rsv2 = 0;
 
+    /**
+     * Reserved bit 3 of this frame
+     *
+     * @param boolean
+     */
     protected $rsv3 = 0;
 
+    /**
+     * The 8-bit length of the data-payload of this frame
+     *
+     * @var integer
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getLength()
+     */
     protected $length = 0;
 
+    /**
+     * The 16-bit length of the data-payload of this frame
+     *
+     * @var integer
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getLength()
+     */
     protected $length16 = 0;
 
-    protected $length64 = 0;
+    /**
+     * The 64-bit length of the data-payload of this frame
+     *
+     * This is a string because PHP doesn't have a 64-bit unsigned integer
+     * type. The string is passed to PHP's bcmath functions.
+     *
+     * @var string
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getLength()
+     */
+    protected $length64 = '0';
 
+    /**
+     * The binary string containg data payload length data
+     *
+     * @var string
+     */
     protected $lengthData = '';
 
+    /**
+     * The data payload of this frame
+     *
+     * @var string
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getData()
+     * @see Net_ChaChing_WebSocket_Frame::getRawData()
+     */
     protected $data = '';
 
+    /**
+     * The unmasked data payload of this frame
+     *
+     * @var string
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getData()
+     * @see Net_ChaChing_WebSocket_Frame::getUnmaskedData()
+     */
     protected $unmaskedData = '';
 
+    /**
+     * Current byte being parsed for this frame
+     *
+     * @var integer
+     */
     protected $cursor = 0;
 
+    /**
+     * Whether or not parsing this frame's header is complete
+     *
+     * @var booelan
+     */
     protected $isHeaderComplete = false;
 
     protected $observers = array();
 
+    /**
+     * Length of this frame's header in bytes
+     *
+     * @var integer
+     */
     protected $headerLength = 2;
 
+    /**
+     * The current parsing state of this frame
+     *
+     * @param integer
+     *
+     * @see Net_ChaChing_WebSocket_Frame::getState()
+     */
     protected $state = self::STATE_UNSENT;
+
+    // }}}
 
     public function __construct(
         $data = '',
@@ -278,7 +391,7 @@ class Net_ChaChing_WebSocket_Frame
     }
 
     // }}}
-    // {{{ getData()
+    // {{{ getRawData()
 
     /**
      * Gets the raw data payload of this frame

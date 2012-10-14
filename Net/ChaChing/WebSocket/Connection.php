@@ -574,7 +574,6 @@ class Net_ChaChing_WebSocket_Connection
      */
     public function shutdown()
     {
-        echo "SHUTDOWN\n";
         // close the socket for writing
         socket_shutdown($this->socket, 1);
     }
@@ -583,7 +582,6 @@ class Net_ChaChing_WebSocket_Connection
 
     public function startClose($code = self::CLOSE_NORMAL, $reason = '')
     {
-        echo "START CLOSE\n";
         if ($this->state < self::STATE_CLOSING) {
             $code  = intval($code);
             $data  = pack('s', $code) . $reason;
@@ -602,7 +600,6 @@ class Net_ChaChing_WebSocket_Connection
 
     public function close()
     {
-        echo "CLOSE\n";
         socket_close($this->socket);
         $this->state = self::STATE_CLOSED;
     }

@@ -278,8 +278,6 @@ class Net_ChaChing_WebSocket_Frame
      */
     protected $isHeaderComplete = false;
 
-    protected $observers = array();
-
     /**
      * Length of this frame's header in bytes
      *

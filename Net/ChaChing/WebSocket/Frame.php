@@ -295,7 +295,23 @@ class Net_ChaChing_WebSocket_Frame
     protected $state = self::STATE_UNSENT;
 
     // }}}
+    // {{{ __construct()
 
+    /**
+     * Creates a new WebSocket frame
+     *
+     * @param string  $data     optional. The data payload of this frame.
+     * @param integer $opcode   optional. The frame type. If not specified,
+     *                          {@link Net_ChaChing_WebSocket_Frame::TYPE_TEXT}
+     *                          is used.
+     * @param boolean $isMasked optional. Whether or not this frame's data
+     *                          payload is masked. If not specified, the data
+     *                          payload is not masked.
+     * @param boolean $fin      optional. Whether or not this frame is the last
+     *                          frame in a multiframe message or the single
+     *                          frame in a single-frame message. If not
+     *                          specified, this frame is final.
+     */
     public function __construct(
         $data = '',
         $opcode = self::TYPE_TEXT,
@@ -310,6 +326,7 @@ class Net_ChaChing_WebSocket_Frame
             }
             $this->opcode = $opcode;
             $this->fin = $fin;
+            // TODO: this doesn't work for 64-bit lengths
             $length = mb_strlen($data);
             if ($length < 0x7e) {
                 $this->length = $length;
@@ -325,6 +342,7 @@ class Net_ChaChing_WebSocket_Frame
         }
     }
 
+    // }}}
     // {{{ __toString()
 
     /**

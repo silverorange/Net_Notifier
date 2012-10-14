@@ -578,7 +578,32 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
+    // {{{ startClose()
 
+    /**
+     * Initiates the WebSocket closing handshake
+     *
+     * This sends a close frame with a reason code and message. Defined reason
+     * codes include:
+     *
+     * - {@link Net_ChaChing_Connection::CLOSE_NORMAL},
+     * - {@link Net_ChaChing_Connection::CLOSE_GOING_AWAY},
+     * - {@link Net_ChaChing_Connection::CLOSE_PROTOCOL_ERROR},
+     * - {@link Net_ChaChing_Connection::CLOSE_DATA_TYPE},
+     * - {@link Net_ChaChing_Connection::CLOSE_ENCODING_ERROR},
+     * - {@link Net_ChaChing_Connection::CLOSE_POLICY_VIOLATION},
+     * - {@link Net_ChaChing_Connection::CLOSE_UNSUPPORTED_EXTENSION}, and
+     * - {@link Net_ChaChing_Connection::CLOSE_UNEXPECTED_ERROR}.
+     *
+     * Other codes may be used depeding on the application.
+     *
+     * @param integer $code   the close reason code.
+     * @param string  $reason optional. A text description of why the
+     *                        connection is being closed. Encoded as UTF-8
+     *                        text.
+     *
+     * @return void
+     */
     public function startClose($code = self::CLOSE_NORMAL, $reason = '')
     {
         if ($this->state < self::STATE_CLOSING) {
@@ -597,12 +622,23 @@ class Net_ChaChing_WebSocket_Connection
         }
     }
 
+    // }}}
+    // {{{ close()
+
+    /**
+     * Closes this connection
+     *
+     * The underlying socket is closed.
+     *
+     * @return void
+     */
     public function close()
     {
         socket_close($this->socket);
         $this->state = self::STATE_CLOSED;
     }
 
+    // }}}
     // {{{ pong()
 
     /**

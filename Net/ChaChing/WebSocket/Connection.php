@@ -2,21 +2,39 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
-
-require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
-
-require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
-
 /**
- * WebSocket handshake class.
+ * ChaChing WebSocket protocol definition.
  */
 require_once 'Net/ChaChing/WebSocket.php';
 
+/**
+ * UTF-8 encoding exception class definition.
+ */
+require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
+
+/**
+ * Handshake failure exception class definition.
+ */
+require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
+
+/**
+ * Protocol exception class definition.
+ */
+require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
+
+/**
+ * WebSocket handshake class definition.
+ */
 require_once 'Net/ChaChing/WebSocket/Handshake.php';
 
+/**
+ * WebSocket frame class definition.
+ */
 require_once 'Net/ChaChing/WebSocket/Frame.php';
 
+/**
+ * WebSocket frame-parser class definition.
+ */
 require_once 'Net/ChaChing/WebSocket/FrameParser.php';
 
 class Net_ChaChing_WebSocket_Connection
@@ -567,12 +585,26 @@ class Net_ChaChing_WebSocket_Connection
     }
 
     // }}}
+    // {{{ getState()
 
+    /**
+     * Gets the current state of this connection
+     *
+     * One of:
+     *
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CONNECTING}
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_OPEN}
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSING}
+     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSED}
+     *
+     * @return integer the current state of this connection.
+     */
     public function getState()
     {
         return $this->state;
     }
 
+    // }}}
     // {{{ getBinaryMessages()
 
     /**

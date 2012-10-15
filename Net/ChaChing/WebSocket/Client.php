@@ -123,15 +123,42 @@ class Net_ChaChing_WebSocket_Client
     protected $socket = null;
 
     // }}}
+    // {{{ __construct()
 
+    /**
+     * Creates a new client for sending cha-ching notifications
+     *
+     * @param string  $address the WebSocket address of the cha-ching server.
+     *                         Must be in the form
+     *                         ws://host-or-ip:port/resource.
+     * @param integer $timeout optional. Client connection timeout in
+     *                         milliseconds. If not specified, the connection
+     *                         timeout is 200 milliseconds.
+     */
     public function __construct(
         $address,
-        $timeout = 1
+        $timeout = 2020
     ) {
         $this->parseAddress($address);
         $this->setTimeout($timeout);
     }
 
+    // }}}
+    // {{{ __destruct()
+
+    /**
+     * Disconnects this client upon object destruction if it is connected
+     *
+     * @return void
+     */
+    public function __destruct()
+    {
+        if ($this->connection instanceof Net_ChaChing_WebSocket_Connection) {
+            $this->disconnect();
+        }
+    }
+
+    // }}}
     // {{{ parseAddress()
 
     /**
@@ -180,21 +207,6 @@ class Net_ChaChing_WebSocket_Client
     }
 
     // }}}
-    // {{{ __destruct()
-
-    /**
-     * Disconnects this client upon object destruction if it is connected
-     *
-     * @return void
-     */
-    public function __destruct()
-    {
-        if ($this->connection instanceof Net_ChaChing_WebSocket_Connection) {
-            $this->disconnect();
-        }
-    }
-
-    // }}}
     // {{{ sendText()
 
     /**
@@ -204,6 +216,9 @@ class Net_ChaChing_WebSocket_Client
      *
      * @return Net_ChaChing_WebSocket_Client the current object, for fluent
      *                                       interface.
+     *
+     * @throws Net_ChaChing_WebSocket_ClientException if there is an error
+     *         connecting to the cha-ching server or sending the message.
      */
     public function sendText($message)
     {
@@ -283,7 +298,18 @@ class Net_ChaChing_WebSocket_Client
     }
 
     // }}}
+    // {{{ connect()
 
+    /**
+     * Connects this client to the cha-ching server
+     *
+     * A socket connection is opened and the WebSocket handshake is initiated.
+     *
+     * @return void
+     *
+     * @throws Net_ChaChing_WebSocket_ClientException if there is an error
+     *         connecting to the cha-ching server.
+     */
     protected function connect()
     {
         $errno  = 0;
@@ -393,6 +419,7 @@ class Net_ChaChing_WebSocket_Client
         }
     }
 
+    // }}}
     // {{{ disconnect()
 
     /**

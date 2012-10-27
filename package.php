@@ -119,9 +119,8 @@ $package->addMaintainer(
     'mike@silverorange.com'
 );
 
-$package->setPhpDep('5.1.5');
+$package->setPhpDep('5.2.1');
 $package->setPearinstallerDep('1.4.0');
-$package->addExtensionDep('required', 'sockets');
 $package->addExtensionDep('required', 'mbstring');
 $package->generateContents();
 

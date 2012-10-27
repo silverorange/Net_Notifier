@@ -36,6 +36,11 @@
 require_once 'Net/ChaChing/WebSocket.php';
 
 /**
+ * Socket wrapper.
+ */
+require_once 'Net/ChaChing/WebSocket/SocketAbstract.php';
+
+/**
  * UTF-8 encoding exception class definition.
  */
 require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
@@ -263,7 +268,7 @@ class Net_ChaChing_WebSocket_Connection
     /**
      * Creates a new client connection object
      *
-     * @param resource                           $socket the socket this
+     * @param Net_ChaCHing_WebSocket_Socket      $socket the socket this
      *                                                   connection uses to
      *                                                   communicate with the
      *                                                   server.
@@ -272,7 +277,7 @@ class Net_ChaChing_WebSocket_Connection
      *                                                   connection.
      */
     public function __construct(
-        $socket,
+        Net_ChaChing_WebSocket_SocketAbstract $socket,
         Net_ChaChing_WebSocket_FrameParser $parser = null
     ) {
         if ($parser === null) {
@@ -280,8 +285,9 @@ class Net_ChaChing_WebSocket_Connection
         }
 
         $this->setFrameParser($parser);
-        $this->socket = $socket;
-        socket_getpeername($socket, $this->ipAddress);
+
+        $this->socket    = $socket;
+        $this->ipAddress = $this->socket->getPeerName();
     }
 
     // }}}
@@ -298,14 +304,7 @@ class Net_ChaChing_WebSocket_Connection
      */
     public function read($length)
     {
-        $buffer = socket_read($this->socket, $length, PHP_BINARY_READ);
-
-        if (false === $buffer) {
-            echo "socket_read() failed: reason: ",
-                socket_strerror(socket_last_error()), "\n";
-
-            exit(1);
-        }
+        $buffer = $this->socket->read($length);
 
         if ($this->state < self::STATE_OPEN) {
             $this->handshakeBuffer .= $buffer;
@@ -573,8 +572,7 @@ class Net_ChaChing_WebSocket_Connection
      */
     public function shutdown()
     {
-        // close the socket for writing
-        socket_shutdown($this->socket, 1);
+        $this->socket->shutdown(STREAM_SHUT_WR);
     }
 
     // }}}
@@ -634,8 +632,9 @@ class Net_ChaChing_WebSocket_Connection
      */
     public function close()
     {
-        socket_close($this->socket);
-        $this->state = self::STATE_CLOSED;
+        // destructor is called to close socket
+        $this->socket = null;
+        $this->state  = self::STATE_CLOSED;
     }
 
     // }}}
@@ -772,8 +771,7 @@ class Net_ChaChing_WebSocket_Connection
      */
     protected function send($message)
     {
-        $length = mb_strlen($message, '8bit');
-        socket_write($this->socket, $message, $length);
+        $this->socket->write($message);
     }
 
     // }}}

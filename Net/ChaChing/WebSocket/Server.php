@@ -35,6 +35,9 @@
  */
 require_once 'Net/ChaChing/WebSocket/Connection.php';
 
+require_once 'Net/ChaChing/WebSocket/SocketServer.php';
+require_once 'Net/ChaChing/WebSocket/SocketAccept.php';
+
 /**
  * A server process for sending and receiving cha-ching notifications
  *
@@ -220,9 +223,9 @@ class Net_ChaChing_WebSocket_Server
 
         while (true) {
 
-            $read  = $this->getReadArray();
+            $read = $this->getReadArray();
 
-            $result = socket_select(
+            $result = stream_select(
                 $read,
                 $write = null,
                 $except = null,
@@ -234,19 +237,22 @@ class Net_ChaChing_WebSocket_Server
             }
 
             // check for new connections
-            if (in_array($this->socket, $read)) {
-                if (($newSocket = socket_accept($this->socket)) < 0) {
+            if (in_array($this->socket->getRawSocket(), $read)) {
+                try {
+                    $newSocket = new Net_ChaChing_WebSocket_SocketAccept(
+                        $this->socket,
+                        null
+                    );
+                } catch (Exception $e) {
                     $this->output(
-                        "socket_accept() failed: reason: " .
-                        socket_strerror(socket_last_error()) . "\n",
+                        "Accepting client connection failed: reason: " .
+                        $e->getMessage() . "\n",
                         self::VERBOSITY_ERRORS
                     );
                     exit(1);
                 }
 
-                $client = new Net_ChaChing_WebSocket_Connection(
-                    $newSocket
-                );
+                $client = new Net_ChaChing_WebSocket_Connection($newSocket);
                 $this->clients[] = $client;
                 $this->output(
                     "client connected from " . $client->getIpAddress() . "\n",
@@ -260,14 +266,9 @@ class Net_ChaChing_WebSocket_Server
                 $moribund = false;
 
                 // check if client closed connection
-                $bytes = socket_recv(
-                    $client->getSocket(),
-                    $buffer,
-                    32,
-                    MSG_PEEK | MSG_DONTWAIT
-                );
+                $bytes = $client->getSocket()->peek(32);
 
-                if ($bytes === 0) {
+                if (mb_strlen($bytes, '8bit') === 0) {
                     $this->output(
                         "client " . $client->getIpAddress() . " closed "
                         . "connection.\n",
@@ -385,60 +386,30 @@ class Net_ChaChing_WebSocket_Server
      */
     protected function connect()
     {
+        $errstr = '';
+        $errno  = 0;
+
         $this->output("creating socket ... ", self::VERBOSITY_ALL);
-        if (false === ($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))) {
+
+        try {
+            $this->socket = new Net_ChaChing_WebSocket_SocketServer(
+                sprintf(
+                    'tcp://0.0.0.0:%s',
+                    $this->port
+                ),
+                null
+            );
+        } catch (Exception $e) {
             $this->output(
-                "socket_create() failed: reason: " .
-                socket_strerror(socket_last_error()) . "\n",
+                "failed\nreason: " . $e->getMessage() . "\n",
                 self::VERBOSITY_ERRORS,
                 false
             );
             exit(1);
         }
+
         $this->output("done\n", self::VERBOSITY_ALL, false);
 
-        $this->output("setting socket as reusable ... ", self::VERBOSITY_ALL);
-        if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
-            $this->output(
-                "socket_set_option() failed: reason: " .
-                socket_strerror(socket_last_error($sock)) . "\n",
-                self::VERBOSITY_ERRORS,
-                false
-            );
-            exit(1);
-        }
-        $this->output("done\n", self::VERBOSITY_ALL, false);
-
-        $this->output(
-            "binding socket on port " . $this->port . " ... ",
-            self::VERBOSITY_ALL
-        );
-
-        if (!socket_bind($sock, 0, $this->port)) {
-            $this->output(
-                "socket_bind() failed: reason: " .
-                socket_strerror(socket_last_error($sock)) . "\n",
-                self::VERBOSITY_ERRORS,
-                false
-            );
-
-            exit(1);
-        }
-        $this->output("done\n", self::VERBOSITY_ALL, false);
-
-        $this->output("setting socket to listen ... ", self::VERBOSITY_ALL);
-        if (!socket_listen($sock, self::CONNECTION_QUEUE_LENGTH)) {
-            $this->output(
-                "socket_listen() failed: reason: " .
-                socket_strerror(socket_last_error($sock)) . "\n",
-                self::VERBOSITY_ERRORS,
-                false
-            );
-            exit(1);
-        }
-        $this->output("done\n", self::VERBOSITY_ALL, false);
-
-        $this->socket = $sock;
         $this->connected = true;
     }
 
@@ -462,7 +433,7 @@ class Net_ChaChing_WebSocket_Server
         }
 
         $this->clients = array();
-        socket_close($this->socket);
+        fclose($this->socket);
 
         $this->output("done\n", self::VERBOSITY_ALL, false);
 
@@ -530,7 +501,7 @@ class Net_ChaChing_WebSocket_Server
         $clients = array();
 
         foreach ($this->clients as $client) {
-            if (in_array($client->getSocket(), $read)) {
+            if (in_array($client->getSocket()->getRawSocket(), $read)) {
                 $clients[] = $client;
             }
         }
@@ -549,10 +520,10 @@ class Net_ChaChing_WebSocket_Server
     protected function &getReadArray()
     {
         $readArray = array();
-        $readArray[] = $this->socket;
+        $readArray[] = $this->socket->getRawSocket();
         foreach ($this->clients as $client) {
             if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSED) {
-                $readArray[] = $client->getSocket();
+                $readArray[] = $client->getSocket()->getRawSocket();
             }
         }
 

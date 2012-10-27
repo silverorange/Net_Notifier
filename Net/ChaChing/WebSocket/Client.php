@@ -36,6 +36,11 @@
 require_once 'Net/ChaChing/WebSocket.php';
 
 /**
+ * Socket wrapper class.
+ */
+require_once 'Net/ChaChing/WebSocket/SocketClient.php';
+
+/**
  * Client connection class.
  */
 require_once 'Net/ChaChing/WebSocket/Connection.php';
@@ -312,80 +317,14 @@ class Net_ChaChing_WebSocket_Client
      */
     protected function connect()
     {
-        $errno  = 0;
-        $errstr = '';
-
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if ($this->socket === false) {
-            throw new Net_ChaChing_WebSocket_Client_Exception(
-                sprintf(
-                    'Unable to create client TCP socket: %s',
-                    socket_strerror(socket_last_error())
-                )
-            );
-        }
-
-        // set socket non-blocking for connect
-        socket_set_nonblock($this->socket);
-
-        // PHP raises a warning when a non-blocking socket is connected. We're
-        // explicitly checking the error code below, so suppress this warning.
-        $result = @socket_connect(
-            $this->socket,
-            $this->host,
-            $this->port
+        $this->socket = new Net_ChaChing_WebSocket_SocketClient(
+            sprintf(
+                'tcp://%s:%s',
+                $this->host,
+                $this->port
+            ),
+            $this->timeout / 1000
         );
-
-        // connect with timeout
-        if (!$result) {
-            $errno = socket_last_error($this->socket);
-            socket_clear_error($this->socket);
-            if ($errno === SOCKET_EINPROGRESS) {
-
-                // get connect timeout parts
-                $sec  = intval($this->timeout / 1000);
-                $usec = ($this->timeout % 1000) * 1000;
-
-                $write  = array($this->socket);
-                $result = socket_select(
-                    $read = null,
-                    $write,
-                    $except = null,
-                    $sec,
-                    $usec
-                );
-
-                if ($result === 0) {
-                    throw new Net_ChaChing_WebSocket_Client_Exception(
-                        sprintf(
-                            'Connection timed out after %s milliseconds.',
-                            $this->timeout
-                        )
-                    );
-                } else {
-                    $errno = socket_last_error($this->socket);
-                    if ($errno > 0) {
-                        throw new Net_ChaChing_WebSocket_Client_Exception(
-                            sprintf(
-                                'Unable to connect client TCP socket: %s',
-                                socket_strerror($errno)
-                            )
-                        );
-                    }
-                }
-
-            } else {
-                throw new Net_ChaChing_WebSocket_Client_Exception(
-                    sprintf(
-                        'Unable to connect client TCP socket: %s',
-                        socket_strerror($errno)
-                    )
-                );
-            }
-        }
-
-        // set back to blocking
-        socket_set_block($this->socket);
 
         $this->connection = new Net_ChaChing_WebSocket_Connection(
             $this->socket
@@ -402,9 +341,9 @@ class Net_ChaChing_WebSocket_Client
         $state = $this->connection->getState();
         while ($state < Net_ChaChing_WebSocket_Connection::STATE_OPEN) {
 
-            $read = array($this->socket);
+            $read = array($this->socket->getRawSocket());
 
-            $result = socket_select(
+            $result = stream_select(
                 $read,
                 $write = null,
                 $except = null,
@@ -444,9 +383,9 @@ class Net_ChaChing_WebSocket_Client
         $usec = ($this->timeout % 1000) * 1000;
 
         while ($state < Net_ChaChing_WebSocket_Connection::STATE_CLOSED) {
-            $read = array($this->socket);
+            $read = array($this->socket->getRawSocket());
 
-            $result = socket_select(
+            $result = stream_select(
                 $read,
                 $write = null,
                 $except = null,

@@ -65,11 +65,6 @@ class Net_Notifier_Server
     // {{{ class constants
 
     /**
-     * How many connections the server will queue for processing.
-     */
-    const CONNECTION_QUEUE_LENGTH = 20;
-
-    /**
      * How long the read buffer for client connections is.
      *
      * If this is too short, multiple read calls will be made on client

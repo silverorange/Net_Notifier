@@ -16,7 +16,7 @@
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
-require_once 'Net/Notifier/Client.php';
+require_once 'Net/Notifier/Sender.php';
 
 if (   !file_exists(dirname(__FILE__) . '/config.php')
     || !is_readable(dirname(__FILE__) . '/config.php')
@@ -47,8 +47,8 @@ $address = 'ws://' . $config['server'] . ':' . $config['port'];
 for ($i = 0; $i < 10; $i++) {
     $id = $config['sounds'][array_rand($config['sounds'])];
     $value = getValue() / 100;
-    $client = new Net_Notifier_Client($address);
-    $client->sendText(json_encode(array('id' => $id, 'value' => $value)));
+    $client = new Net_Notifier_Sender($address);
+    $client->send(json_encode(array('id' => $id, 'value' => $value)));
     usleep(rand(300000, 1500000));
 }
 

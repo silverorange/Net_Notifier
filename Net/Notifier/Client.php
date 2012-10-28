@@ -41,7 +41,7 @@ require_once 'Net/Notifier/WebSocket.php';
 require_once 'Net/Notifier/Socket/Client.php';
 
 /**
- * Client connection class.
+ * WebSocket connection class.
  */
 require_once 'Net/Notifier/WebSocket/Connection.php';
 
@@ -51,9 +51,7 @@ require_once 'Net/Notifier/WebSocket/Connection.php';
 require_once 'Net/Notifier/ClientException.php';
 
 /**
- * A client for sending notifications
- *
- * This client connects to a WebSocket server and sends a message.
+ * Base class for notification clients
  *
  * @category  Net
  * @package   Net_Notifier
@@ -61,7 +59,7 @@ require_once 'Net/Notifier/ClientException.php';
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_Notifier_Client
+abstract class Net_Notifier_Client
 {
     // {{{ class constants
 
@@ -206,28 +204,6 @@ class Net_Notifier_Client
         if (isset($matches[3])) {
             $this->setResource($matches[3]);
         }
-
-        return $this;
-    }
-
-    // }}}
-    // {{{ sendText()
-
-    /**
-     * Connects to the WebSocket server, sends a text message and disconnects
-     *
-     * @param string $message the UTF-8 text message to send.
-     *
-     * @return Net_Notifier_Client the current object, for fluent interface.
-     *
-     * @throws Net_Notifier_ClientException if there is an error connecting
-     *         to the notification server or sending the message.
-     */
-    public function sendText($message)
-    {
-        $this->connect();
-        $this->connection->writeText($message);
-        $this->disconnect();
 
         return $this;
     }

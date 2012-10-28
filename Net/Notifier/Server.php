@@ -314,7 +314,7 @@ class Net_Notifier_Server
                                         ),
                                         self::VERBOSITY_MESSAGES
                                     );
-                                    $this->dispatchEvent($message);
+                                    $this->relayNotification($message);
                                 }
                             }
                         }
@@ -353,7 +353,7 @@ class Net_Notifier_Server
     }
 
     // }}}
-    // {{{ dispatchEvent()
+    // {{{ relayNotification()
 
     /**
      * Notifies all connected clients of an event
@@ -362,7 +362,7 @@ class Net_Notifier_Server
      *
      * @return void
      */
-    protected function dispatchEvent($message)
+    protected function relayNotification($message)
     {
         foreach ($this->clients as $client) {
             if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {

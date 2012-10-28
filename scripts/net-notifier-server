@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-require_once 'Net/ChaChing/WebSocket/Server.php';
+require_once 'Net/Notifier/Server.php';
 
 set_time_limit(0);
 
@@ -11,7 +11,7 @@ function error($message)
     exit(1);
 }
 
-$verbosity = Net_ChaChing_WebSocket_Server::VERBOSITY_ERRORS;
+$verbosity = Net_Notifier_Server::VERBOSITY_ERRORS;
 $port = 3001;
 
 $args = $_SERVER['argv'];
@@ -21,11 +21,11 @@ for ($i = 1; $i < $numArgs; $i++) {
     case '-v':
     case '--verbose':
         $allowedLevels = array(
-            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_NONE,
-            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_ERRORS,
-            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_MESSAGES,
-            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_CLIENT,
-            (string)Net_ChaChing_WebSocket_Server::VERBOSITY_ALL,
+            (string)Net_Notifier_Server::VERBOSITY_NONE,
+            (string)Net_Notifier_Server::VERBOSITY_ERRORS,
+            (string)Net_Notifier_Server::VERBOSITY_MESSAGES,
+            (string)Net_Notifier_Server::VERBOSITY_CLIENT,
+            (string)Net_Notifier_Server::VERBOSITY_ALL,
         );
 
         if (   isset($args[$i + 1])
@@ -53,7 +53,7 @@ for ($i = 1; $i < $numArgs; $i++) {
     }
 }
 
-$server = new Net_ChaChing_WebSocket_Server($port);
+$server = new Net_Notifier_Server($port);
 $server->setVerbosity($verbosity);
 $server->run();
 

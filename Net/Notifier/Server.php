@@ -451,12 +451,12 @@ class Net_Notifier_Server
     /**
      * Closes a client socket and removes the client from the list of clients
      *
-     * @param Net_ChaChing_WebSocket_Connection $client the client to close.
+     * @param Net_Notifier_WebSocket_Connection $client the client to close.
      *
      * @return void
      */
     protected function closeClient(
-        Net_ChaChing_WebSocket_Connection $client
+        Net_Notifier_WebSocket_Connection $client
     ) {
         $this->output(
             "Closing client " . $client->getIpAddress() . " ... ",

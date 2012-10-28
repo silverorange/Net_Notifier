@@ -61,7 +61,7 @@ require_once 'Net/Notifier/ClientException.php';
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_Notifier_WebSocket_Client
+class Net_Notifier_Client
 {
     // {{{ class constants
 

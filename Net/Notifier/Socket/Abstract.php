@@ -60,7 +60,7 @@
  *
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Alexey Borzov <avb@php.net>
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2008-2012 Alexy Borzov, 2012 silverorange
@@ -70,12 +70,12 @@
 /**
  * Connection exception class definition.
  */
-require_once 'Net/ChaChing/WebSocket/ConnectionException.php';
+require_once 'Net/Notifier/Socket/ConnectionException.php';
 
 /**
  * Timeout exception class definition.
  */
-require_once 'Net/ChaChing/WebSocket/TimeoutException.php';
+require_once 'Net/Notifier/Socket/TimeoutException.php';
 
 /**
  * Socket wrapper class
@@ -84,17 +84,18 @@ require_once 'Net/ChaChing/WebSocket/TimeoutException.php';
  * similar things. Loosely based on Net_Socket used by older HTTP_Request.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Alexey Borzov <avb@php.net>
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2008-2012 Alexy Borzov, 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  * @link      http://tools.ietf.org/html/rfc1928
  */
-abstract class Net_ChaChing_WebSocket_SocketAbstract
+abstract class Net_Notifier_Socket_Abstract
 {
     /**
      * PHP warning messages raised during stream_socket_client() call
+     *
      * @var array
      */
     protected $connectionWarnings = array();
@@ -138,7 +139,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
      *
      * @return string the data read from the socket.
      *
-     * @throws Net_ChaChing_WebSocket_TimeoutException In case of timeout.
+     * @throws Net_Notifier_Socket_TimeoutException In case of timeout.
      */
     public function read($length)
     {
@@ -161,7 +162,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
      *
      * @return string Available data up to the newline (not including newline)
      *
-     * @throws Net_ChaChing_WebSocket_TimeoutException In case of timeout.
+     * @throws Net_Notifier_Socket_TimeoutException In case of timeout.
      */
     public function readLine($bufferSize)
     {
@@ -186,7 +187,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
      *
      * @return integer the number of bytes written.
      *
-     * @throws Net_ChaChing_WebSocket_ConnectionException
+     * @throws Net_Notifier_Socket_ConnectionException
      */
     public function write($data)
     {
@@ -197,7 +198,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
         $this->checkTimeout();
         // http://www.php.net/manual/en/function.fwrite.php#96951
         if ($written < mb_strlen($data, '8bit')) {
-            throw new Net_ChaChing_WebSocket_ConnectionException(
+            throw new Net_Notifier_Socket_ConnectionException(
                 'Error writing request'
             );
         }
@@ -231,7 +232,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
     /**
      * Turns on encryption on a socket
      *
-     * @throws Net_ChaChing_WebSocket_ConnectionException
+     * @throws Net_Notifier_Socket_ConnectionException
      */
     public function enableCrypto()
     {
@@ -247,7 +248,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
                 return;
             }
         }
-        throw new Net_ChaChing_WebSocket_ConnectionException(
+        throw new Net_Notifier_Socket_ConnectionException(
             'Failed to enable secure connection when connecting through proxy'
         );
     }
@@ -255,7 +256,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
     /**
      * Throws an exception if stream timed out
      *
-     * @throws Net_ChaChing_WebSocket_TimeoutException
+     * @throws Net_Notifier_Socket_TimeoutException
      */
     protected function checkTimeout()
     {
@@ -265,7 +266,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
                 ? "after {$this->timeout} second(s)"
                 : 'due to default_socket_timeout php.ini setting';
 
-            throw new Net_ChaChing_WebSocket_TimeoutException(
+            throw new Net_Notifier_Socket_TimeoutException(
                 "Request timed out {$reason}"
             );
         }
@@ -276,7 +277,7 @@ abstract class Net_ChaChing_WebSocket_SocketAbstract
      *
      * One stream_socket_client() call may produce *multiple* PHP warnings
      * (especially OpenSSL-related), we keep them in an array to later use for
-     * the message of Net_ChaChing_WebSocket_ConnectionException
+     * the message of Net_Notifier_Socket_ConnectionException
      *
      * @param integer $errno  error level
      * @param string  $errstr error message

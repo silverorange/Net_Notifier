@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Handshake failure exception class definition
+ * Client exception class definition
  *
  * PHP version 5
  *
@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -33,23 +33,21 @@
 /**
  * Base exception interface
  */
-require_once 'Net/ChaChing/Exception.php';
+require_once 'Net/Notifier/Exception.php';
 
 /**
- * Exception thrown when a WebSocket handshake fails
- *
- * When this exception is caught, the client or server should fail the
- * WebSocket connection as per RFC 6455 Section 7.1.7.
+ * Exception thrown when a WebSocket client fails to connect due to bad
+ * client parameters
  *
  * @category  Net
- * @package   Net_ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_HandshakeFailureException
+class Net_Notifier_WebSocket_ClientException
     extends Exception
-    implements Net_ChaChing_Exception
+    implements Net_Notifier_Exception
 {
 }
 

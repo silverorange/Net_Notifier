@@ -3,20 +3,20 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Tests the pinging client of the ChaChing package by sending several test
- * pings
+ * Tests the send client of the Net_Notifier package by sending several test
+ * messages
  *
  * First copy config.php.dist to config.php and modify to match your server.
  * Then run as 'php -f test-client.php'.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
-require_once 'Net/ChaChing/WebSocket/Client.php';
+require_once 'Net/Notifier/Client.php';
 
 if (   !file_exists(dirname(__FILE__) . '/config.php')
     || !is_readable(dirname(__FILE__) . '/config.php')
@@ -39,13 +39,15 @@ if (   !isset($config['server'])
     exit(1);
 }
 
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
 $address = 'ws://' . $config['server'] . ':' . $config['port'];
 
 for ($i = 0; $i < 10; $i++) {
     $id = $config['sounds'][array_rand($config['sounds'])];
     $value = getValue() / 100;
-    $client = new Net_ChaChing_WebSocket_Client($address);
+    $client = new Net_Notifier_Client($address);
     $client->sendText(json_encode(array('id' => $id, 'value' => $value)));
     usleep(rand(300000, 1500000));
 }

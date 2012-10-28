@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -33,25 +33,25 @@
 /**
  * Frame class
  */
-require_once 'Net/ChaChing/WebSocket/Frame.php';
+require_once 'Net/Notifier/WebSocket/Frame.php';
 
 /**
  * Parseri for extracting WebSocket frames from a raw data-stream
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_FrameParser
+class Net_Notifier_WebSocket_FrameParser
 {
     // {{{ protected properties
 
     /**
      * The current frame being parsed
      *
-     * @var Net_ChaChing_WebSocket_Frame
+     * @var Net_Notifier_WebSocket_Frame
      */
     protected $currentFrame = null;
 
@@ -63,7 +63,7 @@ class Net_ChaChing_WebSocket_FrameParser
      */
     public function __construct()
     {
-        $this->currentFrame = new Net_ChaChing_WebSocket_Frame();
+        $this->currentFrame = new Net_Notifier_WebSocket_Frame();
     }
 
     // }}}
@@ -79,7 +79,7 @@ class Net_ChaChing_WebSocket_FrameParser
      *
      * @param string $data the raw data.
      *
-     * @return array an array of parsed {@link Net_ChaChing_WebSocket_Frame}
+     * @return array an array of parsed {@link Net_Notifier_WebSocket_Frame}
      *               objects.
      */
     public function parse($data)
@@ -90,13 +90,13 @@ class Net_ChaChing_WebSocket_FrameParser
             $data = $this->currentFrame->parse($data);
             if ($data != '') {
                 $frames[] = $this->currentFrame;
-                $this->currentFrame = new Net_ChaChing_WebSocket_Frame();
+                $this->currentFrame = new Net_Notifier_WebSocket_Frame();
             }
         }
 
         // if we received exactly enough data, the last frame is also complete
         $state = $this->currentFrame->getState();
-        if ($state === Net_ChaChing_WebSocket_Frame::STATE_DONE) {
+        if ($state === Net_Notifier_WebSocket_Frame::STATE_DONE) {
             $frames[] = $this->currentFrame;
         }
 

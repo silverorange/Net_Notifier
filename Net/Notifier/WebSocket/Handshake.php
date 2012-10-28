@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * WebSocket handshake parser used by cha-ching connections
+ * WebSocket handshake parser
  *
  * PHP version 5
  *
@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2010-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -33,24 +33,24 @@
 /**
  * Exception class for unsupported requested sub-protocol
  */
-require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
+require_once 'Net/Notifier/WebSocket/ProtocolException.php';
 
 /**
  * Exception class for failing the WebSocket connection
  */
-require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
+require_once 'Net/Notifier/WebSocket/HandshakeFailureException.php';
 
 /**
  * Latest update supports RFC 6455.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2010-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
- * @see       Net_ChaChing_WebSocket_Connection
+ * @see       Net_Notifier_WebSocket_Connection
  */
-class Net_ChaChing_WebSocket_Handshake
+class Net_Notifier_WebSocket_Handshake
 {
     // {{{ class constants
 
@@ -98,7 +98,7 @@ class Net_ChaChing_WebSocket_Handshake
         $resource = '/',
         array $protocols = array()
     ) {
-        $version = Net_ChaChing_WebSocket_Handshake::VERSION;
+        $version = Net_Notifier_WebSocket_Handshake::VERSION;
 
         $request
             = "GET " . $resource . " HTTP/1.1\r\n"
@@ -139,7 +139,7 @@ class Net_ChaChing_WebSocket_Handshake
      * @return string|null the handshake response or null if there is no
      *                     response.
      *
-     * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the
+     * @throws Net_Notifier_WebSocket_HandshakeFailureException if the
      *         handshake fails.
      *
      * @todo Handle 4XX responses from server properly on client.
@@ -298,7 +298,7 @@ class Net_ChaChing_WebSocket_Handshake
      *
      * @return null
      *
-     * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the handshake
+     * @throws Net_Notifier_WebSocket_HandshakeFailureException if the handshake
      *         response is invalid according to RFC 6455.
      */
     protected function receiveServerHandshake(
@@ -309,7 +309,7 @@ class Net_ChaChing_WebSocket_Handshake
         // Make sure required headers and values are present as per RFC 6455
         // section 4.1 client validation of server response.
         if (!isset($headers['Sec-WebSocket-Accept'])) {
-            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+            throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 'Sec-WebSocket-Accept header missing.'
             );
         }
@@ -317,7 +317,7 @@ class Net_ChaChing_WebSocket_Handshake
         if (   !isset($headers['Upgrade'])
             || strtolower($headers['Upgrade']) != 'websocket'
         ) {
-            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+            throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 'Upgrade header missing or not set to "websocket".'
             );
         }
@@ -325,7 +325,7 @@ class Net_ChaChing_WebSocket_Handshake
         if (   !isset($headers['Connection'])
             || strtolower($headers['Connection']) != 'upgrade'
         ) {
-            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+            throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 'Connection header missing or not set to "Upgrade".'
             );
         }
@@ -336,7 +336,7 @@ class Net_ChaChing_WebSocket_Handshake
         $responseAccept = trim($headers['Sec-WebSocket-Accept']);
         $validAccept = $this->getAccept($nonce);
         if ($responseAccept != $validAccept) {
-            throw new Net_ChaChing_WebSocket_HandshakeFailureException(
+            throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 sprintf(
                     'Sec-WebSocket-Accept header "%s" does not validate '
                     . 'against nonce "%s"',
@@ -350,7 +350,7 @@ class Net_ChaChing_WebSocket_Handshake
         // them. See RFC 6455 Section 4.1 server response validation item 6.
         if (count($protocols) > 0) {
             if (!isset($headers['Sec-WebSocket-Protocol'])) {
-                throw new Net_ChaChing_WebSocket_ProtocolException(
+                throw new Net_Notifier_WebSocket_ProtocolException(
                     sprintf(
                         "Client requested '%s' sub-protocols but server does "
                         . "not support any of them.",
@@ -363,7 +363,7 @@ class Net_ChaChing_WebSocket_Handshake
             }
 
             if (!in_array($headers['Sec-WebSocket-Protocol'], $protocols)) {
-                throw new Net_ChaChing_WebSocket_ProtocolException(
+                throw new Net_Notifier_WebSocket_ProtocolException(
                     sprintf(
                         "Client requested '%s' sub-protocols. Server "
                         . "responded with unsupported sub-protocol: '%s'.",

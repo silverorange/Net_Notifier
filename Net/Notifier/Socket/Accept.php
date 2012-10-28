@@ -2,13 +2,14 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-require_once 'Net/ChaChing/WebSocket/SocketAbstract.php';
+require_once 'Net/Notifier/Socket/Abstract.php';
+require_once 'Net/Notifier/Socket/Server.php';
 
-class Net_ChaChing_WebSocket_SocketAccept
-    extends Net_ChaChing_WebSocket_SocketAbstract
+class Net_Notifier_Socket_Accept
+    extends Net_Notifier_Socket_Abstract
 {
     public function __construct(
-        Net_ChaChing_WebSocket_SocketServer $serverSocket,
+        Net_Notifier_Socket_Server $serverSocket,
         $timeout
     ) {
         set_error_handler(array($this, 'connectionWarningsHandler'));
@@ -25,7 +26,7 @@ class Net_ChaChing_WebSocket_SocketAccept
                 ? implode("\n", $this->connectionWarnings)
                 : $errstr;
 
-            throw new Net_ChaChing_WebSocket_ConnectionException(
+            throw new Net_Notifier_Socket_ConnectionException(
                 "Unable to accept client connection. Error: {$error}",
                 0,
                 $errno

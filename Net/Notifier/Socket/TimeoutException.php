@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Client exception class definition
+ * Timeout exception class definition
  *
  * PHP version 5
  *
@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -33,21 +33,25 @@
 /**
  * Base exception interface
  */
-require_once 'Net/ChaChing/Exception.php';
+require_once 'Net/Notifier/Exception.php';
 
 /**
- * Exception thrown when a WebSocket client fails to connect due to bad
- * client parameters
+ * Base socket exception interface
+ */
+require_once 'Net/Notifier/Socket/Exception.php';
+
+/**
+ * Exception thrown when a WebSocket  operation times out
  *
  * @category  Net
- * @package   Net_ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_ClientException
+class Net_Notifier_Socket_TimeoutException
     extends Exception
-    implements Net_ChaChing_Exception
+    implements Net_Notifier_Exception, Net_Notifier_Socket_Exception
 {
 }
 

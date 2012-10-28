@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -36,12 +36,12 @@
  * See IETF 6455 Section 5 for a description of the WebSocket frame format.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_Frame
+class Net_Notifier_WebSocket_Frame
 {
     // {{{ class constants
 
@@ -155,7 +155,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var integer
      *
-     * @see Net_ChaChing_WebSocket_Frame::getOpcode()
+     * @see Net_Notifier_WebSocket_Frame::getOpcode()
      */
     protected $opcode = 0;
 
@@ -164,7 +164,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var boolean
      *
-     * @see Net_ChaChing_WebSocket_Frame::isMasked()
+     * @see Net_Notifier_WebSocket_Frame::isMasked()
      */
     protected $isMasked = false;
 
@@ -173,7 +173,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_Frame::getOpcode()
+     * @see Net_Notifier_WebSocket_Frame::getOpcode()
      */
     protected $mask = '';
 
@@ -182,7 +182,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var boolean
      *
-     * @see Net_ChaChing_WebSocket_Frame::isFinal()
+     * @see Net_Notifier_WebSocket_Frame::isFinal()
      */
     protected $fin = false;
 
@@ -212,7 +212,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var integer
      *
-     * @see Net_ChaChing_WebSocket_Frame::getLength()
+     * @see Net_Notifier_WebSocket_Frame::getLength()
      */
     protected $length = 0;
 
@@ -221,7 +221,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var integer
      *
-     * @see Net_ChaChing_WebSocket_Frame::getLength()
+     * @see Net_Notifier_WebSocket_Frame::getLength()
      */
     protected $length16 = 0;
 
@@ -233,7 +233,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_Frame::getLength()
+     * @see Net_Notifier_WebSocket_Frame::getLength()
      */
     protected $length64 = '0';
 
@@ -249,8 +249,8 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_Frame::getData()
-     * @see Net_ChaChing_WebSocket_Frame::getRawData()
+     * @see Net_Notifier_WebSocket_Frame::getData()
+     * @see Net_Notifier_WebSocket_Frame::getRawData()
      */
     protected $data = '';
 
@@ -259,8 +259,8 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_Frame::getData()
-     * @see Net_ChaChing_WebSocket_Frame::getUnmaskedData()
+     * @see Net_Notifier_WebSocket_Frame::getData()
+     * @see Net_Notifier_WebSocket_Frame::getUnmaskedData()
      */
     protected $unmaskedData = '';
 
@@ -290,7 +290,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @param integer
      *
-     * @see Net_ChaChing_WebSocket_Frame::getState()
+     * @see Net_Notifier_WebSocket_Frame::getState()
      */
     protected $state = self::STATE_UNSENT;
 
@@ -302,7 +302,7 @@ class Net_ChaChing_WebSocket_Frame
      *
      * @param string  $data     optional. The data payload of this frame.
      * @param integer $opcode   optional. The frame type. If not specified,
-     *                          {@link Net_ChaChing_WebSocket_Frame::TYPE_TEXT}
+     *                          {@link Net_Notifier_WebSocket_Frame::TYPE_TEXT}
      *                          is used.
      * @param boolean $isMasked optional. Whether or not this frame's data
      *                          payload is masked. If not specified, the data
@@ -499,10 +499,10 @@ class Net_ChaChing_WebSocket_Frame
      * Gets the current parsing state of this frame
      *
      * @return integer the current parsing state of this frame. One of
-     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_UNSENT},
-     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_OPENED},
-     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_HEADERS_RECEIVED}, or
-     *                 {@link Net_ChaChing_WebSocket_Frame::STATE_DONE}.
+     *                 {@link Net_Notifier_WebSocket_Frame::STATE_UNSENT},
+     *                 {@link Net_Notifier_WebSocket_Frame::STATE_OPENED},
+     *                 {@link Net_Notifier_WebSocket_Frame::STATE_HEADERS_RECEIVED}, or
+     *                 {@link Net_Notifier_WebSocket_Frame::STATE_DONE}.
      */
     public function getState()
     {

@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * This is the package.xml generator for ChaChing
+ * This is the package.xml generator for Net_Notifier
  *
  * PHP version 5
  *
@@ -24,43 +24,43 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @author    Nathan Fredrikson <nathan@silverorange.com>
- * @copyright 2006-2011 silverorange
+ * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$apiVersion     = '2.0.0';
-$apiState       = 'stable';
+$apiVersion     = '0.1.0';
+$apiState       = 'alpha';
 
-$releaseVersion = '2.0.0';
-$releaseState   = 'stable';
+$releaseVersion = '0.1.0';
+$releaseState   = 'alpha';
 
 $releaseNotes   = <<<EOT
-* Added WebSocket client support.
+* First release.
 EOT;
 
 $description = <<<EOT
-The cha-ching system works as follows:
+All connections are made using WebSockets. The notification system works as
+follows:
 
 Server:
 =======
-Runs on a single system and receives requests. The server propegates
-cha-ching pings to connected playback clients.
+Runs on a single system and receives requests. The server relays received
+messages to connected listening clients.
 
-Playback Client:
+Listen Client:
 ================
-Runs on one or many machines. Clients connect to a server and play noises
-that are pushed from the server. Clients may be regular socket clients or
-WebSocket clients.
+Runs on one or many machines. Clients connect to a server and listen for
+messages relayed from the server.
 
-Ping Client:
+Send Client:
 ============
-Notifies the cha-ching server to push a cha-ching to connected playback
+Sends a message to the notification server to be relayed to connected listen
 clients.
 EOT;
 
@@ -74,26 +74,26 @@ $package->setOptions(
         'packagedirectory'                    => './',
         'dir_roles'                           => array(
             'Net'                             => 'php',
-            'Net/ChaChing/'                   => 'php',
-            'Net/ChaChing/Socket'             => 'php',
-            'Net/ChaChing/WebSocket'          => 'php',
+            'Net/Notifier/'                   => 'php',
+            'Net/Notifier/Socket'             => 'php',
+            'Net/Notifier/WebSocket'          => 'php',
             'tests'                           => 'test'
         ),
         'exceptions'                          => array(
-            'scripts/cha-ching-socket-server' => 'script'
+            'scripts/net-notifier-server' => 'script'
         ),
         'ignore'                              => array(
             'package.php',
             '*.tgz'
         ),
         'installexceptions'                   => array(
-            'scripts/cha-ching-socket-server' => '/'
+            'scripts/net-notifier-server' => '/'
         )
     )
 );
 
-$package->setPackage('ChaChing');
-$package->setSummary('Cha-ching notification system.');
+$package->setPackage('Net_Notifier');
+$package->setSummary('WebSocket relay notification system.');
 $package->setDescription($description);
 $package->setChannel('pear.silverorange.com');
 $package->setPackageType('php');
@@ -104,13 +104,6 @@ $package->setReleaseStability($releaseState);
 $package->setAPIVersion($apiVersion);
 $package->setAPIStability($apiState);
 $package->setNotes($releaseNotes);
-
-$package->addMaintainer(
-    'lead',
-    'nrf',
-    'Nathan Fredrickson',
-    'nathan@silverorange.com'
-);
 
 $package->addMaintainer(
     'lead',
@@ -126,8 +119,8 @@ $package->generateContents();
 
 $package->addRelease();
 $package->addInstallAs(
-    'scripts/cha-ching-socket-server',
-    'cha-ching-socket-server'
+    'scripts/net-notifier-server',
+    'net-notifier-server'
 );
 
 if (   isset($_GET['make'])

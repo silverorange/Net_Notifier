@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Cha-ching WebSocket connection class
+ * WebSocket connection class
  *
  * PHP version 5
  *
@@ -24,51 +24,51 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 /**
- * ChaChing WebSocket protocol definition.
- */
-require_once 'Net/ChaChing/WebSocket.php';
-
-/**
  * Socket wrapper.
  */
-require_once 'Net/ChaChing/WebSocket/SocketAbstract.php';
+require_once 'Net/Notifier/Socket/Abstract.php';
+
+/**
+ * Notifier WebSocket protocol definition.
+ */
+require_once 'Net/Notifier/WebSocket.php';
 
 /**
  * UTF-8 encoding exception class definition.
  */
-require_once 'Net/ChaChing/WebSocket/UTF8EncodingException.php';
+require_once 'Net/Notifier/WebSocket/UTF8EncodingException.php';
 
 /**
  * Handshake failure exception class definition.
  */
-require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
+require_once 'Net/Notifier/WebSocket/HandshakeFailureException.php';
 
 /**
  * Protocol exception class definition.
  */
-require_once 'Net/ChaChing/WebSocket/ProtocolException.php';
+require_once 'Net/Notifier/WebSocket/ProtocolException.php';
 
 /**
  * WebSocket handshake class definition.
  */
-require_once 'Net/ChaChing/WebSocket/Handshake.php';
+require_once 'Net/Notifier/WebSocket/Handshake.php';
 
 /**
  * WebSocket frame class definition.
  */
-require_once 'Net/ChaChing/WebSocket/Frame.php';
+require_once 'Net/Notifier/WebSocket/Frame.php';
 
 /**
  * WebSocket frame-parser class definition.
  */
-require_once 'Net/ChaChing/WebSocket/FrameParser.php';
+require_once 'Net/Notifier/WebSocket/FrameParser.php';
 
 /**
  * A WebSocket connection
@@ -77,12 +77,12 @@ require_once 'Net/ChaChing/WebSocket/FrameParser.php';
  * frames.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_Connection
+class Net_Notifier_WebSocket_Connection
 {
     // {{{ class constants
 
@@ -209,7 +209,7 @@ class Net_ChaChing_WebSocket_Connection
      *
      * @var array
      *
-     * @see Net_ChaChing_WebSocket_Connection::getBinaryMessages()
+     * @see Net_Notifier_WebSocket_Connection::getBinaryMessages()
      */
     protected $binaryMessages = array();
 
@@ -228,14 +228,14 @@ class Net_ChaChing_WebSocket_Connection
      *
      * @var array
      *
-     * @see Net_ChaChing_WebSocket_Connection::getTextMessages()
+     * @see Net_Notifier_WebSocket_Connection::getTextMessages()
      */
     protected $textMessages = array();
 
     /**
      * WebSocket frame parser for this connection
      *
-     * @var Net_ChaChing_WebSocket_FrameParser
+     * @var Net_Notifier_WebSocket_FrameParser
      */
     protected $parser = null;
 
@@ -253,10 +253,10 @@ class Net_ChaChing_WebSocket_Connection
      *
      * One of:
      *
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CONNECTING}
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_OPEN}
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSING}
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSED}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_CONNECTING}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_OPEN}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_CLOSING}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_CLOSED}
      *
      * @var integer
      */
@@ -268,20 +268,20 @@ class Net_ChaChing_WebSocket_Connection
     /**
      * Creates a new client connection object
      *
-     * @param Net_ChaCHing_WebSocket_Socket      $socket the socket this
+     * @param Net_Notifier_Socket_Abstract       $socket the socket this
      *                                                   connection uses to
      *                                                   communicate with the
      *                                                   server.
-     * @param Net_ChaChing_WebSocket_FrameParser $parser optional. The frame
+     * @param Net_Notifier_WebSocket_FrameParser $parser optional. The frame
      *                                                   parser to use for this
      *                                                   connection.
      */
     public function __construct(
-        Net_ChaChing_WebSocket_SocketAbstract $socket,
-        Net_ChaChing_WebSocket_FrameParser $parser = null
+        Net_Notifier_Socket_Abstract $socket,
+        Net_Notifier_WebSocket_FrameParser $parser = null
     ) {
         if ($parser === null) {
-            $parser = new Net_ChaChing_WebSocket_FrameParser();
+            $parser = new Net_Notifier_WebSocket_FrameParser();
         }
 
         $this->setFrameParser($parser);
@@ -326,7 +326,7 @@ class Net_ChaChing_WebSocket_Connection
 
                 try {
                     $this->handleHandshake($data);
-                } catch (Net_ChaChing_WebSocket_ProtocolException $e) {
+                } catch (Net_Notifier_WebSocket_ProtocolException $e) {
                     $this->state = self::STATE_CLOSED;
                     $this->shutdown();
                 }
@@ -364,18 +364,18 @@ class Net_ChaChing_WebSocket_Connection
      * This handles saving completed text or binary messages, sending pongs
      * to pings and closing the connection if a close frame is received.
      *
-     * @param Net_ChaChing_WebSocket_Frame $frame the frame to handle.
+     * @param Net_Notifier_WebSocket_Frame $frame the frame to handle.
      *
      * @return void
      *
-     * @throws Net_ChaChing_WebSocket_UTF8EncodingException if a complete
+     * @throws Net_Notifier_WebSocket_UTF8EncodingException if a complete
      *         text message is received and the text message has unpaired
      *         unpaired surrogates (invalid UTF-8 encoding).
      */
-    protected function handleFrame(Net_ChaChing_WebSocket_Frame $frame)
+    protected function handleFrame(Net_Notifier_WebSocket_Frame $frame)
     {
         switch ($frame->getOpcode()) {
-        case Net_ChaChing_WebSocket_Frame::TYPE_BINARY:
+        case Net_Notifier_WebSocket_Frame::TYPE_BINARY:
             $this->binaryBuffer .= $frame->getUnmaskedData();
             if ($frame->isFinal()) {
                 $this->binaryMessages[] = $this->binaryBuffer;
@@ -383,11 +383,11 @@ class Net_ChaChing_WebSocket_Connection
             }
             break;
 
-        case Net_ChaChing_WebSocket_Frame::TYPE_TEXT:
+        case Net_Notifier_WebSocket_Frame::TYPE_TEXT:
             $this->textBuffer .= $frame->getUnmaskedData();
             if ($frame->isFinal()) {
                 if (!$this->isValidUTF8($this->textBuffer)) {
-                    throw new Net_ChaChing_WebSocket_UTF8EncodingException(
+                    throw new Net_Notifier_WebSocket_UTF8EncodingException(
                         'Received a text message that is invalid UTF-8.',
                         0,
                         $this->textBuffer
@@ -398,7 +398,7 @@ class Net_ChaChing_WebSocket_Connection
             }
             break;
 
-        case Net_ChaChing_WebSocket_Frame::TYPE_CLOSE:
+        case Net_Notifier_WebSocket_Frame::TYPE_CLOSE:
             if ($this->state === self::STATE_CLOSING) {
                 $this->close();
             } else {
@@ -406,7 +406,7 @@ class Net_ChaChing_WebSocket_Connection
             }
             break;
 
-        case Net_ChaChing_WebSocket_Frame::TYPE_PING:
+        case Net_Notifier_WebSocket_Frame::TYPE_PING:
             $this->pong($frame->getUnmaskedData());
             break;
         }
@@ -432,9 +432,9 @@ class Net_ChaChing_WebSocket_Connection
             $dataLength = mb_strlen($data, '8bit');
             $pos += $dataLength;
             $final = ($pos === $totalLength);
-            $frame = new Net_ChaChing_WebSocket_Frame(
+            $frame = new Net_Notifier_WebSocket_Frame(
                 $data,
-                Net_ChaChing_WebSocket_Frame::TYPE_BINARY,
+                Net_Notifier_WebSocket_Frame::TYPE_BINARY,
                 false,
                 $final
             );
@@ -452,13 +452,13 @@ class Net_ChaChing_WebSocket_Connection
      *
      * @return void
      *
-     * @throws Net_ChaChing_WebSocket_UTF8EncodingException if the specified
+     * @throws Net_Notifier_WebSocket_UTF8EncodingException if the specified
      *         text has unpaired surrogates (invalid UTF-8 encoding).
      */
     public function writeText($message)
     {
         if (!$this->isValidUTF8($message)) {
-            throw new Net_ChaChing_WebSocket_UTF8EncodingException(
+            throw new Net_Notifier_WebSocket_UTF8EncodingException(
                 'Can not write text message that is invalid UTF8.',
                 0,
                 $message
@@ -473,9 +473,9 @@ class Net_ChaChing_WebSocket_Connection
             $dataLength = mb_strlen($data, '8bit');
             $pos += $dataLength;
             $final = ($pos === $totalLength);
-            $frame = new Net_ChaChing_WebSocket_Frame(
+            $frame = new Net_Notifier_WebSocket_Frame(
                 $data,
-                Net_ChaChing_WebSocket_Frame::TYPE_TEXT,
+                Net_Notifier_WebSocket_Frame::TYPE_TEXT,
                 false,
                 $final
             );
@@ -496,18 +496,18 @@ class Net_ChaChing_WebSocket_Connection
      *
      * @return void
      *
-     * @throws Net_ChaChing_WebSocket_HandshakeFailureException if the
+     * @throws Net_Notifier_WebSocket_HandshakeFailureException if the
      *         handshake fails and the connection is closed.
      */
     protected function handleHandshake($data)
     {
-        $handshake = new Net_ChaChing_WebSocket_Handshake();
+        $handshake = new Net_Notifier_WebSocket_Handshake();
 
         try {
             $response = $handshake->receive(
                 $data,
                 $this->handshakeNonce,
-                array(Net_ChaChing_WebSocket::PROTOCOL)
+                array(Net_Notifier_WebSocket::PROTOCOL)
             );
 
             // for client-connecting to server handshakes, we need to send the
@@ -517,7 +517,7 @@ class Net_ChaChing_WebSocket_Connection
             }
 
             $this->state = self::STATE_OPEN;
-        } catch (Net_ChaChing_WebSocket_HandshakeFailureException $e) {
+        } catch (Net_Notifier_WebSocket_HandshakeFailureException $e) {
             // fail the WebSocket connection
             $this->close();
 
@@ -547,7 +547,7 @@ class Net_ChaChing_WebSocket_Connection
     ) {
         $this->handshakeNonce = $this->getNonce();
 
-        $handshake = new Net_ChaChing_WebSocket_Handshake();
+        $handshake = new Net_Notifier_WebSocket_Handshake();
 
         $request = $handshake->start(
             $host,
@@ -584,14 +584,14 @@ class Net_ChaChing_WebSocket_Connection
      * This sends a close frame with a reason code and message. Defined reason
      * codes include:
      *
-     * - {@link Net_ChaChing_Connection::CLOSE_NORMAL},
-     * - {@link Net_ChaChing_Connection::CLOSE_GOING_AWAY},
-     * - {@link Net_ChaChing_Connection::CLOSE_PROTOCOL_ERROR},
-     * - {@link Net_ChaChing_Connection::CLOSE_DATA_TYPE},
-     * - {@link Net_ChaChing_Connection::CLOSE_ENCODING_ERROR},
-     * - {@link Net_ChaChing_Connection::CLOSE_POLICY_VIOLATION},
-     * - {@link Net_ChaChing_Connection::CLOSE_UNSUPPORTED_EXTENSION}, and
-     * - {@link Net_ChaChing_Connection::CLOSE_UNEXPECTED_ERROR}.
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_NORMAL},
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_GOING_AWAY},
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_PROTOCOL_ERROR},
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_DATA_TYPE},
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_ENCODING_ERROR},
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_POLICY_VIOLATION},
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_UNSUPPORTED_EXTENSION}, and
+     * - {@link Net_Notifier_WebSocket_Connection::CLOSE_UNEXPECTED_ERROR}.
      *
      * Other codes may be used depending on the application.
      *
@@ -607,9 +607,9 @@ class Net_ChaChing_WebSocket_Connection
         if ($this->state < self::STATE_CLOSING) {
             $code  = intval($code);
             $data  = pack('s', $code) . $reason;
-            $frame = new Net_ChaChing_WebSocket_Frame(
+            $frame = new Net_Notifier_WebSocket_Frame(
                 $data,
-                Net_ChaChing_WebSocket_Frame::TYPE_CLOSE
+                Net_Notifier_WebSocket_Frame::TYPE_CLOSE
             );
 
             $this->send($frame->__toString());
@@ -652,9 +652,9 @@ class Net_ChaChing_WebSocket_Connection
      */
     public function pong($message)
     {
-        $frame = new Net_ChaChing_WebSocket_Frame(
+        $frame = new Net_Notifier_WebSocket_Frame(
             $message,
-            Net_ChaChing_WebSocket_Frame::TYPE_PONG
+            Net_Notifier_WebSocket_Frame::TYPE_PONG
         );
 
         $this->send($frame->__toString());
@@ -668,10 +668,10 @@ class Net_ChaChing_WebSocket_Connection
      *
      * One of:
      *
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CONNECTING}
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_OPEN}
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSING}
-     * - {@link Net_ChaChing_WebSocket_Connection::STATE_CLOSED}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_CONNECTING}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_OPEN}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_CLOSING}
+     * - {@link Net_Notifier_WebSocket_Connection::STATE_CLOSED}
      *
      * @return integer the current state of this connection.
      */
@@ -720,8 +720,8 @@ class Net_ChaChing_WebSocket_Connection
     /**
      * Gets the socket this connection uses to communicate with the server
      *
-     * @return resource the socket this connection uses to communicate with the
-     *                   server.
+     * @return Net_Notifier_Socket_Abstract the socket this connection uses to
+     *                                      communicate.
      */
     public function getSocket()
     {
@@ -747,13 +747,13 @@ class Net_ChaChing_WebSocket_Connection
     /**
      * Sets the frame parser to use for this connection
      *
-     * @param Net_ChaChing_WebSocket_FrameParser $parser the parser to use for
+     * @param Net_Notifier_WebSocket_FrameParser $parser the parser to use for
      *                                                   this connection.
      *
-     * @return Net_ChaChing_Connection the current object, for fluent
-     *                                       interface.
+     * @return Net_Notifier_WebSocket_Connection the current object, for fluent
+     *                                           interface.
      */
-    public function setFrameParser(Net_ChaChing_WebSocket_FrameParser $parser)
+    public function setFrameParser(Net_Notifier_WebSocket_FrameParser $parser)
     {
         $this->parser = $parser;
         return $this;

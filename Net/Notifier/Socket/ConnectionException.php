@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   NNet_otifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -33,21 +33,25 @@
 /**
  * Base exception interface
  */
-require_once 'Net/ChaChing/Exception.php';
+require_once 'Net/Notifier/Exception.php';
 
 /**
- * Exception thrown when there is an error connecting a WebSocket client or
- * server
+ * Base socket exception interface
+ */
+require_once 'Net/Notifier/Socket/Exception.php';
+
+/**
+ * Exception thrown when there is an error connecting a socket
  *
  * @category  Net
- * @package   Net_ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_ConnectionException
+class Net_Notifier_Socket_ConnectionException
     extends Exception
-    implements Net_ChaChing_Exception
+    implements Net_Notifier_Exception, Net_Notifier_Socket_Exception
 {
     // {{{ protected properties
 
@@ -56,7 +60,7 @@ class Net_ChaChing_WebSocket_ConnectionException
      *
      * @var integer
      *
-     * @see Net_ChaChing_WebSocket_ConnectionException::getStreamCode()
+     * @see Net_Notifier_Socket_ConnectionException::getStreamCode()
      */
     protected $streamCode = 0;
 

@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -33,19 +33,19 @@
 /**
  * Handshake failure exception
  */
-require_once 'Net/ChaChing/WebSocket/HandshakeFailureException.php';
+require_once 'Net/Notifier/WebSocket/HandshakeFailureException.php';
 
 /**
  * Exception thrown when a WebSocket client requests an unsupported protocol
  *
  * @category  Net
- * @package   Net_ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_ProtocolException
-    extends Net_ChaChing_WebSocket_HandshakeFailureException
+class Net_Notifier_WebSocket_ProtocolException
+    extends Net_Notifier_WebSocket_HandshakeFailureException
 {
     // {{{ protected properties
 
@@ -54,7 +54,7 @@ class Net_ChaChing_WebSocket_ProtocolException
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_ProtocolException::getSupportedProtocol()
+     * @see Net_Notifier_WebSocket_ProtocolException::getSupportedProtocol()
      */
     protected $supportedProtocol = null;
 
@@ -65,7 +65,7 @@ class Net_ChaChing_WebSocket_ProtocolException
      *
      * @var array
      *
-     * @see Net_ChaChing_WebSocket_ProtocolException::getRequestedProtocols()
+     * @see Net_Notifier_WebSocket_ProtocolException::getRequestedProtocols()
      */
     protected $requestedProtocols = array();
 

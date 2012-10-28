@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Cha-ching WebSocket server class
+ * WebSocket notification server class
  *
  * PHP version 5
  *
@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
@@ -33,13 +33,20 @@
 /**
  * Client connection class.
  */
-require_once 'Net/ChaChing/WebSocket/Connection.php';
-
-require_once 'Net/ChaChing/WebSocket/SocketServer.php';
-require_once 'Net/ChaChing/WebSocket/SocketAccept.php';
+require_once 'Net/Notifier/WebSocket/Connection.php';
 
 /**
- * A server process for sending and receiving cha-ching notifications
+ * Socket class definition for listening for incomming connections.
+ */
+require_once 'Net/Notifier/Socket/Server.php';
+
+/**
+ * Socket class definition for accepting client connections.
+ */
+require_once 'Net/Notifier/Socket/Accept.php';
+
+/**
+ * A server process for receiving and relaying notifications
  *
  * The cha-ching server interacts with two types of clients. The first type
  * of client connects to the server, sends a message and disconnects. The
@@ -48,12 +55,12 @@ require_once 'Net/ChaChing/WebSocket/SocketAccept.php';
  * the message to all connected clients of type two.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_Server
+class Net_Notifier_Server
 {
     // {{{ class constants
 
@@ -106,39 +113,38 @@ class Net_ChaChing_WebSocket_Server
     /**
      * The socket at which this server accepts connections
      *
-     * @var resource
+     * @var Net_Notifier_Socket_Server
      */
-    protected $socket;
+    protected $socket = null;
 
     /**
      * The port this server runs on
      *
-     * By default this is 2000. See
-     * {@link Net_ChaChingS_Socket_Server::__construct()} touse a different
-     * port.
+     * By default this is 2000. See {@link Net_Notifier_Server::__construct()}
+     * to use a different port.
      *
      * @var integer
      */
-    protected $port;
+    protected $port = 2000;
 
     /**
      * The level of verbosity to use
      *
      * @var integer
      *
-     * @see Net_ChaChing_Socket_Server::setVerbosity()
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_NONE
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_ERRORS
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_MESSAGES
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_CLIENT
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_ALL
+     * @see Net_Notifier_Server::setVerbosity()
+     * @see Net_Notifier_Server::VERBOSITY_NONE
+     * @see Net_Notifier_Server::VERBOSITY_ERRORS
+     * @see Net_Notifier_Server::VERBOSITY_MESSAGES
+     * @see Net_Notifier_Server::VERBOSITY_CLIENT
+     * @see Net_Notifier_Server::VERBOSITY_ALL
      */
     protected $verbosity = 1;
 
     /**
      * Clients connected to this server
      *
-     * This is an array of {@link Net_ChaChing_Socket_Connection} objects.
+     * This is an array of {@link Net_Notifier_WebSocket_Connection} objects.
      *
      * @var array
      */
@@ -155,12 +161,13 @@ class Net_ChaChing_WebSocket_Server
     // {{{ __construct()
 
     /**
-     * Creates a new cha-ching server
+     * Creates a new notification server
      *
-     * @param integer $port the port on which this server should listen for
-     *                      incomming connections.
+     * @param integer $port optional. The port on which this server should
+     *                      listen for incomming connections. If not specified,
+     *                      port 2000 is used.
      *
-     * @see Net_ChaChing_Socket_Server::run()
+     * @see Net_Notifier_Server::run()
      */
     public function __construct($port = 2000)
     {
@@ -195,11 +202,11 @@ class Net_ChaChing_WebSocket_Server
      *
      * @return void
      *
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_NONE
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_ERRORS
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_MESSAGES
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_CLIENT
-     * @see Net_ChaChing_Socket_Server::VERBOSITY_ALL
+     * @see Net_Notifier_Server::VERBOSITY_NONE
+     * @see Net_Notifier_Server::VERBOSITY_ERRORS
+     * @see Net_Notifier_Server::VERBOSITY_MESSAGES
+     * @see Net_Notifier_Server::VERBOSITY_CLIENT
+     * @see Net_Notifier_Server::VERBOSITY_ALL
      */
     public function setVerbosity($verbosity)
     {
@@ -210,10 +217,10 @@ class Net_ChaChing_WebSocket_Server
     // {{{ run()
 
     /**
-     * Runs this cha-ching server
+     * Runs this notification server
      *
-     * The cha-ching server receives client connections and sends and receives
-     * data to and from connected clients.
+     * This notification server receives client connections and receives and
+     * relays data from connected clients.
      *
      * @return void
      */
@@ -239,11 +246,11 @@ class Net_ChaChing_WebSocket_Server
             // check for new connections
             if (in_array($this->socket->getRawSocket(), $read)) {
                 try {
-                    $newSocket = new Net_ChaChing_WebSocket_SocketAccept(
+                    $newSocket = new Net_Notifier_Socket_Accept(
                         $this->socket,
                         null
                     );
-                } catch (Exception $e) {
+                } catch (Net_Notifier_Socket_Exception $e) {
                     $this->output(
                         "Accepting client connection failed: reason: " .
                         $e->getMessage() . "\n",
@@ -252,7 +259,7 @@ class Net_ChaChing_WebSocket_Server
                     exit(1);
                 }
 
-                $client = new Net_ChaChing_WebSocket_Connection($newSocket);
+                $client = new Net_Notifier_WebSocket_Connection($newSocket);
                 $this->clients[] = $client;
                 $this->output(
                     "client connected from " . $client->getIpAddress() . "\n",
@@ -282,10 +289,10 @@ class Net_ChaChing_WebSocket_Server
 
                     if ($client->read(self::READ_BUFFER_LENGTH)) {
 
-                        if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSING) {
+                        if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {
                             $this->startCloseClient(
                                 $client,
-                                Net_ChaChing_WebSocket_Connection::CLOSE_NORMAL,
+                                Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
                                 'Received message.'
                             );
 
@@ -324,7 +331,7 @@ class Net_ChaChing_WebSocket_Server
 
                     }
 
-                } catch (Net_ChaChing_WebSocket_HandshakeFailureException $e) {
+                } catch (Net_Notifier_WebSocket_HandshakeFailureException $e) {
                     $this->output(
                         sprintf(
                             "failed client handshake: %s\n",
@@ -351,16 +358,14 @@ class Net_ChaChing_WebSocket_Server
     /**
      * Notifies all connected clients of an event
      *
-     * @param string $message the JSON encoded object containing the event
-     *                        information. The object is a key-value hash
-     *                        containing 'id' and 'value'.
+     * @param string $message the message being relayed.
      *
      * @return void
      */
     protected function dispatchEvent($message)
     {
         foreach ($this->clients as $client) {
-            if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSING) {
+            if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {
 
                 $this->output(
                     "=> writing message '" . $message . "' to " .
@@ -392,14 +397,14 @@ class Net_ChaChing_WebSocket_Server
         $this->output("creating socket ... ", self::VERBOSITY_ALL);
 
         try {
-            $this->socket = new Net_ChaChing_WebSocket_SocketServer(
+            $this->socket = new Net_Notifier_Socket_Server(
                 sprintf(
                     'tcp://0.0.0.0:%s',
                     $this->port
                 ),
                 null
             );
-        } catch (Exception $e) {
+        } catch (Net_Notifier_Socket_Exception $e) {
             $this->output(
                 "failed\nreason: " . $e->getMessage() . "\n",
                 self::VERBOSITY_ERRORS,
@@ -427,7 +432,7 @@ class Net_ChaChing_WebSocket_Server
 
         foreach ($this->clients as $client) {
             $client->startClose(
-                Net_ChaChing_WebSocket_Connection::CLOSE_GOING_AWAY,
+                Net_Notifier_WebSocket_Connection::CLOSE_GOING_AWAY,
                 'Server shutting down.'
             );
         }
@@ -469,8 +474,8 @@ class Net_ChaChing_WebSocket_Server
     // {{ startCloseClient()
 
     protected function startCloseClient(
-        Net_ChaChing_WebSocket_Connection $client,
-        $code = Net_ChaChing_WebSocket_Connection::CLOSE_NORMAL,
+        Net_Notifier_WebSocket_Connection $client,
+        $code = Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
         $reason = ''
     ) {
         $this->output(
@@ -492,7 +497,7 @@ class Net_ChaChing_WebSocket_Server
      *
      * @param array &$read an array of sockets that were read.
      *
-     * @return array an array of {@link Net_ChaChing_Socket_Connection}
+     * @return array an array of {@link Net_Notifier_WebSocket_Connection}
      *               objects having sockets found in the given array of read
      *               sockets.
      */
@@ -522,7 +527,7 @@ class Net_ChaChing_WebSocket_Server
         $readArray = array();
         $readArray[] = $this->socket->getRawSocket();
         foreach ($this->clients as $client) {
-            if ($client->getState() < Net_ChaChing_WebSocket_Connection::STATE_CLOSED) {
+            if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSED) {
                 $readArray[] = $client->getSocket()->getRawSocket();
             }
         }

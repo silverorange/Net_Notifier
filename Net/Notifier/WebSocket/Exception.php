@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Cha-ching WebSocket protocol class
+ * Base exception interface for WebSocket exceptions in the Net_Notifier package
  *
  * PHP version 5
  *
@@ -24,31 +24,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 /**
- * Defines the cha-ching WebSocket sub-protocol
+ * Base exception interface for WebSocket exceptions in the Net_Notifier package
+ *
+ * All WebSocket exceptions within the Net_Notifier package implement this
+ * interface.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-abstract class Net_ChaChing_WebSocket
+interface Net_Notifier_WebSocket_Exception
 {
-    // {{{ class constants
-
-    /**
-     * WebSocket sub-protocol
-     */
-    const PROTOCOL = 'com.silverorange.net-cha-ching';
-
-    // }}}
 }
 
 ?>

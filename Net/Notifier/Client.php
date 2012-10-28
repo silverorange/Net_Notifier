@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Cha-ching WebSocket client class
+ * Notifier WebSocket client class
  *
  * PHP version 5
  *
@@ -24,44 +24,44 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 /**
- * ChaChing WebSocket protocol definition.
+ * Notifier WebSocket protocol definition.
  */
-require_once 'Net/ChaChing/WebSocket.php';
+require_once 'Net/Notifier/WebSocket.php';
 
 /**
  * Socket wrapper class.
  */
-require_once 'Net/ChaChing/WebSocket/SocketClient.php';
+require_once 'Net/Notifier/Socket/Client.php';
 
 /**
  * Client connection class.
  */
-require_once 'Net/ChaChing/WebSocket/Connection.php';
+require_once 'Net/Notifier/WebSocket/Connection.php';
 
 /**
  * Client exception class.
  */
-require_once 'Net/ChaChing/WebSocket/ClientException.php';
+require_once 'Net/Notifier/ClientException.php';
 
 /**
- * A client sending cha-ching notifications
+ * A client for sending notifications
  *
  * This client connects to a WebSocket server and sends a message.
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_Client
+class Net_Notifier_WebSocket_Client
 {
     // {{{ class constants
 
@@ -81,8 +81,8 @@ class Net_ChaChing_WebSocket_Client
      *
      * @var integer
      *
-     * @see Net_ChaChing_WebSocket_Client::parseAddress()
-     * @see Net_ChaChing_WebSocket_Client::setPort()
+     * @see Net_Notifier_Client::parseAddress()
+     * @see Net_Notifier_Client::setPort()
      */
     protected $port = 3000;
 
@@ -91,8 +91,8 @@ class Net_ChaChing_WebSocket_Client
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_Client::parseAddress()
-     * @see Net_ChaChing_WebSocket_Client::setHost()
+     * @see Net_Notifier_Client::parseAddress()
+     * @see Net_Notifier_Client::setHost()
      */
     protected $host = 'localhost';
 
@@ -101,8 +101,8 @@ class Net_ChaChing_WebSocket_Client
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_Client::parseAddress()
-     * @see Net_ChaChing_WebSocket_Client::setResource()
+     * @see Net_Notifier_Client::parseAddress()
+     * @see Net_Notifier_Client::setResource()
      */
     protected $resource = '/';
 
@@ -116,14 +116,14 @@ class Net_ChaChing_WebSocket_Client
     /**
      * The connection to the WebSocket server
      *
-     * @var Net_ChaChing_WebSocket_Connection
+     * @var Net_Notifier_WebSocket_Connection
      */
     protected $connection = null;
 
     /**
-     * The raw socket connection of this client
+     * The socket connection of this client
      *
-     * @var resource
+     * @var Net_Notifier_Socket_Client
      */
     protected $socket = null;
 
@@ -131,9 +131,9 @@ class Net_ChaChing_WebSocket_Client
     // {{{ __construct()
 
     /**
-     * Creates a new client for sending cha-ching notifications
+     * Creates a new client for sending notifications
      *
-     * @param string  $address the WebSocket address of the cha-ching server.
+     * @param string  $address the WebSocket address of the notification server.
      *                         Must be in the form
      *                         ws://host-or-ip:port/resource.
      * @param integer $timeout optional. Client connection timeout in
@@ -158,7 +158,7 @@ class Net_ChaChing_WebSocket_Client
      */
     public function __destruct()
     {
-        if ($this->connection instanceof Net_ChaChing_WebSocket_Connection) {
+        if ($this->connection instanceof Net_Notifier_WebSocket_Connection) {
             $this->disconnect();
         }
     }
@@ -176,18 +176,17 @@ class Net_ChaChing_WebSocket_Client
      *
      * @param string $address the address to parse.
      *
-     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
-     *                                       interface.
+     * @return Net_Notifier_Client the current object, for fluent interface.
      *
-     * @throws Net_ChaChing_WebSocket_ClientException if the specified address
-     *         is not a properly formatted websocket address.
+     * @throws Net_Notifier_ClientException if the specified address is not a
+     *         properly formatted WebSocket address.
      */
     public function parseAddress($address)
     {
         $exp = '!^wss?://([\w-.]+?)(?::(\d+))?(/.*)?$!';
         $matches = array();
         if (!preg_match($exp, $address, $matches)) {
-            throw new Net_ChaChing_WebSocket_ClientException(
+            throw new Net_Notifier_ClientException(
                 sprintf(
                     'Invalid WebSocket address: %s. Should be in the form '
                     . 'ws://host[:port][/resource]',
@@ -219,11 +218,10 @@ class Net_ChaChing_WebSocket_Client
      *
      * @param string $message the UTF-8 text message to send.
      *
-     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
-     *                                       interface.
+     * @return Net_Notifier_Client the current object, for fluent interface.
      *
-     * @throws Net_ChaChing_WebSocket_ClientException if there is an error
-     *         connecting to the cha-ching server or sending the message.
+     * @throws Net_Notifier_ClientException if there is an error connecting
+     *         to the notification server or sending the message.
      */
     public function sendText($message)
     {
@@ -242,8 +240,7 @@ class Net_ChaChing_WebSocket_Client
      *
      * @param string $host the server host name or IP address for this client.
      *
-     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
-     *                                       interface.
+     * @return Net_Notifier_Client the current object, for fluent interface.
      */
     public function setHost($host)
     {
@@ -259,8 +256,7 @@ class Net_ChaChing_WebSocket_Client
      *
      * @param integer $port the connection port for this client.
      *
-     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
-     *                                       interface.
+     * @return Net_Notifier_Client the current object, for fluent interface.
      */
     public function setPort($port)
     {
@@ -276,8 +272,7 @@ class Net_ChaChing_WebSocket_Client
      *
      * @param string $resource the WebSocket resource name for this client.
      *
-     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
-     *                                       interface.
+     * @return Net_Notifier_Client the current object, for fluent interface.
      */
     public function setResource($resource)
     {
@@ -293,8 +288,7 @@ class Net_ChaChing_WebSocket_Client
      *
      * @param integer $timeout this client's connection timeout in milliseconds.
      *
-     * @return Net_ChaChing_WebSocket_Client the current object, for fluent
-     *                                       interface.
+     * @return Net_Notifier_Client the current object, for fluent interface.
      */
     public function setTimeout($timeout)
     {
@@ -312,12 +306,12 @@ class Net_ChaChing_WebSocket_Client
      *
      * @return void
      *
-     * @throws Net_ChaChing_WebSocket_ClientException if there is an error
-     *         connecting to the cha-ching server.
+     * @throws Net_Notifier_ClientException if there is an error connecting to
+     *         the notification server.
      */
     protected function connect()
     {
-        $this->socket = new Net_ChaChing_WebSocket_SocketClient(
+        $this->socket = new Net_Notifier_Socket_Client(
             sprintf(
                 'tcp://%s:%s',
                 $this->host,
@@ -326,7 +320,7 @@ class Net_ChaChing_WebSocket_Client
             $this->timeout / 1000
         );
 
-        $this->connection = new Net_ChaChing_WebSocket_Connection(
+        $this->connection = new Net_Notifier_WebSocket_Connection(
             $this->socket
         );
 
@@ -334,12 +328,12 @@ class Net_ChaChing_WebSocket_Client
             $this->host,
             $this->port,
             $this->resource,
-            array(Net_ChaChing_WebSocket::PROTOCOL)
+            array(Net_Notifier_WebSocket::PROTOCOL)
         );
 
         // read handshake response
         $state = $this->connection->getState();
-        while ($state < Net_ChaChing_WebSocket_Connection::STATE_OPEN) {
+        while ($state < Net_Notifier_WebSocket_Connection::STATE_OPEN) {
 
             $read = array($this->socket->getRawSocket());
 
@@ -372,7 +366,7 @@ class Net_ChaChing_WebSocket_Client
         // clients initiating the close handshake but we want to ensure the
         // connection is closed as soon as possible.
         $this->connection->startClose(
-            Net_ChaChing_WebSocket_Connection::CLOSE_GOING_AWAY,
+            Net_Notifier_WebSocket_Connection::CLOSE_GOING_AWAY,
             'Client sent message.'
         );
 
@@ -382,7 +376,7 @@ class Net_ChaChing_WebSocket_Client
         $sec  = intval($this->timeout / 1000);
         $usec = ($this->timeout % 1000) * 1000;
 
-        while ($state < Net_ChaChing_WebSocket_Connection::STATE_CLOSED) {
+        while ($state < Net_Notifier_WebSocket_Connection::STATE_CLOSED) {
             $read = array($this->socket->getRawSocket());
 
             $result = stream_select(

@@ -24,29 +24,34 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2011 silverorange
+ * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 /**
  * Base exception interface
  */
-require_once 'Net/ChaChing/Exception.php';
+require_once 'Net/Notifier/Exception.php';
+
+/**
+ * Base WebSocket exception interface
+ */
+require_once 'Net/Notifier/WebSocket/Exception.php';
 
 /**
  * Exception thrown when invalid UTF-8 encoding is detected
  *
  * @category  Net
- * @package   Net_ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2011 silverorange
+ * @copyright 2011-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_UTF8EncodingException
+class Net_Notifier_WebSocket_UTF8EncodingException
     extends Exception
-    implements Net_ChaChing_Exception
+    implements Net_Notifier_Exception, Net_Notifier_WebSocket_Exception
 {
     // {{{ protected properties
 
@@ -55,7 +60,7 @@ class Net_ChaChing_WebSocket_UTF8EncodingException
      *
      * @var string
      *
-     * @see Net_ChaChing_WebSocket_UTF8EncodingException::getBinaryData()
+     * @see Net_Notifier_WebSocket_UTF8EncodingException::getBinaryData()
      */
     protected $binaryData = '';
 

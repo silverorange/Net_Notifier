@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Timeout exception class definition
+ * Base exception interface for socket exceptions in the Net_Notifier package
  *
  * PHP version 5
  *
@@ -24,29 +24,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @category  Net
- * @package   ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 /**
- * Base exception interface
- */
-require_once 'Net/ChaChing/Exception.php';
-
-/**
- * Exception thrown when a WebSocket  operation times out
+ * Base exception interface for socket exceptions in the Net_Notifier package
+ *
+ * All socket exceptions within the Net_Notifier package implement this
+ * interface.
  *
  * @category  Net
- * @package   Net_ChaChing
+ * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_ChaChing_WebSocket_TimeoutException
-    extends Exception
-    implements Net_ChaChing_Exception
+interface Net_Notifier_Socket_Exception
 {
 }
 

@@ -36,8 +36,7 @@
 require_once 'Net/Notifier/Exception.php';
 
 /**
- * Exception thrown when a WebSocket client fails to connect due to bad
- * client parameters
+ * Exception thrown when a client fails to connect
  *
  * @category  Net
  * @package   Net_Notifier
@@ -45,7 +44,7 @@ require_once 'Net/Notifier/Exception.php';
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_Notifier_WebSocket_ClientException
+class Net_Notifier_ClientException
     extends Exception
     implements Net_Notifier_Exception
 {

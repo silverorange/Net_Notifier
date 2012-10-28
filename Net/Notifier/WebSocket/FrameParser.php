@@ -98,6 +98,7 @@ class Net_Notifier_WebSocket_FrameParser
         $state = $this->currentFrame->getState();
         if ($state === Net_Notifier_WebSocket_Frame::STATE_DONE) {
             $frames[] = $this->currentFrame;
+            $this->currentFrame = new Net_Notifier_WebSocket_Frame();
         }
 
         return $frames;

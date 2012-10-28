@@ -1,0 +1,65 @@
+#!/usr/bin/php
+<?php
+
+require_once 'Net/Notifier/Listener.php';
+
+set_time_limit(0);
+
+function error($message)
+{
+    echo "net-notifier-listener: ", $message;
+    exit(1);
+}
+
+$verbosity = Net_Notifier_Listener::VERBOSITY_NONE;
+$address = null;
+
+$args = $_SERVER['argv'];
+$numArgs = count($args);
+for ($i = 1; $i < $numArgs; $i++) {
+    switch ($args[$i]) {
+    case '-v':
+    case '--verbose':
+        $allowedLevels = array(
+            (string)Net_Notifier_Listener::VERBOSITY_NONE,
+            (string)Net_Notifier_Listener::VERBOSITY_ERRORS,
+            (string)Net_Notifier_Listener::VERBOSITY_MESSAGES,
+            (string)Net_Notifier_Listener::VERBOSITY_CLIENT,
+            (string)Net_Notifier_Listener::VERBOSITY_ALL,
+        );
+
+        if (   isset($args[$i + 1])
+            && in_array($args[$i + 1], $allowedLevels)
+        ) {
+            $verbosity = $args[$i + 1];
+            $i++;
+        } else {
+            error("--verbose expects verbosity level between 0 and 4\n");
+        }
+        break;
+
+    case '-a':
+    case '--address':
+        if (isset($args[$i + 1])) {
+            $address = $args[$i + 1];
+            $i++;
+        } else {
+            error("--address expects value\n");
+        }
+        break;
+    default:
+        error("unrecognized argument: " . $args[$i] . "\n");
+        break;
+    }
+}
+
+
+if ($address === null) {
+    error('address (--address) is required.');
+}
+
+$listener = new Net_Notifier_Listener($address);
+$listener->setVerbosity($verbosity);
+$listener->run();
+
+?>

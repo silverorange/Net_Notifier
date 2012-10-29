@@ -48,7 +48,9 @@ for ($i = 0; $i < 10; $i++) {
     $id = $config['sounds'][array_rand($config['sounds'])];
     $value = getValue() / 100;
     $client = new Net_Notifier_Sender($address);
-    $client->send(json_encode(array('id' => $id, 'value' => $value)));
+    echo "sending site : {$id}, value : {$value} ... ";
+    $client->send('order', array('site' => $id, 'value' => $value));
+    echo "done\n";
     usleep(rand(300000, 1500000));
 }
 

@@ -146,6 +146,16 @@ class Net_Notifier_Server
     protected $clients = array();
 
     /**
+     * Listening clients connected to this server
+     *
+     * This is an array of {@link Net_Notifier_WebSocket_Connection} objects.
+     * These clients are relayed messages received by the server.
+     *
+     * @var array
+     */
+    protected $listenClients = array();
+
+    /**
      * Whether or not this server is running
      *
      * @var boolean
@@ -285,32 +295,80 @@ class Net_Notifier_Server
                     if ($client->read(self::READ_BUFFER_LENGTH)) {
 
                         if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {
-                            $this->startCloseClient(
-                                $client,
-                                Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
-                                'Received message.'
-                            );
 
+                            $receivedRelayMessage = false;
                             $messages = $client->getTextMessages();
                             foreach ($messages as $message) {
-                                if ($message === 'shutdown') {
+                                $this->output(
+                                    sprintf(
+                                        "received message: '%s' from %s\n",
+                                        $message,
+                                        $client->getIpAddress()
+                                    ),
+                                    self::VERBOSITY_MESSAGES
+                                );
+
+                                $message = json_decode($message, true);
+
+                                if (   $message === false
+                                    || !isset($message['action'])
+                                ) {
                                     $this->output(
-                                        "received shutdown request\n",
+                                        "=> incorrectly formatted\n",
                                         self::VERBOSITY_MESSAGES
                                     );
-                                    break 3;
+
+                                    $this->startCloseClient(
+                                        $client,
+                                        Net_Notifier_WebSocket_Connection::CLOSE_PROTOCOL_ERROR,
+                                        'Incorrectly formatted message.'
+                                    );
+
+                                    break;
                                 }
 
-                                if (mb_strlen($message, '8bit') > 0) {
+                                if ($message['action'] === 'shutdown') {
                                     $this->output(
                                         sprintf(
-                                            "received message: '%s'\n",
-                                            $message
+                                            "shutting down at request of %s\n",
+                                            $client->getIpAddress()
                                         ),
                                         self::VERBOSITY_MESSAGES
                                     );
-                                    $this->relayNotification($message);
+
+                                    $this->startCloseClient(
+                                        $client,
+                                        Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
+                                        'Received shutdown message.'
+                                    );
+
+                                    break 3;
                                 }
+
+                                if ($message['action'] === 'listen') {
+                                    $this->output(
+                                        sprintf(
+                                            "set %s to listen\n",
+                                            $client->getIpAddress()
+                                        ),
+                                        self::VERBOSITY_MESSAGES
+                                    );
+
+                                    if (!in_array($client, $this->listenClients)) {
+                                        $this->listenClients[] = $client;
+                                    }
+                                } else {
+                                    $this->relayNotification($message);
+                                    $receivedRelayMessage = true;
+                                }
+                            }
+
+                            if ($receivedRelayMessage) {
+                                $this->startCloseClient(
+                                    $client,
+                                    Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
+                                    'Received message for relay.'
+                                );
                             }
                         }
 
@@ -323,6 +381,17 @@ class Net_Notifier_Server
                             ),
                             self::VERBOSITY_CLIENT
                         );
+
+                        if ($client->getState() === Net_Notifier_WebSocket_Connection::STATE_CLOSED) {
+                            $this->output(
+                                sprintf(
+                                    "completed close handshake from %s\n",
+                                    $client->getIpAddress()
+                                ),
+                                self::VERBOSITY_CLIENT
+                            );
+                            $moribund = true;
+                        }
 
                     }
 
@@ -359,11 +428,13 @@ class Net_Notifier_Server
      */
     protected function relayNotification($message)
     {
-        foreach ($this->clients as $client) {
+        $message = json_encode($message);
+
+        foreach ($this->listenClients as $client) {
             if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {
 
                 $this->output(
-                    "=> writing message '" . $message . "' to " .
+                    " ... relaying message '" . $message . "' to " .
                     $client->getIpAddress() . " ... ",
                     self::VERBOSITY_CLIENT
                 );
@@ -433,7 +504,7 @@ class Net_Notifier_Server
         }
 
         $this->clients = array();
-        fclose($this->socket);
+        $this->socket  = null;
 
         $this->output("done\n", self::VERBOSITY_ALL, false);
 
@@ -454,20 +525,43 @@ class Net_Notifier_Server
         Net_Notifier_WebSocket_Connection $client
     ) {
         $this->output(
-            "Closing client " . $client->getIpAddress() . " ... ",
+            "closing client " . $client->getIpAddress() . " ... ",
             self::VERBOSITY_CLIENT
         );
 
-        $client->close();
+        if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSED) {
+            $client->close();
+        }
+
         $key = array_search($client, $this->clients);
         unset($this->clients[$key]);
+
+        $key = array_search($client, $this->listenClients);
+        if ($key !== false) {
+            unset($this->listenClients[$key]);
+        }
 
         $this->output("done\n", self::VERBOSITY_CLIENT, false);
     }
 
     // }}}
-    // {{ startCloseClient()
+    // {{{ startCloseClient()
 
+    /**
+     * Initiates the closing handshake for a client connection
+     *
+     * @param Net_Notifier_WebSocket_Connection $client the client to close.
+     * @param integer                           $code   optional. The WebSocket close
+     *                                                  close reason code. If
+     *                                                  not specified,
+     *                                                  {@link Net_Notifier_WebSocket_Connection::CLOSE_NORMAL}
+     *                                                  is used.
+     * @param string                            $reason optional. A description
+     *                                                  of why the connection
+     *                                                  is being closed.
+     *
+     * @return void
+     */
     protected function startCloseClient(
         Net_Notifier_WebSocket_Connection $client,
         $code = Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
@@ -484,7 +578,7 @@ class Net_Notifier_Server
         $this->output("done\n", self::VERBOSITY_CLIENT, false);
     }
 
-    // }}
+    // }}}
     // {{{ getReadClients()
 
     /**

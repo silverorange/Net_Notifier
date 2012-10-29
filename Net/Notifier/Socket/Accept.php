@@ -22,14 +22,9 @@ class Net_Notifier_Socket_Accept
         restore_error_handler();
 
         if (!$this->socket) {
-            $error = ($errstr == '')
-                ? implode("\n", $this->connectionWarnings)
-                : $errstr;
-
+            $error = implode("\n", $this->connectionWarnings);
             throw new Net_Notifier_Socket_ConnectionException(
-                "Unable to accept client connection. Error: {$error}",
-                0,
-                $errno
+                "Unable to accept client connection. Error: {$error}"
             );
         }
     }

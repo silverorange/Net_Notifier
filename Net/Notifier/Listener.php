@@ -107,6 +107,9 @@ class Net_Notifier_Listener extends Net_Notifier_Client
     {
         $this->connect();
 
+        // tell server we want to listen
+        $this->connection->writeText('{ "action" : "listen" }');
+
         while (true) {
 
             $read = array($this->connection->getSocket()->getRawSocket());
@@ -141,12 +144,7 @@ class Net_Notifier_Listener extends Net_Notifier_Client
                 if ($this->connection->read(self::READ_BUFFER_LENGTH)) {
 
                      if ($this->connection->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {
-/*                        $this->startCloseClient(
-                            $client,
-                            Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
-                            'Received message.'
-                        );
-*/
+
                         $messages = $this->connection->getTextMessages();
                         foreach ($messages as $message) {
                             if (mb_strlen($message, '8bit') > 0) {

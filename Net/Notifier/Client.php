@@ -140,7 +140,7 @@ abstract class Net_Notifier_Client
      */
     public function __construct(
         $address,
-        $timeout = 2020
+        $timeout = 200
     ) {
         $this->parseAddress($address);
         $this->setTimeout($timeout);

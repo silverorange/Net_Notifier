@@ -267,7 +267,7 @@ class Net_Notifier_Server
                 $client = new Net_Notifier_WebSocket_Connection($newSocket);
                 $this->clients[] = $client;
                 $this->output(
-                    "client connected from " . $client->getIpAddress() . "\n",
+                    "client connected from " . $client->getIPAddress() . "\n",
                     self::VERBOSITY_CLIENT
                 );
             }
@@ -282,7 +282,7 @@ class Net_Notifier_Server
 
                 if (mb_strlen($bytes, '8bit') === 0) {
                     $this->output(
-                        "client " . $client->getIpAddress() . " closed "
+                        "client " . $client->getIPAddress() . " closed "
                         . "connection.\n",
                         self::VERBOSITY_CLIENT
                     );
@@ -303,7 +303,7 @@ class Net_Notifier_Server
                                     sprintf(
                                         "received message: '%s' from %s\n",
                                         $message,
-                                        $client->getIpAddress()
+                                        $client->getIPAddress()
                                     ),
                                     self::VERBOSITY_MESSAGES
                                 );
@@ -331,7 +331,7 @@ class Net_Notifier_Server
                                     $this->output(
                                         sprintf(
                                             "shutting down at request of %s\n",
-                                            $client->getIpAddress()
+                                            $client->getIPAddress()
                                         ),
                                         self::VERBOSITY_MESSAGES
                                     );
@@ -349,7 +349,7 @@ class Net_Notifier_Server
                                     $this->output(
                                         sprintf(
                                             "set %s to listen\n",
-                                            $client->getIpAddress()
+                                            $client->getIPAddress()
                                         ),
                                         self::VERBOSITY_MESSAGES
                                     );
@@ -377,7 +377,7 @@ class Net_Notifier_Server
                         $this->output(
                             sprintf(
                                 "got a message chunk from %s\n",
-                                $client->getIpAddress()
+                                $client->getIPAddress()
                             ),
                             self::VERBOSITY_CLIENT
                         );
@@ -386,7 +386,7 @@ class Net_Notifier_Server
                             $this->output(
                                 sprintf(
                                     "completed close handshake from %s\n",
-                                    $client->getIpAddress()
+                                    $client->getIPAddress()
                                 ),
                                 self::VERBOSITY_CLIENT
                             );
@@ -435,7 +435,7 @@ class Net_Notifier_Server
 
                 $this->output(
                     " ... relaying message '" . $message . "' to " .
-                    $client->getIpAddress() . " ... ",
+                    $client->getIPAddress() . " ... ",
                     self::VERBOSITY_CLIENT
                 );
 
@@ -525,7 +525,7 @@ class Net_Notifier_Server
         Net_Notifier_WebSocket_Connection $client
     ) {
         $this->output(
-            "closing client " . $client->getIpAddress() . " ... ",
+            "closing client " . $client->getIPAddress() . " ... ",
             self::VERBOSITY_CLIENT
         );
 
@@ -568,7 +568,7 @@ class Net_Notifier_Server
         $reason = ''
     ) {
         $this->output(
-            "disconnecting client from " . $client->getIpAddress() .
+            "disconnecting client from " . $client->getIPAddress() .
             " for reason '" . $reason . "' ... ",
             self::VERBOSITY_CLIENT
         );

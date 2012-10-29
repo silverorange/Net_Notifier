@@ -729,14 +729,14 @@ class Net_Notifier_WebSocket_Connection
     }
 
     // }}}
-    // {{{ getIpAddress()
+    // {{{ getIPAddress()
 
     /**
      * Gets the IP address of this connection
      *
      * @return string the IP address of this connection.
      */
-    public function getIpAddress()
+    public function getIPAddress()
     {
         return $this->ipAddress;
     }

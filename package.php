@@ -34,10 +34,10 @@
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$apiVersion     = '0.1.0';
+$apiVersion     = '0.1.1';
 $apiState       = 'alpha';
 
-$releaseVersion = '0.1.0';
+$releaseVersion = '0.1.1';
 $releaseState   = 'alpha';
 
 $releaseNotes   = <<<EOT
@@ -112,6 +112,12 @@ $package->addMaintainer(
     'mike@silverorange.com'
 );
 
+$package->addMaintainer(
+    'lead',
+    'nrf',
+    'Nathan Fredrickson',
+    'nrf@silverorange.com'
+);
 $package->setPhpDep('5.2.1');
 $package->setPearinstallerDep('1.4.0');
 $package->addExtensionDep('required', 'mbstring');

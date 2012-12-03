@@ -46,6 +46,11 @@ require_once 'Net/Notifier/Socket/Server.php';
 require_once 'Net/Notifier/Socket/Accept.php';
 
 /**
+ * Logger class for logging messages and debug output for this server.
+ */
+require_once 'Net/Notifier/Logger.php';
+
+/**
  * A server process for receiving and relaying notifications
  *
  * The cha-ching server interacts with two types of clients. The first type
@@ -77,31 +82,6 @@ class Net_Notifier_Server
      */
     const WRITE_BUFFER_LENGTH = 2048;
 
-    /**
-     * Verbosity level for showing nothing.
-     */
-    const VERBOSITY_NONE = 0;
-
-    /**
-     * Verbosity level for showing fatal errors.
-     */
-    const VERBOSITY_ERRORS = 1;
-
-    /**
-     * Verbosity level for showing relayed messages.
-     */
-    const VERBOSITY_MESSAGES = 2;
-
-    /**
-     * Verbosity level for showing all client activity.
-     */
-    const VERBOSITY_CLIENT = 3;
-
-    /**
-     * Verbosity level for showing all activity.
-     */
-    const VERBOSITY_ALL = 4;
-
     // }}}
     // {{{ protected properties
 
@@ -121,20 +101,6 @@ class Net_Notifier_Server
      * @var integer
      */
     protected $port = 2000;
-
-    /**
-     * The level of verbosity to use
-     *
-     * @var integer
-     *
-     * @see Net_Notifier_Server::setVerbosity()
-     * @see Net_Notifier_Server::VERBOSITY_NONE
-     * @see Net_Notifier_Server::VERBOSITY_ERRORS
-     * @see Net_Notifier_Server::VERBOSITY_MESSAGES
-     * @see Net_Notifier_Server::VERBOSITY_CLIENT
-     * @see Net_Notifier_Server::VERBOSITY_ALL
-     */
-    protected $verbosity = 1;
 
     /**
      * Clients connected to this server
@@ -161,6 +127,15 @@ class Net_Notifier_Server
      * @var boolean
      */
     protected $connected = false;
+
+    /**
+     * List of loggers for this server
+     *
+     * @var array
+     *
+     * @see Net_Notifier_Server::addLogger()
+     */
+    protected $loggers = array();
 
     // }}}
     // {{{ __construct()
@@ -198,24 +173,44 @@ class Net_Notifier_Server
     }
 
     // }}}
-    // {{{ setVerbosity()
+    // {{{ addLogger()
 
     /**
-     * Sets the level of verbosity to use
+     * Adds a logger for this server
      *
-     * @param integer $verbosity the level of verbosity to use.
+     * Loggers receive server status messages and debug output and can store
+     * or display received messages.
      *
-     * @return void
+     * @param Net_Notifier_Logger $logger the logger to add.
      *
-     * @see Net_Notifier_Server::VERBOSITY_NONE
-     * @see Net_Notifier_Server::VERBOSITY_ERRORS
-     * @see Net_Notifier_Server::VERBOSITY_MESSAGES
-     * @see Net_Notifier_Server::VERBOSITY_CLIENT
-     * @see Net_Notifier_Server::VERBOSITY_ALL
+     * @return Net_Notifier_Server the current object, for fluent interface.
      */
-    public function setVerbosity($verbosity)
+    public function addLogger(Net_Notifier_Logger $logger)
     {
-        $this->verbosity = (integer)$verbosity;
+        $this->loggers[] = $logger;
+        return $this;
+    }
+
+    // }}}
+    // {{{ removeLogger()
+
+    /**
+     * Removes a logger from this server
+     *
+     * @param Net_Notifier_Logger $logger the logger to remove.
+     *
+     * @return boolean true if the logger was removed, false if it was not found.
+     */
+    public function removeLogger(Net_Notifier_Logger $logger)
+    {
+        $old_loggers = $this->loggers;
+
+        $this->loggers = array_diff(
+            $this->loggers,
+            array($logger)
+        );
+
+        return (count($old_loggers) > count($this->loggers));
     }
 
     // }}}
@@ -256,19 +251,19 @@ class Net_Notifier_Server
                         null
                     );
                 } catch (Net_Notifier_Socket_Exception $e) {
-                    $this->output(
-                        "Accepting client connection failed: reason: " .
-                        $e->getMessage() . "\n",
-                        self::VERBOSITY_ERRORS
+                    $this->log(
+                        'Accepting client connection failed: reason: '
+                        . $e->getMessage() . PHP_EOL,
+                        Net_Notifier_Logger::VERBOSITY_ERRORS
                     );
-                    exit(1);
                 }
 
                 $client = new Net_Notifier_WebSocket_Connection($newSocket);
                 $this->clients[] = $client;
-                $this->output(
-                    "client connected from " . $client->getIPAddress() . "\n",
-                    self::VERBOSITY_CLIENT
+                $this->log(
+                    'client connected from ' . $client->getIPAddress()
+                    . PHP_EOL,
+                    Net_Notifier_Logger::VERBOSITY_CLIENT
                 );
             }
 
@@ -281,10 +276,12 @@ class Net_Notifier_Server
                 $bytes = $client->getSocket()->peek(32);
 
                 if (mb_strlen($bytes, '8bit') === 0) {
-                    $this->output(
-                        "client " . $client->getIPAddress() . " closed "
-                        . "connection.\n",
-                        self::VERBOSITY_CLIENT
+                    $this->log(
+                        sprintf(
+                            'client %s closed connection.' . PHP_EOL,
+                            $client->getIPAddress()
+                        ),
+                        Net_Notifier_Logger::VERBOSITY_CLIENT
                     );
 
                     $moribund = true;
@@ -299,13 +296,14 @@ class Net_Notifier_Server
                             $receivedRelayMessage = false;
                             $messages = $client->getTextMessages();
                             foreach ($messages as $message) {
-                                $this->output(
+                                $this->log(
                                     sprintf(
-                                        "received message: '%s' from %s\n",
+                                        'received message: "%s" from %s'
+                                        . PHP_EOL,
                                         $message,
                                         $client->getIPAddress()
                                     ),
-                                    self::VERBOSITY_MESSAGES
+                                    Net_Notifier_Logger::VERBOSITY_MESSAGES
                                 );
 
                                 $message = json_decode($message, true);
@@ -313,9 +311,9 @@ class Net_Notifier_Server
                                 if (   $message === false
                                     || !isset($message['action'])
                                 ) {
-                                    $this->output(
-                                        "=> incorrectly formatted\n",
-                                        self::VERBOSITY_MESSAGES
+                                    $this->log(
+                                        '=> incorrectly formatted' . PHP_EOL,
+                                        Net_Notifier_Logger::VERBOSITY_MESSAGES
                                     );
 
                                     $this->startCloseClient(
@@ -328,12 +326,13 @@ class Net_Notifier_Server
                                 }
 
                                 if ($message['action'] === 'shutdown') {
-                                    $this->output(
+                                    $this->log(
                                         sprintf(
-                                            "shutting down at request of %s\n",
+                                            'shutting down at request of %s'
+                                            . PHP_EOL,
                                             $client->getIPAddress()
                                         ),
-                                        self::VERBOSITY_MESSAGES
+                                        Net_Notifier_Logger::VERBOSITY_MESSAGES
                                     );
 
                                     $this->startCloseClient(
@@ -346,12 +345,12 @@ class Net_Notifier_Server
                                 }
 
                                 if ($message['action'] === 'listen') {
-                                    $this->output(
+                                    $this->log(
                                         sprintf(
-                                            "set %s to listen\n",
+                                            'set %s to listen' . PHP_EOL,
                                             $client->getIPAddress()
                                         ),
-                                        self::VERBOSITY_MESSAGES
+                                        Net_Notifier_Logger::VERBOSITY_MESSAGES
                                     );
 
                                     if (!in_array($client, $this->listenClients)) {
@@ -374,21 +373,22 @@ class Net_Notifier_Server
 
                     } else {
 
-                        $this->output(
+                        $this->log(
                             sprintf(
-                                "got a message chunk from %s\n",
+                                'got a message chunk from %s' . PHP_EOL,
                                 $client->getIPAddress()
                             ),
-                            self::VERBOSITY_CLIENT
+                            Net_Notifier_Logger::VERBOSITY_CLIENT
                         );
 
                         if ($client->getState() === Net_Notifier_WebSocket_Connection::STATE_CLOSED) {
-                            $this->output(
+                            $this->log(
                                 sprintf(
-                                    "completed close handshake from %s\n",
+                                    'completed close handshake from %s'
+                                    . PHP_EOL,
                                     $client->getIPAddress()
                                 ),
-                                self::VERBOSITY_CLIENT
+                                Net_Notifier_Logger::VERBOSITY_CLIENT
                             );
                             $moribund = true;
                         }
@@ -396,12 +396,12 @@ class Net_Notifier_Server
                     }
 
                 } catch (Net_Notifier_WebSocket_HandshakeFailureException $e) {
-                    $this->output(
+                    $this->log(
                         sprintf(
-                            "failed client handshake: %s\n",
+                            'failed client handshake: %s' . PHP_EOL,
                             $e->getMessage()
                         ),
-                        self::VERBOSITY_CLIENT
+                        Net_Notifier_Logger::VERBOSITY_CLIENT
                     );
                 }
 
@@ -433,16 +433,22 @@ class Net_Notifier_Server
         foreach ($this->listenClients as $client) {
             if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {
 
-                $this->output(
-                    " ... relaying message '" . $message . "' to " .
-                    $client->getIPAddress() . " ... ",
-                    self::VERBOSITY_CLIENT
+                $this->log(
+                    sprintf(
+                        ' ... relaying message "%s" to %s ... ',
+                        $message,
+                        $client->getIPAddress()
+                    ),
+                    Net_Notifier_Logger::VERBOSITY_CLIENT
                 );
 
                 $client->writeText($message);
 
-                $this->output("done\n", self::VERBOSITY_CLIENT, false);
-
+                $this->log(
+                    'done' . PHP_EOL,
+                    Net_Notifier_Logger::VERBOSITY_CLIENT,
+                    false
+                );
             }
         }
     }
@@ -460,7 +466,7 @@ class Net_Notifier_Server
         $errstr = '';
         $errno  = 0;
 
-        $this->output("creating socket ... ", self::VERBOSITY_ALL);
+        $this->log('creating socket ... ', Net_Notifier_Logger::VERBOSITY_ALL);
 
         try {
             $this->socket = new Net_Notifier_Socket_Server(
@@ -471,15 +477,15 @@ class Net_Notifier_Server
                 null
             );
         } catch (Net_Notifier_Socket_Exception $e) {
-            $this->output(
-                "failed\nreason: " . $e->getMessage() . "\n",
-                self::VERBOSITY_ERRORS,
+            $this->log(
+                'failed' . PHP_EOL,
+                Net_Notifier_Logger::VERBOSITY_ALL,
                 false
             );
-            exit(1);
+            throw $e;
         }
 
-        $this->output("done\n", self::VERBOSITY_ALL, false);
+        $this->log('done' . PHP_EOL, Net_Notifier_Logger::VERBOSITY_ALL, false);
 
         $this->connected = true;
     }
@@ -494,7 +500,7 @@ class Net_Notifier_Server
      */
     protected function disconnect()
     {
-        $this->output("closing sockets ... ", self::VERBOSITY_ALL);
+        $this->log('closing sockets ... ', Net_Notifier_Logger::VERBOSITY_ALL);
 
         foreach ($this->clients as $client) {
             $client->startClose(
@@ -506,7 +512,7 @@ class Net_Notifier_Server
         $this->clients = array();
         $this->socket  = null;
 
-        $this->output("done\n", self::VERBOSITY_ALL, false);
+        $this->log('done' . PHP_EOL, Net_Notifier_Logger::VERBOSITY_ALL, false);
 
         $this->connected = false;
     }
@@ -524,9 +530,12 @@ class Net_Notifier_Server
     protected function closeClient(
         Net_Notifier_WebSocket_Connection $client
     ) {
-        $this->output(
-            "closing client " . $client->getIPAddress() . " ... ",
-            self::VERBOSITY_CLIENT
+        $this->log(
+            sprintf(
+                'closing client %s ... ',
+                $client->getIPAddress()
+            ),
+            Net_Notifier_Logger::VERBOSITY_CLIENT
         );
 
         if ($client->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSED) {
@@ -541,7 +550,11 @@ class Net_Notifier_Server
             unset($this->listenClients[$key]);
         }
 
-        $this->output("done\n", self::VERBOSITY_CLIENT, false);
+        $this->log(
+            'done' . PHP_EOL,
+            Net_Notifier_Logger::VERBOSITY_CLIENT,
+            false
+        );
     }
 
     // }}}
@@ -567,15 +580,22 @@ class Net_Notifier_Server
         $code = Net_Notifier_WebSocket_Connection::CLOSE_NORMAL,
         $reason = ''
     ) {
-        $this->output(
-            "disconnecting client from " . $client->getIPAddress() .
-            " for reason '" . $reason . "' ... ",
-            self::VERBOSITY_CLIENT
+        $this->log(
+            sprintf(
+                'disconnecting client from %s for reason "%s" ... ',
+                $client->getIPAddress(),
+                $reason
+            ),
+            Net_Notifier_Logger::VERBOSITY_CLIENT
         );
 
         $client->startClose($code, $reason);
 
-        $this->output("done\n", self::VERBOSITY_CLIENT, false);
+        $this->log(
+            'done' . PHP_EOL,
+            Net_Notifier_Logger::VERBOSITY_CLIENT,
+            false
+        );
     }
 
     // }}}
@@ -625,28 +645,31 @@ class Net_Notifier_Server
     }
 
     // }}}
-    // {{{ output()
+    // {{{ log()
 
     /**
-     * Displays a debug string based on the verbosity level
+     * Logs a message with the specified priority
      *
-     * @param string  $string    the string to display.
-     * @param integer $verbosity an optional verbosity level to display at. By
-     *                           default, this is 1.
+     * @param string  $message   the message to log.
+     * @param integer $priority  an optional verbosity level to display at. By
+     *                           default, this is
+     *                           {@link Net_Notifier_Logger::VERBOSITY_MESSAGES}.
      * @param boolean $timestamp optional. Whether or not to include a
-     *                           timestamp with the output.
+     *                           timestamp with the logged message. If not
+     *                           specified, a timetamp is included.
      *
-     * @return void
+     * @return Net_Notifier_Server the current object, for fluent interface.
      */
-    protected function output($string, $verbosity = 1, $timestamp = true)
-    {
-        if ($verbosity <= $this->verbosity) {
-            if ($timestamp) {
-                echo '[' . date('Y-m-d H:i:s') . '] ' . $string;
-            } else {
-                echo $string;
-            }
+    protected function log(
+        $message,
+        $priority = Net_Notifier_Logger::VERBOSITY_MESSAGES,
+        $timestamp = true
+    ) {
+        foreach ($this->loggers as $logger) {
+            $logger->log($message, $priority, $timestamp);
         }
+
+        return $this;
     }
 
     // }}}

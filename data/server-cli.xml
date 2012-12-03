@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes"?>
+<command>
+	<description>Service that receives and relays notifications to listening clients.</description>
+	<version>@package-version@</version>
+	<option name="port">
+		<short_name>-p</short_name>
+		<long_name>--port</long_name>
+		<description>Optional port on which to listen for notifications. If not specified, port 3000 is used.</description>
+		<action>StoreInt</action>
+		<default>3000</default>
+	</option>
+	<option name="verbose">
+		<short_name>-v</short_name>
+		<long_name>--verbose</long_name>
+		<description>Sets verbosity level. Use multiples for more detail (e.g. "-vv").</description>
+		<action>Counter</action>
+		<default>1</default>
+	</option>
+</command>

@@ -121,6 +121,12 @@ $package->addMaintainer(
 $package->setPhpDep('5.2.1');
 $package->setPearinstallerDep('1.4.0');
 $package->addExtensionDep('required', 'mbstring');
+$package->addPackageDepWithChannel(
+    'required',
+    'Console_CommandLine',
+    'pear.php.net',
+    '1.1.10'
+);
 $package->generateContents();
 
 $package->addRelease();

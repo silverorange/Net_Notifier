@@ -163,6 +163,15 @@ class Net_Notifier_Listener
     // }}}
     // {{{ handleMessage()
 
+    /**
+     * Handles messages received by this listener
+     *
+     * Subclasses can and should override this method to handle messages.
+     *
+     * @param string $message the received message
+     *
+     * @return void
+     */
     protected function handleMessage($message)
     {
     }

@@ -233,6 +233,8 @@ abstract class Net_Notifier_Socket_Abstract
     /**
      * Throws an exception if stream timed out
      *
+     * @return void
+     *
      * @throws Net_Notifier_Socket_TimeoutException
      */
     protected function checkTimeout()

@@ -26,7 +26,7 @@
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2012 silverorange
+ * @copyright 2006-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -62,7 +62,7 @@ require_once 'Net/Notifier/Logger.php';
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2006-2012 silverorange
+ * @copyright 2006-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 class Net_Notifier_Server
@@ -72,15 +72,22 @@ class Net_Notifier_Server
     /**
      * How long the read buffer for client connections is.
      *
-     * If this is too short, multiple read calls will be made on client
-     * connections to receive messages.
+     * Note: For correct behaviour, this must be the same at the PHP stream
+     * chunk size. For all PHP < 5.4 this is 8192. Other values will cause
+     * PHP's internal stream buffer to be used and break stream_select()
+     * semantics. See https://bugs.php.net/bug.php?id=52602
      */
-    const READ_BUFFER_LENGTH = 2048;
+    const READ_BUFFER_LENGTH = 8192;
 
     /**
      * How long the write buffer for client connections is.
+     *
+     * Note: For correct behaviour, this must be the same at the PHP stream
+     * chunk size. For all PHP < 5.4 this is 8192. Other values will cause
+     * PHP's internal stream buffer to be used and break stream_select()
+     * semantics. See https://bugs.php.net/bug.php?id=52602
      */
-    const WRITE_BUFFER_LENGTH = 2048;
+    const WRITE_BUFFER_LENGTH = 8192;
 
     // }}}
     // {{{ protected properties
@@ -273,7 +280,7 @@ class Net_Notifier_Server
                 $moribund = false;
 
                 // check if client closed connection
-                $bytes = $client->getSocket()->peek(32);
+                $bytes = $client->getSocket()->peek(1);
 
                 if (mb_strlen($bytes, '8bit') === 0) {
                     $this->log(

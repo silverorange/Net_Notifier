@@ -93,6 +93,8 @@ require_once 'Net/Notifier/Socket/TimeoutException.php';
  */
 abstract class Net_Notifier_Socket_Abstract
 {
+    // {{{ protected proeprties
+
     /**
      * PHP warning messages raised during stream_socket_client() call
      *
@@ -123,6 +125,8 @@ abstract class Net_Notifier_Socket_Abstract
      */
     protected $timeout;
 
+    // }}}
+    // {{{ __destruct()
 
     /**
      * Destructor, disconnects socket
@@ -131,6 +135,9 @@ abstract class Net_Notifier_Socket_Abstract
     {
         fclose($this->socket);
     }
+
+    // }}}
+    // {{{ read()
 
     /**
      * Wrapper around fread(), handles global request timeout
@@ -157,6 +164,9 @@ abstract class Net_Notifier_Socket_Abstract
         return $data;
     }
 
+    // }}}
+    // {{{ write()
+
     /**
      * Wrapper around fwrite(), handles global request timeout
      *
@@ -182,6 +192,9 @@ abstract class Net_Notifier_Socket_Abstract
         return $written;
     }
 
+    // }}}
+    // {{{ eof()
+
     /**
      * Tests for end-of-file on a socket
      *
@@ -191,6 +204,9 @@ abstract class Net_Notifier_Socket_Abstract
     {
         return feof($this->socket);
     }
+
+    // }}}
+    // {{{ setDeadline()
 
     /**
      * Sets request deadline
@@ -210,6 +226,9 @@ abstract class Net_Notifier_Socket_Abstract
 
         return $this;
     }
+
+    // }}}
+    // {{{ enableCrypto()
 
     /**
      * Turns on encryption on a socket
@@ -239,6 +258,9 @@ abstract class Net_Notifier_Socket_Abstract
         );
     }
 
+    // }}}
+    // {{{ checkTimeout()
+
     /**
      * Throws an exception if stream timed out
      *
@@ -260,6 +282,9 @@ abstract class Net_Notifier_Socket_Abstract
         }
     }
 
+    // }}}
+    // {{{ connectionWarningsHandler()
+
     /**
      * Error handler to use during stream_socket_client() call
      *
@@ -280,6 +305,9 @@ abstract class Net_Notifier_Socket_Abstract
         return true;
     }
 
+    // }}}
+    // {{{ getPeerName()
+
     /**
      * Gets the name of this socket
      *
@@ -291,6 +319,9 @@ abstract class Net_Notifier_Socket_Abstract
     {
         return stream_socket_get_name($this->socket, true);
     }
+
+    // }}}
+    // {{{ shutdown()
 
     /**
      * Shuts down one or more ends of the TCP pipe for this socket
@@ -307,6 +338,9 @@ abstract class Net_Notifier_Socket_Abstract
         return stream_socket_shutdown($this->socket, $how);
     }
 
+    // }}}
+    // {{{ getRawSocket()
+
     /**
      * Gets the raw PHP stream for this socket
      *
@@ -317,6 +351,9 @@ abstract class Net_Notifier_Socket_Abstract
     {
         return $this->socket;
     }
+
+    // }}}
+    // {{{ peek()
 
     /**
      * Gets bytes from this socket without incrementing the read position
@@ -332,6 +369,8 @@ abstract class Net_Notifier_Socket_Abstract
     {
         return stream_socket_recvfrom($this->socket, $length, STREAM_PEEK);
     }
+
+    // }}}
 }
 
 ?>

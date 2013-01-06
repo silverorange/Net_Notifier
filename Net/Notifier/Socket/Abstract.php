@@ -199,15 +199,23 @@ abstract class Net_Notifier_Socket_Abstract
      *                          past this time
      * @param integer $timeout  Original request timeout value, to use in
      *                          Exception message
+     *
+     * @return Net_Notifier_Socket_Abstract the current object, for fluent
+     *                                      interface.
      */
     public function setDeadline($deadline, $timeout)
     {
         $this->deadline = $deadline;
         $this->timeout  = $timeout;
+
+        return $this;
     }
 
     /**
      * Turns on encryption on a socket
+     *
+     * @return Net_Notifier_Socket_Abstract the current object, for fluent
+     *                                      interface.
      *
      * @throws Net_Notifier_Socket_ConnectionException
      */
@@ -222,9 +230,10 @@ abstract class Net_Notifier_Socket_Abstract
 
         foreach ($modes as $mode) {
             if (stream_socket_enable_crypto($this->socket, true, $mode)) {
-                return;
+                return $this;
             }
         }
+
         throw new Net_Notifier_Socket_ConnectionException(
             'Failed to enable secure connection when connecting through proxy'
         );
@@ -261,7 +270,7 @@ abstract class Net_Notifier_Socket_Abstract
      * @param integer $errno  error level
      * @param string  $errstr error message
      *
-     * @return bool
+     * @return boolean
      */
     protected function connectionWarningsHandler($errno, $errstr)
     {
@@ -271,21 +280,54 @@ abstract class Net_Notifier_Socket_Abstract
         return true;
     }
 
+    /**
+     * Gets the name of this socket
+     *
+     * For example: 192.168.0.150:56784
+     *
+     * @return string the name of this socket.
+     */
     public function getPeerName()
     {
         return stream_socket_get_name($this->socket, true);
     }
 
+    /**
+     * Shuts down one or more ends of the TCP pipe for this socket
+     *
+     * @param integer $how on of the constants STREAM_SHUT_RD, STREAM_SHUT_WR
+     *                     or STREAM_SHUT_RDRW. See
+     *                     {@link http://ca3.php.net/stream_socket_shutdown} for
+     *                     a description of the constants.
+     *
+     * @return boolean true on success, false on failure.
+     */
     public function shutdown($how)
     {
         return stream_socket_shutdown($this->socket, $how);
     }
 
+    /**
+     * Gets the raw PHP stream for this socket
+     *
+     * @return resource the raw PHP stream for this socket. Useful for
+     *                  performing stream_select() calls on this socket.
+     */
     public function getRawSocket()
     {
         return $this->socket;
     }
 
+    /**
+     * Gets bytes from this socket without incrementing the read position
+     *
+     * Subsequent calls to read from this socket will return the same bytes.
+     * Peek can block just like read if the socket is not ready to be read.
+     *
+     * @param integer $length the maximum number of bytes to read.
+     *
+     * @return string up to <kbd>$length</kbd> bytes or data from this socket.
+     */
     public function peek($length)
     {
         return stream_socket_recvfrom($this->socket, $length, STREAM_PEEK);

@@ -26,7 +26,7 @@
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2010-2012 silverorange
+ * @copyright 2010-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -46,7 +46,7 @@ require_once 'Net/Notifier/WebSocket/HandshakeFailureException.php';
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2010-2012 silverorange
+ * @copyright 2010-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  * @see       Net_Notifier_WebSocket_Connection
  */

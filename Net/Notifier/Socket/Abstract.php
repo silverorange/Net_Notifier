@@ -10,7 +10,7 @@
  * LICENSE:
  *
  * Copyright (c) 2008-2012 Alexey Borzov <avb@php.net>
- * Copyright (c) 2012 Michael Gauthier <mike@silverorange.com>
+ * Copyright (c) 2012-2013 Michael Gauthier <mike@silverorange.com>
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -63,7 +63,7 @@
  * @package   Net_Notifier
  * @author    Alexey Borzov <avb@php.net>
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2008-2012 Alexy Borzov, 2012 silverorange
+ * @copyright 2008-2012 Alexy Borzov, 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -87,7 +87,7 @@ require_once 'Net/Notifier/Socket/TimeoutException.php';
  * @package   Net_Notifier
  * @author    Alexey Borzov <avb@php.net>
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2008-2012 Alexy Borzov, 2012 silverorange
+ * @copyright 2008-2012 Alexy Borzov, 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  * @link      http://tools.ietf.org/html/rfc1928
  */

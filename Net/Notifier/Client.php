@@ -26,7 +26,7 @@
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2012 silverorange
+ * @copyright 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
@@ -56,7 +56,7 @@ require_once 'Net/Notifier/ClientException.php';
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2012 silverorange
+ * @copyright 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 abstract class Net_Notifier_Client
@@ -66,10 +66,12 @@ abstract class Net_Notifier_Client
     /**
      * How long the read buffer for connections is.
      *
-     * If this is too short, multiple read calls will be made on client
-     * connections to receive messages.
+     * Note: For correct behaviour, this must be the same at the PHP stream
+     * chunk size. For all PHP < 5.4 this is 8192. Other values will cause
+     * PHP's internal stream buffer to be used and break stream_select()
+     * semantics. See https://bugs.php.net/bug.php?id=52602
      */
-    const READ_BUFFER_LENGTH = 2048;
+    const READ_BUFFER_LENGTH = 8192;
 
     // }}}
     // {{{ protected properties

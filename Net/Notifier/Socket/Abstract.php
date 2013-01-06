@@ -146,38 +146,15 @@ abstract class Net_Notifier_Socket_Abstract
         if ($this->deadline) {
             stream_set_timeout($this->socket, max($this->deadline - time(), 1));
         }
+
+        // Note: For correct behaviour, $length should be the same at the
+        // PHP stream chunk size. For all PHP < 5.4 this is 8192. Other values
+        // will cause PHP's internal stream buffer to be used and break
+        // stream_select() semantics. See https://bugs.php.net/bug.php?id=52602
         $data = fread($this->socket, $length);
+
         $this->checkTimeout();
         return $data;
-    }
-
-    /**
-     * Reads until either the end of the socket or a newline, whichever comes
-     * first
-     *
-     * Strips the trailing newline from the returned data, handles global
-     * request timeout. Method idea borrowed from Net_Socket PEAR package.
-     *
-     * @param integer $bufferSize buffer size to use for reading
-     *
-     * @return string Available data up to the newline (not including newline)
-     *
-     * @throws Net_Notifier_Socket_TimeoutException In case of timeout.
-     */
-    public function readLine($bufferSize)
-    {
-        $line = '';
-        while (!feof($this->socket)) {
-            if ($this->deadline) {
-                stream_set_timeout($this->socket, max($this->deadline - time(), 1));
-            }
-            $line .= @fgets($this->socket, $bufferSize);
-            $this->checkTimeout();
-            if (mb_substr($line, -1, mb_strlen($line, '8bit'), '8bit') == "\n") {
-                return rtrim($line, "\r\n");
-            }
-        }
-        return $line;
     }
 
     /**

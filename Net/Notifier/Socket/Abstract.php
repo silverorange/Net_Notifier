@@ -165,6 +165,29 @@ abstract class Net_Notifier_Socket_Abstract
     }
 
     // }}}
+    // {{{ peek()
+
+    /**
+     * Gets bytes from this socket without incrementing the read position
+     *
+     * Subsequent calls to read from this socket will return the same bytes.
+     * Peek can block just like read if the socket is not ready to be read.
+     *
+     * The data returned is raw data. For encytpted sockets, the encrypted
+     * bytes are returned. This is unlike the behaviour of
+     * {@link Net_Notifier_Socket_Abstract::read()}, which returnes unencrypted
+     * data.
+     *
+     * @param integer $length the maximum number of bytes to read.
+     *
+     * @return string up to <kbd>$length</kbd> bytes or data from this socket.
+     */
+    public function peek($length)
+    {
+        return stream_socket_recvfrom($this->socket, $length, STREAM_PEEK);
+    }
+
+    // }}}
     // {{{ write()
 
     /**
@@ -350,24 +373,6 @@ abstract class Net_Notifier_Socket_Abstract
     public function getRawSocket()
     {
         return $this->socket;
-    }
-
-    // }}}
-    // {{{ peek()
-
-    /**
-     * Gets bytes from this socket without incrementing the read position
-     *
-     * Subsequent calls to read from this socket will return the same bytes.
-     * Peek can block just like read if the socket is not ready to be read.
-     *
-     * @param integer $length the maximum number of bytes to read.
-     *
-     * @return string up to <kbd>$length</kbd> bytes or data from this socket.
-     */
-    public function peek($length)
-    {
-        return stream_socket_recvfrom($this->socket, $length, STREAM_PEEK);
     }
 
     // }}}

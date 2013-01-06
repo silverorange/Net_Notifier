@@ -204,22 +204,22 @@ class Net_Notifier_WebSocket_Handshake
                 . "missing.\r\n";
 
         } elseif (   !isset($headers['Upgrade'])
-                  || strtolower($headers['Upgrade']) != 'websocket'
+                  || !in_array('websocket', $this->parseHeaderValue($headers['Upgrade']))
         ) {
 
             $response
                 = "HTTP/1.1 400 Bad Request\r\n"
                 . "X-WebSocket-Message: Client request Upgrade header is "
-                . "missing or not set to 'websocket'.\r\n";
+                . "missing or does not contain the 'websocket' product.\r\n";
 
         } elseif (   !isset($headers['Connection'])
-                  || strtolower($headers['Connection']) != 'upgrade'
+                  || !in_array('upgrade', $this->parseHeaderValue($headers['Connection']))
         ) {
 
             $response
                 = "HTTP/1.1 400 Bad Request\r\n"
                 . "X-WebSocket-Message: Client request Connection header is "
-                . "missing or not set to 'Upgrade'.\r\n";
+                . "missing or does not contain the'Upgrade' token.\r\n";
 
         } elseif (!isset($headers['Sec-WebSocket-Key'])) {
 
@@ -437,6 +437,42 @@ class Net_Notifier_WebSocket_Handshake
         }
 
         return $parsedHeaders;
+    }
+
+    // }}}
+    // {{{ parseHeader()
+
+    /**
+     * Parses a HTTP header value containing one or more tokens separated by
+     * commas
+     *
+     * Empty values are ignored. Only tokens are parsed, which means quoted
+     * string values may not be parsed correctly.
+     *
+     * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.1
+     *
+     * @param string $value the raw HTTP header value to parse
+     *
+     * @return array an array of parsed header values.
+     */
+    protected function parseHeaderValue($value)
+    {
+        $values = explode(',', $value);
+
+        // remove leading/trailing whitespace
+        $values = array_map('trim', $values);
+
+        // ignore empty values
+        $values = array_filter(
+            $values,
+            create_function('$value', 'return ($value != \'\');')
+        );
+
+        // lowercase header values
+        // remove leading/trailing whitespace
+        $values = array_map('strtolower', $values);
+
+        return $values;
     }
 
     // }}}

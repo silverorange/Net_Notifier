@@ -23,14 +23,6 @@ class Net_Notifier_Listener extends Net_Notifier_Client
     // {{{ class constants
 
     /**
-     * How long the read buffer for client connections is.
-     *
-     * If this is too short, multiple read calls will be made on client
-     * connections to receive messages.
-     */
-    const READ_BUFFER_LENGTH = 2048;
-
-    /**
      * Verbosity level for showing nothing.
      */
     const VERBOSITY_NONE = 0;
@@ -141,7 +133,7 @@ class Net_Notifier_Listener extends Net_Notifier_Client
 
             try {
 
-                if ($this->connection->read(self::READ_BUFFER_LENGTH)) {
+                if ($this->connection->read(Net_Notifier_Client::READ_BUFFER_LENGTH)) {
 
                      if ($this->connection->getState() < Net_Notifier_WebSocket_Connection::STATE_CLOSING) {
 

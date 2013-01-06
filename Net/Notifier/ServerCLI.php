@@ -22,7 +22,7 @@ class Net_Notifier_ServerCLI
 
             try {
                 $server = $this->getServer($result->options);
-                $server->addLogger($logger);
+                $server->setLogger($logger);
                 $server->run();
             } catch (Net_Notifier_Exception $e) {
                 $logger->log(
@@ -34,19 +34,19 @@ class Net_Notifier_ServerCLI
             }
 
         } catch (Console_CommandLine_Exception $e) {
-            $this->logger->log(
+            $logger->log(
                 $e->getMessage() . PHP_EOL,
                 Net_Notifier_Logger::VERBOSITY_ERRORS
             );
 
             exit(1);
         } catch (Exception $e) {
-            $this->logger->log(
+            $logger->log(
                 $e->getMessage() . PHP_EOL,
                 Net_Notifier_Logger::VERBOSITY_ERRORS
             );
 
-            $this->logger->log(
+            $logger->log(
                 $e->getTraceAsString() . PHP_EOL,
                 Net_Notifier_Logger::VERBOSITY_ERRORS
             );

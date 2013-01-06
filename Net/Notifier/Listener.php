@@ -161,7 +161,7 @@ class Net_Notifier_Listener
     }
 
     // }}}
-    // {{{ protected function handleMessage()
+    // {{{ handleMessage()
 
     protected function handleMessage($message)
     {

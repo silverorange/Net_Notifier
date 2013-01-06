@@ -8,6 +8,16 @@
 require_once 'Net/Notifier/Client.php';
 
 /**
+ * Logger class for logging messages and debug output for this client.
+ */
+require_once 'Net/Notifier/Logger.php';
+
+/**
+ * Loggable interface.
+ */
+require_once 'Net/Notifier/Loggable.php';
+
+/**
  * A simple notification listener client
  *
  * May be extended to provide additional functionality.
@@ -18,71 +28,38 @@ require_once 'Net/Notifier/Client.php';
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
-class Net_Notifier_Listener extends Net_Notifier_Client
+class Net_Notifier_Listener
+    extends Net_Notifier_Client
+    implements Net_Notifier_Loggable
 {
-    // {{{ class constants
-
-    /**
-     * Verbosity level for showing nothing.
-     */
-    const VERBOSITY_NONE = 0;
-
-    /**
-     * Verbosity level for showing fatal errors.
-     */
-    const VERBOSITY_ERRORS = 1;
-
-    /**
-     * Verbosity level for showing relayed messages.
-     */
-    const VERBOSITY_MESSAGES = 2;
-
-    /**
-     * Verbosity level for showing all client activity.
-     */
-    const VERBOSITY_CLIENT = 3;
-
-    /**
-     * Verbosity level for showing all activity.
-     */
-    const VERBOSITY_ALL = 4;
-
-    // }}}
     // {{{ protected properties
 
     /**
-     * The level of verbosity to use
+     * The logger used by this client
      *
-     * @var integer
-     *
-     * @see Net_Notifier_Listener::setVerbosity()
-     * @see Net_Notifier_Listener::VERBOSITY_NONE
-     * @see Net_Notifier_Listener::VERBOSITY_ERRORS
-     * @see Net_Notifier_Listener::VERBOSITY_MESSAGES
-     * @see Net_Notifier_Listener::VERBOSITY_CLIENT
-     * @see Net_Notifier_Listener::VERBOSITY_ALL
+     * @var Net_Notifier_Logger
      */
-    protected $verbosity = 0;
+    protected $logger = null;
 
     // }}}
-    // {{{ setVerbosity()
+    // {{{ setLogger()
 
     /**
-     * Sets the level of verbosity to use
+     * Sets the logger for this client
      *
-     * @param integer $verbosity the level of verbosity to use.
+     * Loggers receive status messages and debug output and can store or
+     * display received messages.
      *
-     * @return void
+     * @param Net_Notifier_Logger|null $logger the logger to set for this
+     *                                         server, or null to unset the
+     *                                         logger.
      *
-     * @see Net_Notifier_Listener::VERBOSITY_NONE
-     * @see Net_Notifier_Listener::VERBOSITY_ERRORS
-     * @see Net_Notifier_Listener::VERBOSITY_MESSAGES
-     * @see Net_Notifier_Listener::VERBOSITY_CLIENT
-     * @see Net_Notifier_Listener::VERBOSITY_ALL
+     * @return Net_Notifier_Loggable the current object, for fluent interface.
      */
-    public function setVerbosity($verbosity)
+    public function setLogger(Net_Notifier_Logger $logger = null)
     {
-        $this->verbosity = (integer)$verbosity;
+        $this->logger = $logger;
+        return $this;
     }
 
     // }}}
@@ -120,12 +97,12 @@ class Net_Notifier_Listener extends Net_Notifier_Client
             $moribund = false;
 
             // check if server closed connection
-            $bytes = $this->connection->getSocket()->peek(32);
+            $bytes = $this->connection->getSocket()->peek(1);
 
             if (mb_strlen($bytes, '8bit') === 0) {
-                $this->output(
-                    "server closed connection.\n",
-                    self::VERBOSITY_CLIENT
+                $this->log(
+                    'server closed connection.' . PHP_EOL,
+                    Net_Notifier_Logger::VERBOSITY_CLIENT
                 );
 
                 $moribund = true;
@@ -140,12 +117,12 @@ class Net_Notifier_Listener extends Net_Notifier_Client
                         $messages = $this->connection->getTextMessages();
                         foreach ($messages as $message) {
                             if (mb_strlen($message, '8bit') > 0) {
-                                $this->output(
+                                $this->log(
                                     sprintf(
-                                        "received message: '%s'\n",
+                                        'received message: "%s"' . PHP_EOL,
                                         $message
                                     ),
-                                    self::VERBOSITY_MESSAGES
+                                    Net_Notifier_Logger::VERBOSITY_MESSAGES
                                 );
                                 $this->handleMessage($message);
                             }
@@ -154,20 +131,20 @@ class Net_Notifier_Listener extends Net_Notifier_Client
 
                 } else {
 
-                    $this->output(
-                        "got a message chunk from server\n",
-                        self::VERBOSITY_CLIENT
+                    $this->log(
+                        'got a message chunk from server' . PHP_EOL,
+                        Net_Notifier_Logger::VERBOSITY_CLIENT
                     );
 
                 }
 
             } catch (Net_Notifier_WebSocket_HandshakeFailureException $e) {
-                $this->output(
+                $this->log(
                     sprintf(
-                        "failed server handshake: %s\n",
+                        'failed server handshake: %s' . PHP_EOL,
                         $e->getMessage()
                     ),
-                    self::VERBOSITY_CLIENT
+                    Net_Notifier_Logger::VERBOSITY_CLIENT
                 );
             }
 
@@ -191,28 +168,31 @@ class Net_Notifier_Listener extends Net_Notifier_Client
     }
 
     // }}}
-    // {{{ output()
+    // {{{ log()
 
     /**
-     * Displays a debug string based on the verbosity level
+     * Logs a message with the specified priority
      *
-     * @param string  $string    the string to display.
-     * @param integer $verbosity an optional verbosity level to display at. By
-     *                           default, this is 1.
+     * @param string  $message   the message to log.
+     * @param integer $priority  an optional verbosity level to display at. By
+     *                           default, this is
+     *                           {@link Net_Notifier_Logger::VERBOSITY_MESSAGES}.
      * @param boolean $timestamp optional. Whether or not to include a
-     *                           timestamp with the output.
+     *                           timestamp with the logged message. If not
+     *                           specified, a timetamp is included.
      *
-     * @return void
+     * @return Net_Notifier_Server the current object, for fluent interface.
      */
-    protected function output($string, $verbosity = 1, $timestamp = true)
-    {
-        if ($verbosity <= $this->verbosity) {
-            if ($timestamp) {
-                echo '[' . date('Y-m-d H:i:s') . '] ' . $string;
-            } else {
-                echo $string;
-            }
+    protected function log(
+        $message,
+        $priority = Net_Notifier_Logger::VERBOSITY_MESSAGES,
+        $timestamp = true
+    ) {
+        if ($this->logger instanceof Net_Notifier_Logger) {
+            $this->logger->log($message, $priority, $timestamp);
         }
+
+        return $this;
     }
 
     // }}}

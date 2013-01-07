@@ -84,12 +84,14 @@ $package->setOptions(
             'Net/Notifier/'                   => 'php',
             'Net/Notifier/Socket'             => 'php',
             'Net/Notifier/WebSocket'          => 'php',
-            'tests'                           => 'test'
+            'tests'                           => 'test',
             'data'                            => 'data'
         ),
         'exceptions'                          => array(
-            'scripts/net-notifier-server'   => 'script'
-            'scripts/net-notifier-listener' => 'script'
+            'scripts/net-notifier-server'   => 'script',
+            'scripts/net-notifier-listener' => 'script',
+            'LICENSE'                       => 'doc',
+            'README.md'                     => 'doc'
         ),
         'ignore'                              => array(
             'package.php',
@@ -97,7 +99,7 @@ $package->setOptions(
             '*.zip'
         ),
         'installexceptions'                   => array(
-            'scripts/net-notifier-server'   => '/'
+            'scripts/net-notifier-server'   => '/',
             'scripts/net-notifier-listener' => '/'
         )
     )

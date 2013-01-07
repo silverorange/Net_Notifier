@@ -65,6 +65,7 @@
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2008-2012 Alexy Borzov, 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 
 /**
@@ -89,6 +90,7 @@ require_once 'Net/Notifier/Socket/TimeoutException.php';
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2008-2012 Alexy Borzov, 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  * @link      http://tools.ietf.org/html/rfc1928
  */
 abstract class Net_Notifier_Socket_Abstract

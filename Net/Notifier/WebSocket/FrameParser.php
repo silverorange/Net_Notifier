@@ -28,6 +28,7 @@
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 
 /**
@@ -43,6 +44,7 @@ require_once 'Net/Notifier/WebSocket/Frame.php';
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 class Net_Notifier_WebSocket_FrameParser
 {

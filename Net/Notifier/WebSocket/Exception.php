@@ -28,6 +28,7 @@
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 
 /**
@@ -41,6 +42,7 @@
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 interface Net_Notifier_WebSocket_Exception
 {

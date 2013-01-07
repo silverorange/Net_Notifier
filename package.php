@@ -96,6 +96,7 @@ $package->setOptions(
         'ignore'                              => array(
             'tests/config.php',
             'package.php',
+            'package.xml',
             '*.tgz',
             '*.zip'
         ),

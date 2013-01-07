@@ -28,6 +28,7 @@
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 
 /**
@@ -41,13 +42,14 @@ require_once 'Net/Notifier/Exception.php';
 require_once 'Net/Notifier/Socket/Exception.php';
 
 /**
- * Exception thrown when a WebSocket  operation times out
+ * Exception thrown when a socket operation times out
  *
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2012 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 class Net_Notifier_Socket_TimeoutException
     extends Exception

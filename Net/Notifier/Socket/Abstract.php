@@ -65,6 +65,7 @@
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2008-2012 Alexy Borzov, 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 
 /**
@@ -89,10 +90,13 @@ require_once 'Net/Notifier/Socket/TimeoutException.php';
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2008-2012 Alexy Borzov, 2012-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  * @link      http://tools.ietf.org/html/rfc1928
  */
 abstract class Net_Notifier_Socket_Abstract
 {
+    // {{{ protected proeprties
+
     /**
      * PHP warning messages raised during stream_socket_client() call
      *
@@ -123,6 +127,8 @@ abstract class Net_Notifier_Socket_Abstract
      */
     protected $timeout;
 
+    // }}}
+    // {{{ __destruct()
 
     /**
      * Destructor, disconnects socket
@@ -131,6 +137,9 @@ abstract class Net_Notifier_Socket_Abstract
     {
         fclose($this->socket);
     }
+
+    // }}}
+    // {{{ read()
 
     /**
      * Wrapper around fread(), handles global request timeout
@@ -157,6 +166,32 @@ abstract class Net_Notifier_Socket_Abstract
         return $data;
     }
 
+    // }}}
+    // {{{ peek()
+
+    /**
+     * Gets bytes from this socket without incrementing the read position
+     *
+     * Subsequent calls to read from this socket will return the same bytes.
+     * Peek can block just like read if the socket is not ready to be read.
+     *
+     * The data returned is raw data. For encytpted sockets, the encrypted
+     * bytes are returned. This is unlike the behaviour of
+     * {@link Net_Notifier_Socket_Abstract::read()}, which returnes unencrypted
+     * data.
+     *
+     * @param integer $length the maximum number of bytes to read.
+     *
+     * @return string up to <kbd>$length</kbd> bytes or data from this socket.
+     */
+    public function peek($length)
+    {
+        return stream_socket_recvfrom($this->socket, $length, STREAM_PEEK);
+    }
+
+    // }}}
+    // {{{ write()
+
     /**
      * Wrapper around fwrite(), handles global request timeout
      *
@@ -182,6 +217,9 @@ abstract class Net_Notifier_Socket_Abstract
         return $written;
     }
 
+    // }}}
+    // {{{ eof()
+
     /**
      * Tests for end-of-file on a socket
      *
@@ -192,6 +230,9 @@ abstract class Net_Notifier_Socket_Abstract
         return feof($this->socket);
     }
 
+    // }}}
+    // {{{ setDeadline()
+
     /**
      * Sets request deadline
      *
@@ -199,15 +240,26 @@ abstract class Net_Notifier_Socket_Abstract
      *                          past this time
      * @param integer $timeout  Original request timeout value, to use in
      *                          Exception message
+     *
+     * @return Net_Notifier_Socket_Abstract the current object, for fluent
+     *                                      interface.
      */
     public function setDeadline($deadline, $timeout)
     {
         $this->deadline = $deadline;
         $this->timeout  = $timeout;
+
+        return $this;
     }
+
+    // }}}
+    // {{{ enableCrypto()
 
     /**
      * Turns on encryption on a socket
+     *
+     * @return Net_Notifier_Socket_Abstract the current object, for fluent
+     *                                      interface.
      *
      * @throws Net_Notifier_Socket_ConnectionException
      */
@@ -222,16 +274,22 @@ abstract class Net_Notifier_Socket_Abstract
 
         foreach ($modes as $mode) {
             if (stream_socket_enable_crypto($this->socket, true, $mode)) {
-                return;
+                return $this;
             }
         }
+
         throw new Net_Notifier_Socket_ConnectionException(
             'Failed to enable secure connection when connecting through proxy'
         );
     }
 
+    // }}}
+    // {{{ checkTimeout()
+
     /**
      * Throws an exception if stream timed out
+     *
+     * @return void
      *
      * @throws Net_Notifier_Socket_TimeoutException
      */
@@ -249,6 +307,9 @@ abstract class Net_Notifier_Socket_Abstract
         }
     }
 
+    // }}}
+    // {{{ connectionWarningsHandler()
+
     /**
      * Error handler to use during stream_socket_client() call
      *
@@ -259,7 +320,7 @@ abstract class Net_Notifier_Socket_Abstract
      * @param integer $errno  error level
      * @param string  $errstr error message
      *
-     * @return bool
+     * @return boolean
      */
     protected function connectionWarningsHandler($errno, $errstr)
     {
@@ -269,25 +330,54 @@ abstract class Net_Notifier_Socket_Abstract
         return true;
     }
 
+    // }}}
+    // {{{ getPeerName()
+
+    /**
+     * Gets the name of this socket
+     *
+     * For example: 192.168.0.150:56784
+     *
+     * @return string the name of this socket.
+     */
     public function getPeerName()
     {
         return stream_socket_get_name($this->socket, true);
     }
 
+    // }}}
+    // {{{ shutdown()
+
+    /**
+     * Shuts down one or more ends of the TCP pipe for this socket
+     *
+     * @param integer $how on of the constants STREAM_SHUT_RD, STREAM_SHUT_WR
+     *                     or STREAM_SHUT_RDRW. See
+     *                     {@link http://ca3.php.net/stream_socket_shutdown} for
+     *                     a description of the constants.
+     *
+     * @return boolean true on success, false on failure.
+     */
     public function shutdown($how)
     {
         return stream_socket_shutdown($this->socket, $how);
     }
 
+    // }}}
+    // {{{ getRawSocket()
+
+    /**
+     * Gets the raw PHP stream for this socket
+     *
+     * @return resource the raw PHP stream for this socket. Useful for
+     *                  performing stream_select() calls on this socket.
+     */
     public function getRawSocket()
     {
         return $this->socket;
     }
 
-    public function peek($length)
-    {
-        return stream_socket_recvfrom($this->socket, $length, STREAM_PEEK);
-    }
+    // }}}
 }
 
 ?>

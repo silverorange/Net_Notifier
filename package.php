@@ -27,21 +27,28 @@
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
  * @author    Nathan Fredrikson <nathan@silverorange.com>
- * @copyright 2006-2012 silverorange
+ * @copyright 2006-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$apiVersion     = '0.1.2';
-$apiState       = 'alpha';
+$apiVersion     = '0.2.0';
+$apiState       = 'beta';
 
-$releaseVersion = '0.1.2';
-$releaseState   = 'alpha';
+$releaseVersion = '0.2.0';
+$releaseState   = 'beta';
 
 $releaseNotes   = <<<EOT
-* First release.
+ * Listener now based off Console_CommandLine and Net_Notifier_Logger.
+ * Fixed issue with clients providing more than one token in Connect header.
+ * Fixed issue with clients having large handshake requests.
+ * Fixed issue with clients having more than one token in Upgrade header.
+ * Improved documentation and coding standards.
+ * CLI scripts are more portable.
+ * Listener CLI script is installed.
+ * Improved packaging build script.
 EOT;
 
 $description = <<<EOT
@@ -68,7 +75,7 @@ $package = new PEAR_PackageFileManager2();
 
 $package->setOptions(
     array(
-        'filelistgenerator'                   => 'svn',
+        'filelistgenerator'                   => 'file',
         'simpleoutput'                        => true,
         'baseinstalldir'                      => '/',
         'packagedirectory'                    => './',
@@ -77,17 +84,23 @@ $package->setOptions(
             'Net/Notifier/'                   => 'php',
             'Net/Notifier/Socket'             => 'php',
             'Net/Notifier/WebSocket'          => 'php',
-            'tests'                           => 'test'
+            'tests'                           => 'test',
+            'data'                            => 'data'
         ),
         'exceptions'                          => array(
-            'scripts/net-notifier-server' => 'script'
+            'scripts/net-notifier-server'   => 'script',
+            'scripts/net-notifier-listener' => 'script',
+            'LICENSE'                       => 'doc',
+            'README.md'                     => 'doc'
         ),
         'ignore'                              => array(
             'package.php',
-            '*.tgz'
+            '*.tgz',
+            '*.zip'
         ),
         'installexceptions'                   => array(
-            'scripts/net-notifier-server' => '/'
+            'scripts/net-notifier-server'   => '/',
+            'scripts/net-notifier-listener' => '/'
         )
     )
 );
@@ -112,12 +125,49 @@ $package->addMaintainer(
     'mike@silverorange.com'
 );
 
-$package->addMaintainer(
-    'lead',
-    'nrf',
-    'Nathan Fredrickson',
-    'nrf@silverorange.com'
+$package->addReplacement(
+    'Net/Notifier/ServerCLI.php',
+    'pear-config',
+    '@data-dir@',
+    'data_dir'
 );
+
+$package->addReplacement(
+    'Net/Notifier/ListenerCLI.php',
+    'pear-config',
+    '@data-dir@',
+    'data_dir'
+);
+
+$package->addReplacement(
+    'Net/Notifier/ServerCLI.php',
+    'package-info',
+    '@package-name@',
+    'name'
+);
+
+$package->addReplacement(
+    'Net/Notifier/ListenerCLI.php',
+    'package-info',
+    '@package-name@',
+    'name'
+);
+
+
+$package->addReplacement(
+    'data/server-cli.xml',
+    'package-info',
+    '@package-version@',
+    'version'
+);
+
+$package->addReplacement(
+    'data/listener-cli.xml',
+    'package-info',
+    '@package-version@',
+    'version'
+);
+
 $package->setPhpDep('5.2.1');
 $package->setPearinstallerDep('1.4.0');
 $package->addExtensionDep('required', 'mbstring');
@@ -133,6 +183,11 @@ $package->addRelease();
 $package->addInstallAs(
     'scripts/net-notifier-server',
     'net-notifier-server'
+);
+
+$package->addInstallAs(
+    'scripts/net-notifier-listener',
+    'net-notifier-listener'
 );
 
 if (   isset($_GET['make'])

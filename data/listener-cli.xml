@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes"?>
+<command>
+	<description>Simple notification client that connects to a notification server and listens for notifications.</description>
+	<version>@package-version@</version>
+	<option name="verbose">
+		<short_name>-v</short_name>
+		<long_name>--verbose</long_name>
+		<description>Sets verbosity level. Use multiples for more detail (e.g. "-vv").</description>
+		<action>Counter</action>
+		<default>1</default>
+	</option>
+	<option name="timeout">
+		<short_name>-t</short_name>
+		<long_name>--timeout</long_name>
+		<description>Connection timeout in milliseconds. If not set, defaults to 1000.</description>
+		<action>StoreInt</action>
+		<default>1000</default>
+	</option>
+	<argument name="address">
+		<description>Address of notification server. Must be a web-socket address in the form ws://hostname:port/.</description>
+	</argument>
+</command>

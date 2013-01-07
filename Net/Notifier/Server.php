@@ -28,6 +28,7 @@
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
 
 /**
@@ -51,6 +52,11 @@ require_once 'Net/Notifier/Socket/Accept.php';
 require_once 'Net/Notifier/Logger.php';
 
 /**
+ * Loggable interface
+ */
+require_once 'Net/Notifier/Loggable.php';
+
+/**
  * A server process for receiving and relaying notifications
  *
  * The cha-ching server interacts with two types of clients. The first type
@@ -64,8 +70,9 @@ require_once 'Net/Notifier/Logger.php';
  * @author    Michael Gauthier <mike@silverorange.com>
  * @copyright 2006-2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
+ * @link      https://github.com/silverorange/Net_Notifier
  */
-class Net_Notifier_Server
+class Net_Notifier_Server implements Net_Notifier_Loggable
 {
     // {{{ class constants
 
@@ -136,13 +143,11 @@ class Net_Notifier_Server
     protected $connected = false;
 
     /**
-     * List of loggers for this server
+     * The logger used by this server
      *
-     * @var array
-     *
-     * @see Net_Notifier_Server::addLogger()
+     * @var Net_Notifier_Logger
      */
-    protected $loggers = array();
+    protected $logger = null;
 
     // }}}
     // {{{ __construct()
@@ -180,44 +185,24 @@ class Net_Notifier_Server
     }
 
     // }}}
-    // {{{ addLogger()
+    // {{{ setLogger()
 
     /**
-     * Adds a logger for this server
+     * Sets the logger for this server
      *
-     * Loggers receive server status messages and debug output and can store
-     * or display received messages.
+     * Loggers receive status messages and debug output and can store or
+     * display received messages.
      *
-     * @param Net_Notifier_Logger $logger the logger to add.
+     * @param Net_Notifier_Logger|null $logger the logger to set for this
+     *                                         server, or null to unset the
+     *                                         logger.
      *
-     * @return Net_Notifier_Server the current object, for fluent interface.
+     * @return Net_Notifier_Loggable the current object, for fluent interface.
      */
-    public function addLogger(Net_Notifier_Logger $logger)
+    public function setLogger(Net_Notifier_Logger $logger = null)
     {
-        $this->loggers[] = $logger;
+        $this->logger = $logger;
         return $this;
-    }
-
-    // }}}
-    // {{{ removeLogger()
-
-    /**
-     * Removes a logger from this server
-     *
-     * @param Net_Notifier_Logger $logger the logger to remove.
-     *
-     * @return boolean true if the logger was removed, false if it was not found.
-     */
-    public function removeLogger(Net_Notifier_Logger $logger)
-    {
-        $old_loggers = $this->loggers;
-
-        $this->loggers = array_diff(
-            $this->loggers,
-            array($logger)
-        );
-
-        return (count($old_loggers) > count($this->loggers));
     }
 
     // }}}
@@ -672,8 +657,8 @@ class Net_Notifier_Server
         $priority = Net_Notifier_Logger::VERBOSITY_MESSAGES,
         $timestamp = true
     ) {
-        foreach ($this->loggers as $logger) {
-            $logger->log($message, $priority, $timestamp);
+        if ($this->logger instanceof Net_Notifier_Logger) {
+            $this->logger->log($message, $priority, $timestamp);
         }
 
         return $this;

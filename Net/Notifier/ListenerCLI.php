@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Server command line interface
+ * Listener command line interface
  *
  * PHP version 5
  *
@@ -26,7 +26,7 @@
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2012-2013 silverorange
+ * @copyright 2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  * @link      https://github.com/silverorange/Net_Notifier
  */
@@ -47,32 +47,33 @@ require_once 'Net/Notifier/Exception.php';
 require_once 'Net/Notifier/LoggerCLI.php';
 
 /**
- * Notification server class.
+ * Listener implementation.
  */
-require_once 'Net/Notifier/Server.php';
+require_once 'Net/Notifier/Listener.php';
 
 /**
- * Server command line interface
+ * Listener command line interface
  *
- * This provides a comamnd-line interface for the notification server. It
- * bootstraps the actual server and sets up the command line and logging
+ * This provides a comamnd-line interface for the notification listener. It
+ * bootstraps the actual listener and sets up the command line and logging
  * interfaces.
  *
- * The server CLI is designed to be subclassed if a custom server is desired.
+ * The listener CLI is designed to be subclassed for implementing custom
+ * notification listeners.
  *
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2012-2013 silverorange
+ * @copyright 2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  * @link      https://github.com/silverorange/Net_Notifier
  */
-class Net_Notifier_ServerCLI
+class Net_Notifier_ListenerCLI
 {
     // {{{ __invoke()
 
     /**
-     * Runs this CLI server
+     * Runs this CLI listener
      *
      * @return void
      */
@@ -88,9 +89,12 @@ class Net_Notifier_ServerCLI
             $logger->setVerbosity($result->options['verbose']);
 
             try {
-                $server = $this->getServer($result->options);
-                $server->setLogger($logger);
-                $server->run();
+                $listener = $this->getListener(
+                    $result->options,
+                    $result->args
+                );
+                $listener->setLogger($logger);
+                $listener->run();
             } catch (Net_Notifier_Exception $e) {
                 $logger->log(
                     $e->getMessage() . PHP_EOL,
@@ -126,9 +130,9 @@ class Net_Notifier_ServerCLI
     // {{{ getParser()
 
     /**
-     * Gets the command line parser for this server
+     * Gets the command line parser for this listener
      *
-     * @return Console_CommandLine the command line parser for this server.
+     * @return Console_CommandLine the command line parser for this listener.
      */
     protected function getParser()
     {
@@ -139,12 +143,15 @@ class Net_Notifier_ServerCLI
     // {{{ getLogger()
 
     /**
-     * Gets the logger for this server
+     * Gets the logger for this listener
+     *
+     * Subclasses can and should override this method to provide a custom
+     * logger.
      *
      * @param Console_CommandLine $parser the command line parser for this
      *                                    CLI.
      *
-     * @return Net_Notifier_Logger the logger for this server.
+     * @return Net_Notifier_Logger the logger for this listener.
      */
     protected function getLogger(Console_CommandLine $parser)
     {
@@ -152,29 +159,35 @@ class Net_Notifier_ServerCLI
     }
 
     // }}}
-    // {{{ getServer()
+    // {{{ getListener()
 
     /**
-     * Gets the server used by this CLI
+     * Gets the listener used by this CLI
+     *
+     * Subclasses can and should override this method to provide a custom
+     * listener.
      *
      * @param array $options   an indexed array of command line options.
      * @param array $arguments an indexed array of command line arguments.
      *
-     * @return Net_Notifier_Server the server used by this CLI.
+     * @return Net_Notifier_Listener the listener used by this CLI.
      */
-    protected function getServer(array $options, array $arguments)
+    protected function getListener(array $options, array $arguments)
     {
-        return new Net_Notifier_Server($options['port']);
+        return new Net_Notifier_Listener(
+            $arguments['address'],
+            $options['timeout']
+        );
     }
 
     // }}}
     // {{{ getUiXml()
 
     /**
-     * Gets the XML command line interface definition for this server
+     * Gets the XML command line interface definition for this listener
      *
      * @return string the XML command line interface definition for this
-     *                server.
+     *                listener.
      */
     protected function getUiXml()
     {
@@ -186,7 +199,7 @@ class Net_Notifier_ServerCLI
                 . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'data';
         }
 
-        return $dir . DIRECTORY_SEPARATOR . 'server-cli.xml';
+        return $dir . DIRECTORY_SEPARATOR . 'listener-cli.xml';
     }
 
     // }}}

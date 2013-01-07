@@ -3,7 +3,7 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * Client exception class definition
+ * Interface for loggable objects
  *
  * PHP version 5
  *
@@ -26,18 +26,18 @@
  * @category  Net
  * @package   Net_Notifier
  * @author    Michael Gauthier <mike@silverorange.com>
- * @copyright 2012 silverorange
+ * @copyright 2013 silverorange
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  * @link      https://github.com/silverorange/Net_Notifier
  */
 
 /**
- * Base exception interface
+ * Logger class.
  */
-require_once 'Net/Notifier/Exception.php';
+require_once 'Net/Notifier/Logger.php';
 
 /**
- * Exception thrown when a client fails to connect
+ * Interface for loggable objects
  *
  * @category  Net
  * @package   Net_Notifier
@@ -46,10 +46,25 @@ require_once 'Net/Notifier/Exception.php';
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  * @link      https://github.com/silverorange/Net_Notifier
  */
-class Net_Notifier_ClientException
-    extends Exception
-    implements Net_Notifier_Exception
+interface Net_Notifier_Loggable
 {
+    // {{{ setLogger()
+
+    /**
+     * Sets the logger for this loggable object
+     *
+     * Loggers receive status messages and debug output and can store or
+     * display received messages.
+     *
+     * @param Net_Notifier_Logger|null $logger the logger to set for this
+     *                                         server, or null to unset the
+     *                                         logger.
+     *
+     * @return Net_Notifier_Loggable the current object, for fluent interface.
+     */
+    public function setLogger(Net_Notifier_Logger $logger = null);
+
+    // }}}
 }
 
 ?>

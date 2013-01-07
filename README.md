@@ -26,5 +26,3 @@ Options:
   -h, --help            show this help message and exit
   --version             show the program version and exit
 </pre>
-
-test

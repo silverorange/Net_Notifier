@@ -88,7 +88,7 @@ class Net_Notifier_ServerCLI
             $logger->setVerbosity($result->options['verbose']);
 
             try {
-                $server = $this->getServer($result->options);
+                $server = $this->getServer($result->options, $result->args);
                 $server->setLogger($logger);
                 $server->run();
             } catch (Net_Notifier_Exception $e) {

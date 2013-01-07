@@ -89,10 +89,7 @@ class Net_Notifier_ListenerCLI
             $logger->setVerbosity($result->options['verbose']);
 
             try {
-                $listener = $this->getListener(
-                    $result->options,
-                    $result->args
-                );
+                $listener = $this->getListener($result->options, $result->args);
                 $listener->setLogger($logger);
                 $listener->run();
             } catch (Net_Notifier_Exception $e) {

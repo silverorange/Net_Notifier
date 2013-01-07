@@ -94,7 +94,9 @@ $package->setOptions(
             'README.md'                     => 'doc'
         ),
         'ignore'                              => array(
+            'tests/config.php',
             'package.php',
+            'package.xml',
             '*.tgz',
             '*.zip'
         ),

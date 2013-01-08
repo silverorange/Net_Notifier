@@ -149,6 +149,15 @@ class Net_Notifier_Server implements Net_Notifier_Loggable
      */
     protected $logger = null;
 
+    /**
+     * Flag to trigger clean shutdown of this server
+     *
+     * This flag is checked during each iteration of the main event loop.
+     *
+     * @var boolean
+     */
+    protected $moribund = false;
+
     // }}}
     // {{{ __construct()
 
@@ -220,18 +229,20 @@ class Net_Notifier_Server implements Net_Notifier_Loggable
     {
         $this->connect();
 
-        while (true) {
+        while (!$this->moribund) {
 
             $read = $this->getReadArray();
 
-            $result = stream_select(
+            // Suppressing warnings for stream_select() because it will raise
+            // a warning if interrupted by a signal.
+            $result = @stream_select(
                 $read,
                 $write = null,
                 $except = null,
                 null
             );
 
-            if ($result < 1) {
+            if ($result === false || $result < 1) {
                 continue;
             }
 
@@ -333,7 +344,7 @@ class Net_Notifier_Server implements Net_Notifier_Loggable
                                         'Received shutdown message.'
                                     );
 
-                                    break 3;
+                                    $this->moribund = true;
                                 }
 
                                 if ($message['action'] === 'listen') {
@@ -406,6 +417,40 @@ class Net_Notifier_Server implements Net_Notifier_Loggable
         }
 
         $this->disconnect();
+    }
+
+    // }}}
+    // {{{ handleSignal()
+
+    /**
+     * Handles UNIX signals
+     *
+     * SIGTERM and SIGINT can be used to trigger a clean shutdown of
+     * this server.
+     *
+     * @param integer $signal the signal received.
+     *
+     * @return void
+     */
+    public function handleSignal($signal)
+    {
+        switch ($signal) {
+        case SIGINT:
+            $this->log(
+                'Received SIGINT, shutting down.' . PHP_EOL,
+                Net_Notifier_Logger::VERBOSITY_ALL
+            );
+            $this->moribund = true;
+            break;
+
+        case SIGTERM:
+            $this->log(
+                'Received SIGTERM, shutting down.' . PHP_EOL,
+                Net_Notifier_Logger::VERBOSITY_ALL
+            );
+            $this->moribund = true;
+            break;
+        }
     }
 
     // }}}

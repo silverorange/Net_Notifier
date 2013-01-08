@@ -173,6 +173,7 @@ $package->addReplacement(
 $package->setPhpDep('5.2.1');
 $package->setPearinstallerDep('1.4.0');
 $package->addExtensionDep('required', 'mbstring');
+$package->addExtensionDep('optional', 'pcntl');
 $package->addPackageDepWithChannel(
     'required',
     'Console_CommandLine',

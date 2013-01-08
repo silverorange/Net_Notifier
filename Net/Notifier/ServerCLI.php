@@ -1,5 +1,7 @@
 <?php
 
+declare (ticks = 1);
+
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
@@ -90,6 +92,10 @@ class Net_Notifier_ServerCLI
             try {
                 $server = $this->getServer($result->options, $result->args);
                 $server->setLogger($logger);
+                if (extension_loaded('pcntl')) {
+                    pcntl_signal(SIGTERM, array($server, 'handleSignal'));
+                    pcntl_signal(SIGINT, array($server, 'handleSignal'));
+                }
                 $server->run();
             } catch (Net_Notifier_Exception $e) {
                 $logger->log(

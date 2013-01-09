@@ -26,3 +26,5 @@ Options:
   -h, --help            show this help message and exit
   --version             show the program version and exit
 </pre>
+
+This is a super cool test.

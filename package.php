@@ -37,7 +37,7 @@ PEAR::setErrorHandling(PEAR_ERROR_DIE);
 $apiVersion     = '0.4.0';
 $apiState       = 'beta';
 
-$releaseVersion = '0.4.0';
+$releaseVersion = '0.4.1';
 $releaseState   = 'beta';
 
 $releaseNotes   = <<<EOT
@@ -139,6 +139,13 @@ $package->addReplacement(
 );
 
 $package->addReplacement(
+    'Net/Notifier/SenderCLI.php',
+    'pear-config',
+    '@data-dir@',
+    'data_dir'
+);
+
+$package->addReplacement(
     'Net/Notifier/ServerCLI.php',
     'package-info',
     '@package-name@',
@@ -152,6 +159,13 @@ $package->addReplacement(
     'name'
 );
 
+
+$package->addReplacement(
+    'Net/Notifier/SenderCLI.php',
+    'package-info',
+    '@package-name@',
+    'name'
+);
 
 $package->addReplacement(
     'data/server-cli.xml',

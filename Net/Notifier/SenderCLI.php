@@ -84,8 +84,7 @@ class Net_Notifier_SenderCLI
             $logger->setVerbosity($result->options['verbose']);
 
             try {
-                $sender = $this->getListener($result->options, $result->args);
-                $sender->setLogger($logger);
+                $sender = $this->getSender($result->options, $result->args);
                 if (isset($result->args['data']) && $result->args['data'] != '') {
                     $data = json_decode($result->args['data'], true);
                     if ($data === null) {
@@ -98,7 +97,7 @@ class Net_Notifier_SenderCLI
                 } else {
                     $data = array();
                 }
-                $sender>send($result->args['action'], $data);
+                $sender->send($result->args['action'], $data);
             } catch (Net_Notifier_Exception $e) {
                 $logger->log(
                     $e->getMessage() . PHP_EOL,
@@ -163,7 +162,7 @@ class Net_Notifier_SenderCLI
     }
 
     // }}}
-    // {{{ getListener()
+    // {{{ getSender()
 
     /**
      * Gets the sender used by this CLI

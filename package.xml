@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.9.4" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+    http://pear.php.net/dtd/tasks-1.0.xsd
+    http://pear.php.net/dtd/package-2.0
+    http://pear.php.net/dtd/package-2.0.xsd">
+ <name>Net_Notifier</name>
+ <channel>pear.silverorange.com</channel>
+ <summary>WebSocket relay notification system.</summary>
+ <description>All connections are made using WebSockets. The notification system works as
+follows:
+
+Server:
+=======
+Runs on a single system and receives requests. The server relays received
+messages to connected listening clients.
+
+Listen Client:
+================
+Runs on one or many machines. Clients connect to a server and listen for
+messages relayed from the server.
+
+Send Client:
+============
+Sends a message to the notification server to be relayed to connected listen
+clients.</description>
+ <lead>
+  <name>Mike Gauthier</name>
+  <user>gauthierm</user>
+  <email>mike@silverorange.com</email>
+  <active>yes</active>
+ </lead>
+ <date>2013-05-02</date>
+ <time>16:31:50</time>
+ <version>
+  <release>0.2.1</release>
+  <api>0.2.0</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
+ <notes>
+* Listener now based off Console_CommandLine and Net_Notifier_Logger.
+ * Fixed issue with clients providing more than one token in Connect header.
+ * Fixed issue with clients having large handshake requests.
+ * Fixed issue with clients having more than one token in Upgrade header.
+ * Improved documentation and coding standards.
+ * CLI scripts are more portable.
+ * Listener CLI script is installed.
+ * Improved packaging build script.
+ </notes>
+ <contents>
+  <dir baseinstalldir="/" name="/">
+   <dir name="data">
+    <file baseinstalldir="/" name="listener-cli.xml" role="data">
+     <tasks:replace from="@package-version@" to="version" type="package-info" />
+    </file>
+    <file baseinstalldir="/" name="sender-cli.xml" role="data" />
+    <file baseinstalldir="/" name="server-cli.xml" role="data">
+     <tasks:replace from="@package-version@" to="version" type="package-info" />
+    </file>
+   </dir> <!-- /data -->
+   <dir name="Net">
+    <dir name="Notifier">
+     <dir name="Socket">
+      <file baseinstalldir="/" name="Abstract.php" role="php" />
+      <file baseinstalldir="/" name="Accept.php" role="php" />
+      <file baseinstalldir="/" name="Client.php" role="php" />
+      <file baseinstalldir="/" name="ConnectionException.php" role="php" />
+      <file baseinstalldir="/" name="Exception.php" role="php" />
+      <file baseinstalldir="/" name="Server.php" role="php" />
+      <file baseinstalldir="/" name="TimeoutException.php" role="php" />
+     </dir> <!-- /Net/Notifier/Socket -->
+     <dir name="WebSocket">
+      <file baseinstalldir="/" name="Connection.php" role="php" />
+      <file baseinstalldir="/" name="Exception.php" role="php" />
+      <file baseinstalldir="/" name="Frame.php" role="php" />
+      <file baseinstalldir="/" name="FrameParser.php" role="php" />
+      <file baseinstalldir="/" name="Handshake.php" role="php" />
+      <file baseinstalldir="/" name="HandshakeFailureException.php" role="php" />
+      <file baseinstalldir="/" name="ProtocolException.php" role="php" />
+      <file baseinstalldir="/" name="UTF8EncodingException.php" role="php" />
+     </dir> <!-- /Net/Notifier/WebSocket -->
+     <file baseinstalldir="/" name="Client.php" role="php" />
+     <file baseinstalldir="/" name="ClientException.php" role="php" />
+     <file baseinstalldir="/" name="Exception.php" role="php" />
+     <file baseinstalldir="/" name="Listener.php" role="php" />
+     <file baseinstalldir="/" name="ListenerCLI.php" role="php">
+      <tasks:replace from="@data-dir@" to="data_dir" type="pear-config" />
+      <tasks:replace from="@package-name@" to="name" type="package-info" />
+     </file>
+     <file baseinstalldir="/" name="Loggable.php" role="php" />
+     <file baseinstalldir="/" name="Logger.php" role="php" />
+     <file baseinstalldir="/" name="LoggerCLI.php" role="php" />
+     <file baseinstalldir="/" name="Sender.php" role="php" />
+     <file baseinstalldir="/" name="SenderCLI.php" role="php" />
+     <file baseinstalldir="/" name="Server.php" role="php" />
+     <file baseinstalldir="/" name="ServerCLI.php" role="php">
+      <tasks:replace from="@data-dir@" to="data_dir" type="pear-config" />
+      <tasks:replace from="@package-name@" to="name" type="package-info" />
+     </file>
+     <file baseinstalldir="/" name="WebSocket.php" role="php" />
+    </dir> <!-- /Net/Notifier -->
+   </dir> <!-- /Net -->
+   <dir name="scripts">
+    <file baseinstalldir="/" name="net-notifier-listener" role="script" />
+    <file baseinstalldir="/" name="net-notifier-server" role="script" />
+   </dir> <!-- /scripts -->
+   <dir name="tests">
+    <file baseinstalldir="/" name="config.php.dist" role="test" />
+    <file baseinstalldir="/" name="web-test-sender.php" role="test" />
+   </dir> <!-- /tests -->
+   <file baseinstalldir="/" name="composer.json" role="data" />
+   <file baseinstalldir="/" name="LICENSE" role="doc" />
+   <file baseinstalldir="/" name="README.md" role="doc" />
+  </dir> <!-- / -->
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.2.1</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0</min>
+   </pearinstaller>
+   <package>
+    <name>Console_CommandLine</name>
+    <channel>pear.php.net</channel>
+    <min>1.1.10</min>
+   </package>
+   <extension>
+    <name>mbstring</name>
+   </extension>
+  </required>
+  <optional>
+   <extension>
+    <name>pcntl</name>
+   </extension>
+  </optional>
+ </dependencies>
+ <phprelease>
+  <filelist>
+   <install as="net-notifier-server" name="scripts/net-notifier-server" />
+   <install as="net-notifier-listener" name="scripts/net-notifier-listener" />
+  </filelist>
+ </phprelease>
+ <changelog>
+  <release>
+   <version>
+    <release>0.2.1</release>
+    <api>0.2.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2013-05-02</date>
+   <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
+   <notes>
+* Listener now based off Console_CommandLine and Net_Notifier_Logger.
+ * Fixed issue with clients providing more than one token in Connect header.
+ * Fixed issue with clients having large handshake requests.
+ * Fixed issue with clients having more than one token in Upgrade header.
+ * Improved documentation and coding standards.
+ * CLI scripts are more portable.
+ * Listener CLI script is installed.
+ * Improved packaging build script.
+   </notes>
+  </release>
+ </changelog>
+</package>

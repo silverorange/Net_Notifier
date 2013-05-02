@@ -30,9 +30,9 @@ clients.</description>
   <active>yes</active>
  </lead>
  <date>2013-05-02</date>
- <time>16:44:29</time>
+ <time>17:52:48</time>
  <version>
-  <release>0.4.0</release>
+  <release>0.4.1</release>
   <api>0.4.0</api>
  </version>
  <stability>
@@ -91,7 +91,10 @@ clients.</description>
      <file baseinstalldir="/" name="Logger.php" role="php" />
      <file baseinstalldir="/" name="LoggerCLI.php" role="php" />
      <file baseinstalldir="/" name="Sender.php" role="php" />
-     <file baseinstalldir="/" name="SenderCLI.php" role="php" />
+     <file baseinstalldir="/" name="SenderCLI.php" role="php">
+      <tasks:replace from="@data-dir@" to="data_dir" type="pear-config" />
+      <tasks:replace from="@package-name@" to="name" type="package-info" />
+     </file>
      <file baseinstalldir="/" name="Server.php" role="php" />
      <file baseinstalldir="/" name="ServerCLI.php" role="php">
       <tasks:replace from="@data-dir@" to="data_dir" type="pear-config" />
@@ -185,6 +188,23 @@ clients.</description>
   <release>
    <version>
     <release>0.4.0</release>
+    <api>0.4.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2013-05-02</date>
+   <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
+   <notes>
+* Added sender CLI.
+ * Added SIGTERM and SIGINT handlers to server and listener.
+ * Added composer support.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>0.4.1</release>
     <api>0.4.0</api>
    </version>
    <stability>

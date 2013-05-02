@@ -34,21 +34,14 @@
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$apiVersion     = '0.2.0';
+$apiVersion     = '0.3.0';
 $apiState       = 'beta';
 
-$releaseVersion = '0.2.1';
+$releaseVersion = '0.3.0';
 $releaseState   = 'beta';
 
 $releaseNotes   = <<<EOT
- * Listener now based off Console_CommandLine and Net_Notifier_Logger.
- * Fixed issue with clients providing more than one token in Connect header.
- * Fixed issue with clients having large handshake requests.
- * Fixed issue with clients having more than one token in Upgrade header.
- * Improved documentation and coding standards.
- * CLI scripts are more portable.
- * Listener CLI script is installed.
- * Improved packaging build script.
+ * Added sender CLI.
 EOT;
 
 $description = <<<EOT
@@ -103,7 +96,7 @@ $package->setOptions(
         ),
         'installexceptions'                   => array(
             'scripts/net-notifier-server'   => '/',
-            'scripts/net-notifier-listener' => '/'
+            'scripts/net-notifier-listener' => '/',
             'scripts/net-notifier-sender'   => '/'
         )
     )

@@ -30,10 +30,10 @@ clients.</description>
   <active>yes</active>
  </lead>
  <date>2013-05-02</date>
- <time>16:31:50</time>
+ <time>16:37:11</time>
  <version>
-  <release>0.2.1</release>
-  <api>0.2.0</api>
+  <release>0.3.0</release>
+  <api>0.3.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -41,14 +41,7 @@ clients.</description>
  </stability>
  <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
  <notes>
-* Listener now based off Console_CommandLine and Net_Notifier_Logger.
- * Fixed issue with clients providing more than one token in Connect header.
- * Fixed issue with clients having large handshake requests.
- * Fixed issue with clients having more than one token in Upgrade header.
- * Improved documentation and coding standards.
- * CLI scripts are more portable.
- * Listener CLI script is installed.
- * Improved packaging build script.
+* Added sender CLI.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -56,7 +49,9 @@ clients.</description>
     <file baseinstalldir="/" name="listener-cli.xml" role="data">
      <tasks:replace from="@package-version@" to="version" type="package-info" />
     </file>
-    <file baseinstalldir="/" name="sender-cli.xml" role="data" />
+    <file baseinstalldir="/" name="sender-cli.xml" role="data">
+     <tasks:replace from="@package-version@" to="version" type="package-info" />
+    </file>
     <file baseinstalldir="/" name="server-cli.xml" role="data">
      <tasks:replace from="@package-version@" to="version" type="package-info" />
     </file>
@@ -105,6 +100,7 @@ clients.</description>
    </dir> <!-- /Net -->
    <dir name="scripts">
     <file baseinstalldir="/" name="net-notifier-listener" role="script" />
+    <file baseinstalldir="/" name="net-notifier-sender" role="script" />
     <file baseinstalldir="/" name="net-notifier-server" role="script" />
    </dir> <!-- /scripts -->
    <dir name="tests">
@@ -143,6 +139,7 @@ clients.</description>
   <filelist>
    <install as="net-notifier-server" name="scripts/net-notifier-server" />
    <install as="net-notifier-listener" name="scripts/net-notifier-listener" />
+   <install as="net-notifier-sender" name="scripts/net-notifier-sender" />
   </filelist>
  </phprelease>
  <changelog>
@@ -166,6 +163,21 @@ clients.</description>
  * CLI scripts are more portable.
  * Listener CLI script is installed.
  * Improved packaging build script.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>0.3.0</release>
+    <api>0.3.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2013-05-02</date>
+   <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
+   <notes>
+* Added sender CLI.
    </notes>
   </release>
  </changelog>

@@ -30,10 +30,10 @@ clients.</description>
   <active>yes</active>
  </lead>
  <date>2013-05-02</date>
- <time>16:37:11</time>
+ <time>16:44:29</time>
  <version>
-  <release>0.3.0</release>
-  <api>0.3.0</api>
+  <release>0.4.0</release>
+  <api>0.4.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -42,6 +42,8 @@ clients.</description>
  <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
  <notes>
 * Added sender CLI.
+ * Added SIGTERM and SIGINT handlers to server and listener.
+ * Added composer support.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -178,6 +180,23 @@ clients.</description>
    <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
    <notes>
 * Added sender CLI.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>0.4.0</release>
+    <api>0.4.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2013-05-02</date>
+   <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
+   <notes>
+* Added sender CLI.
+ * Added SIGTERM and SIGINT handlers to server and listener.
+ * Added composer support.
    </notes>
   </release>
  </changelog>

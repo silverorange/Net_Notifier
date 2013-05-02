@@ -34,14 +34,16 @@
 require_once 'PEAR/PackageFileManager2.php';
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
 
-$apiVersion     = '0.3.0';
+$apiVersion     = '0.4.0';
 $apiState       = 'beta';
 
-$releaseVersion = '0.3.0';
+$releaseVersion = '0.4.0';
 $releaseState   = 'beta';
 
 $releaseNotes   = <<<EOT
  * Added sender CLI.
+ * Added SIGTERM and SIGINT handlers to server and listener.
+ * Added composer support.
 EOT;
 
 $description = <<<EOT

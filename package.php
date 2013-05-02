@@ -90,6 +90,7 @@ $package->setOptions(
         'exceptions'                          => array(
             'scripts/net-notifier-server'   => 'script',
             'scripts/net-notifier-listener' => 'script',
+            'scripts/net-notifier-sender'   => 'script',
             'LICENSE'                       => 'doc',
             'README.md'                     => 'doc'
         ),
@@ -103,6 +104,7 @@ $package->setOptions(
         'installexceptions'                   => array(
             'scripts/net-notifier-server'   => '/',
             'scripts/net-notifier-listener' => '/'
+            'scripts/net-notifier-sender'   => '/'
         )
     )
 );
@@ -170,6 +172,13 @@ $package->addReplacement(
     'version'
 );
 
+$package->addReplacement(
+    'data/sender-cli.xml',
+    'package-info',
+    '@package-version@',
+    'version'
+);
+
 $package->setPhpDep('5.2.1');
 $package->setPearinstallerDep('1.4.0');
 $package->addExtensionDep('required', 'mbstring');
@@ -191,6 +200,11 @@ $package->addInstallAs(
 $package->addInstallAs(
     'scripts/net-notifier-listener',
     'net-notifier-listener'
+);
+
+$package->addInstallAs(
+    'scripts/net-notifier-sender',
+    'net-notifier-sender'
 );
 
 if (   isset($_GET['make'])

@@ -37,7 +37,7 @@ PEAR::setErrorHandling(PEAR_ERROR_DIE);
 $apiVersion     = '0.4.0';
 $apiState       = 'beta';
 
-$releaseVersion = '0.4.1';
+$releaseVersion = '0.4.2';
 $releaseState   = 'beta';
 
 $releaseNotes   = <<<EOT

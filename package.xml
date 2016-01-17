@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.9.4" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+<package packagerversion="1.9.5" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
     http://pear.php.net/dtd/tasks-1.0.xsd
     http://pear.php.net/dtd/package-2.0
     http://pear.php.net/dtd/package-2.0.xsd">
@@ -29,10 +29,10 @@ clients.</description>
   <email>mike@silverorange.com</email>
   <active>yes</active>
  </lead>
- <date>2013-05-02</date>
- <time>17:52:48</time>
+ <date>2016-01-17</date>
+ <time>15:32:27</time>
  <version>
-  <release>0.4.1</release>
+  <release>0.4.2</release>
   <api>0.4.0</api>
  </version>
  <stability>
@@ -150,68 +150,14 @@ clients.</description>
  <changelog>
   <release>
    <version>
-    <release>0.2.1</release>
-    <api>0.2.0</api>
-   </version>
-   <stability>
-    <release>beta</release>
-    <api>beta</api>
-   </stability>
-   <date>2013-05-02</date>
-   <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
-   <notes>
-* Listener now based off Console_CommandLine and Net_Notifier_Logger.
- * Fixed issue with clients providing more than one token in Connect header.
- * Fixed issue with clients having large handshake requests.
- * Fixed issue with clients having more than one token in Upgrade header.
- * Improved documentation and coding standards.
- * CLI scripts are more portable.
- * Listener CLI script is installed.
- * Improved packaging build script.
-   </notes>
-  </release>
-  <release>
-   <version>
-    <release>0.3.0</release>
-    <api>0.3.0</api>
-   </version>
-   <stability>
-    <release>beta</release>
-    <api>beta</api>
-   </stability>
-   <date>2013-05-02</date>
-   <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
-   <notes>
-* Added sender CLI.
-   </notes>
-  </release>
-  <release>
-   <version>
-    <release>0.4.0</release>
+    <release>0.4.2</release>
     <api>0.4.0</api>
    </version>
    <stability>
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2013-05-02</date>
-   <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
-   <notes>
-* Added sender CLI.
- * Added SIGTERM and SIGINT handlers to server and listener.
- * Added composer support.
-   </notes>
-  </release>
-  <release>
-   <version>
-    <release>0.4.1</release>
-    <api>0.4.0</api>
-   </version>
-   <stability>
-    <release>beta</release>
-    <api>beta</api>
-   </stability>
-   <date>2013-05-02</date>
+   <date>2016-01-17</date>
    <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
    <notes>
 * Added sender CLI.

@@ -32,16 +32,6 @@
  */
 
 /**
- * Exception class for unsupported requested sub-protocol
- */
-require_once 'Net/Notifier/WebSocket/ProtocolException.php';
-
-/**
- * Exception class for failing the WebSocket connection
- */
-require_once 'Net/Notifier/WebSocket/HandshakeFailureException.php';
-
-/**
  * Latest update supports RFC 6455.
  *
  * @category  Net

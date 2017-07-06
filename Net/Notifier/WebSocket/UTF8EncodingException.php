@@ -32,16 +32,6 @@
  */
 
 /**
- * Base exception interface
- */
-require_once 'Net/Notifier/Exception.php';
-
-/**
- * Base WebSocket exception interface
- */
-require_once 'Net/Notifier/WebSocket/Exception.php';
-
-/**
  * Exception thrown when invalid UTF-8 encoding is detected
  *
  * @category  Net

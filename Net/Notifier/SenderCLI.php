@@ -32,26 +32,6 @@
  */
 
 /**
- * Command line interface parser class.
- */
-require_once 'Console/CommandLine.php';
-
-/**
- * Base exception class.
- */
-require_once 'Net/Notifier/Exception.php';
-
-/**
- * Logger implementation class.
- */
-require_once 'Net/Notifier/LoggerCLI.php';
-
-/**
- * Sender implementation.
- */
-require_once 'Net/Notifier/Sender.php';
-
-/**
  * Sender command line interface
  *
  * Provides a CLI for sending arbitrary notifications.

@@ -32,16 +32,6 @@
  */
 
 /**
- * Base socket class.
- */
-require_once 'Net/Notifier/Socket/Abstract.php';
-
-/**
- * Server socket class.
- */
-require_once 'Net/Notifier/Socket/Server.php';
-
-/**
  * Socket used by servers to accept client connections
  *
  * @category  Net

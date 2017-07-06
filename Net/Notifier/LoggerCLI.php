@@ -32,16 +32,6 @@
  */
 
 /**
- * Base logger class.
- */
-require_once 'Net/Notifier/Logger.php';
-
-/**
- * Command-line outputter class.
- */
-require_once 'Console/CommandLine/Outputter.php';
-
-/**
  * Logger that displayes logged messages to STDOUT and STDERR
  *
  * Logged messages of priority {@link Net_Notifier_Logger:VERBOSITY_MESSAGES} are

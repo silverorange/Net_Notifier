@@ -32,11 +32,6 @@
  */
 
 /**
- * Handshake failure exception
- */
-require_once 'Net/Notifier/WebSocket/HandshakeFailureException.php';
-
-/**
  * Exception thrown when a WebSocket client requests an unsupported protocol
  *
  * @category  Net

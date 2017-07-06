@@ -16,7 +16,7 @@
  * @license   http://www.gnu.org/copyleft/lesser.html LGPL License 2.1
  */
 
-require_once 'Net/Notifier/Sender.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 if (   !file_exists(dirname(__FILE__) . '/config.php')
     || !is_readable(dirname(__FILE__) . '/config.php')

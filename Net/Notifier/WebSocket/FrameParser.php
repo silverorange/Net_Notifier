@@ -32,11 +32,6 @@
  */
 
 /**
- * Frame class
- */
-require_once 'Net/Notifier/WebSocket/Frame.php';
-
-/**
  * Parseri for extracting WebSocket frames from a raw data-stream
  *
  * @category  Net

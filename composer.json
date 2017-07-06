@@ -27,8 +27,5 @@
 		"psr-0": {
 			"Net_Notifier" : ""
 		}
-	},
-	"include-path": [
-		"./"
-	]
+	}
 }

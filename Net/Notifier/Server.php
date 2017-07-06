@@ -32,31 +32,6 @@
  */
 
 /**
- * Client connection class.
- */
-require_once 'Net/Notifier/WebSocket/Connection.php';
-
-/**
- * Socket class definition for listening for incomming connections.
- */
-require_once 'Net/Notifier/Socket/Server.php';
-
-/**
- * Socket class definition for accepting client connections.
- */
-require_once 'Net/Notifier/Socket/Accept.php';
-
-/**
- * Logger class for logging messages and debug output for this server.
- */
-require_once 'Net/Notifier/Logger.php';
-
-/**
- * Loggable interface
- */
-require_once 'Net/Notifier/Loggable.php';
-
-/**
  * A server process for receiving and relaying notifications
  *
  * The cha-ching server interacts with two types of clients. The first type

@@ -32,11 +32,6 @@
  */
 
 /**
- * Base exception interface
- */
-require_once 'Net/Notifier/Exception.php';
-
-/**
  * Exception thrown when a client fails to connect
  *
  * @category  Net

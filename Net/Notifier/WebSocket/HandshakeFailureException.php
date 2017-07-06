@@ -32,16 +32,6 @@
  */
 
 /**
- * Base exception interface
- */
-require_once 'Net/Notifier/Exception.php';
-
-/**
- * Base WebSocket exception interface
- */
-require_once 'Net/Notifier/WebSocket/Exception.php';
-
-/**
  * Exception thrown when a WebSocket handshake fails
  *
  * When this exception is caught, the client or server should fail the

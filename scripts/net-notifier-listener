@@ -1,7 +1,21 @@
 #! /usr/bin/env php
 <?php
 
-require_once 'Net/Notifier/ListenerCLI.php';
+$autoloadPaths = array(
+    // Try to load autoloader if Net_Notifier is the root project.
+    __DIR__ . '/../vendor/autoload.php',
+
+    // Try to load an autoloader if Net_Notifier is installed as a library for
+    // another root project.
+    __DIR__ . '/../../../autoload.php',
+);
+
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        require_once $path;
+        break;
+    }
+}
 
 set_time_limit(0);
 

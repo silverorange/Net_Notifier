@@ -66,11 +66,6 @@
  */
 
 /**
- * Base socket class.
- */
-require_once 'Net/Notifier/Socket/Abstract.php';
-
-/**
  * Socket used for clients connecting to servers
  *
  * @category  Net

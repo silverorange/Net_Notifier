@@ -32,21 +32,6 @@
  */
 
 /**
- * Client class.
- */
-require_once 'Net/Notifier/Client.php';
-
-/**
- * Logger class for logging messages and debug output for this client.
- */
-require_once 'Net/Notifier/Logger.php';
-
-/**
- * Loggable interface.
- */
-require_once 'Net/Notifier/Loggable.php';
-
-/**
  * A simple notification listener client
  *
  * May be extended to provide additional functionality.

@@ -32,26 +32,6 @@
  */
 
 /**
- * Notifier WebSocket protocol definition.
- */
-require_once 'Net/Notifier/WebSocket.php';
-
-/**
- * Socket wrapper class.
- */
-require_once 'Net/Notifier/Socket/Client.php';
-
-/**
- * WebSocket connection class.
- */
-require_once 'Net/Notifier/WebSocket/Connection.php';
-
-/**
- * Client exception class.
- */
-require_once 'Net/Notifier/ClientException.php';
-
-/**
  * Base class for notification clients
  *
  * @category  Net

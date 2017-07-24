@@ -32,11 +32,6 @@
  */
 
 /**
- * Client class.
- */
-require_once 'Net/Notifier/Client.php';
-
-/**
  * A client for sending notifications
  *
  * @category  Net

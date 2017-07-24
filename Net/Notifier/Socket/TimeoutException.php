@@ -32,16 +32,6 @@
  */
 
 /**
- * Base exception interface
- */
-require_once 'Net/Notifier/Exception.php';
-
-/**
- * Base socket exception interface
- */
-require_once 'Net/Notifier/Socket/Exception.php';
-
-/**
  * Exception thrown when a socket operation times out
  *
  * @category  Net

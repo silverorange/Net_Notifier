@@ -32,46 +32,6 @@
  */
 
 /**
- * Socket wrapper.
- */
-require_once 'Net/Notifier/Socket/Abstract.php';
-
-/**
- * Notifier WebSocket protocol definition.
- */
-require_once 'Net/Notifier/WebSocket.php';
-
-/**
- * UTF-8 encoding exception class definition.
- */
-require_once 'Net/Notifier/WebSocket/UTF8EncodingException.php';
-
-/**
- * Handshake failure exception class definition.
- */
-require_once 'Net/Notifier/WebSocket/HandshakeFailureException.php';
-
-/**
- * Protocol exception class definition.
- */
-require_once 'Net/Notifier/WebSocket/ProtocolException.php';
-
-/**
- * WebSocket handshake class definition.
- */
-require_once 'Net/Notifier/WebSocket/Handshake.php';
-
-/**
- * WebSocket frame class definition.
- */
-require_once 'Net/Notifier/WebSocket/Frame.php';
-
-/**
- * WebSocket frame-parser class definition.
- */
-require_once 'Net/Notifier/WebSocket/FrameParser.php';
-
-/**
  * A WebSocket connection
  *
  * Handles hansdhaking, sending and receiving WebSocket messages and control

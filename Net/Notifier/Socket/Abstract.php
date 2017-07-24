@@ -69,16 +69,6 @@
  */
 
 /**
- * Connection exception class definition.
- */
-require_once 'Net/Notifier/Socket/ConnectionException.php';
-
-/**
- * Timeout exception class definition.
- */
-require_once 'Net/Notifier/Socket/TimeoutException.php';
-
-/**
  * Socket wrapper class
  *
  * Needed to properly handle connection errors, global timeout support and

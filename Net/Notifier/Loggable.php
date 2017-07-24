@@ -32,11 +32,6 @@
  */
 
 /**
- * Logger class.
- */
-require_once 'Net/Notifier/Logger.php';
-
-/**
  * Interface for loggable objects
  *
  * @category  Net

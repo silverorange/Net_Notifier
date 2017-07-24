@@ -34,26 +34,6 @@ declare(ticks = 1);
  */
 
 /**
- * Command line interface parser class.
- */
-require_once 'Console/CommandLine.php';
-
-/**
- * Base exception class.
- */
-require_once 'Net/Notifier/Exception.php';
-
-/**
- * Logger implementation class.
- */
-require_once 'Net/Notifier/LoggerCLI.php';
-
-/**
- * Listener implementation.
- */
-require_once 'Net/Notifier/Listener.php';
-
-/**
  * Listener command line interface
  *
  * This provides a comamnd-line interface for the notification listener. It

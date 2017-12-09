@@ -307,7 +307,7 @@ class Net_Notifier_WebSocket_Handshake
         }
 
         if (   !isset($headers['Upgrade'])
-            || strtolower($headers['Upgrade']) != 'websocket'
+            || mb_strtolower($headers['Upgrade']) != 'websocket'
         ) {
             throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 'Upgrade header missing or not set to "websocket".'
@@ -315,7 +315,7 @@ class Net_Notifier_WebSocket_Handshake
         }
 
         if (   !isset($headers['Connection'])
-            || strtolower($headers['Connection']) != 'upgrade'
+            || mb_strtolower($headers['Connection']) != 'upgrade'
         ) {
             throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 'Connection header missing or not set to "Upgrade".'
@@ -462,7 +462,7 @@ class Net_Notifier_WebSocket_Handshake
 
         // lowercase header values
         // remove leading/trailing whitespace
-        $values = array_map('strtolower', $values);
+        $values = array_map('mb_strtolower', $values);
 
         return $values;
     }

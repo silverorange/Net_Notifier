@@ -227,7 +227,7 @@ class Net_Notifier_WebSocket_Handshake
                 . "X-WebSocket-Message: Client request Sec-WebSocket-Version "
                 . "header is missing.\r\n";
 
-        } elseif ($headers['Sec-WebSocket-Version'] != self::VERSION) {
+        } elseif ($headers['Sec-WebSocket-Version'] !== self::VERSION) {
 
             $response
                 = "HTTP/1.1 426 Upgrade Required\r\n"
@@ -307,7 +307,7 @@ class Net_Notifier_WebSocket_Handshake
         }
 
         if (   !isset($headers['Upgrade'])
-            || mb_strtolower($headers['Upgrade']) != 'websocket'
+            || mb_strtolower($headers['Upgrade']) !== 'websocket'
         ) {
             throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 'Upgrade header missing or not set to "websocket".'
@@ -315,7 +315,7 @@ class Net_Notifier_WebSocket_Handshake
         }
 
         if (   !isset($headers['Connection'])
-            || mb_strtolower($headers['Connection']) != 'upgrade'
+            || mb_strtolower($headers['Connection']) !== 'upgrade'
         ) {
             throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 'Connection header missing or not set to "Upgrade".'
@@ -327,7 +327,7 @@ class Net_Notifier_WebSocket_Handshake
         // section 4.1 client validation of server response item 4.
         $responseAccept = trim($headers['Sec-WebSocket-Accept']);
         $validAccept = $this->getAccept($nonce);
-        if ($responseAccept != $validAccept) {
+        if ($responseAccept !== $validAccept) {
             throw new Net_Notifier_WebSocket_HandshakeFailureException(
                 sprintf(
                     'Sec-WebSocket-Accept header "%s" does not validate '

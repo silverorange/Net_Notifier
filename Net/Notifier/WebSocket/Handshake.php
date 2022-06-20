@@ -457,7 +457,9 @@ class Net_Notifier_WebSocket_Handshake
         // ignore empty values
         $values = array_filter(
             $values,
-            create_function('$value', 'return ($value != \'\');')
+            function ($value) {
+                return ($value != '');
+            }
         );
 
         // lowercase header values
